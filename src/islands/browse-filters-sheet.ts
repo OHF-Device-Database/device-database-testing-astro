@@ -6,6 +6,8 @@ import {
   type BrowseFilters,
   type FacetDimension,
   type FilterMode,
+  type FilterOption,
+  type ManufacturerFacet,
   activeFilterCount,
   browseFiltersHref,
   categoryOptions,
@@ -13,18 +15,17 @@ import {
   parseBrowseFilters,
 } from "../lib/browse-filters.js"
 import { defineElementOnce } from "../lib/define-element.js"
-import type { Category } from "../lib/device.js"
 import { icon } from "../lib/icons.js"
 
 interface DimensionConfig {
   dim: FacetDimension
   label: string
-  options: Category[]
+  options: FilterOption[]
   letterGroups: boolean
 }
 
 export class BrowseFiltersSheet extends LitElement {
-  @property({ type: Array }) manufacturers: string[] = []
+  @property({ type: Array }) manufacturers: ManufacturerFacet[] = []
 
   @state() private _open = false
   @state() private _subView: FacetDimension | null = null
@@ -85,7 +86,7 @@ export class BrowseFiltersSheet extends LitElement {
       {
         dim: "manufacturer",
         label: "Manufacturer",
-        options: this.manufacturers.map((name) => ({ id: name, label: name })),
+        options: this.manufacturers.map(({ name, count }) => ({ id: name, label: name, count })),
         letterGroups: true,
       },
     ]
@@ -263,6 +264,11 @@ export class BrowseFiltersSheet extends LitElement {
                             ${on ? unsafeHTML(icon("check", 16)) : nothing}
                           </span>
                           <span class="filter-tap-row-text">${option.label}</span>
+                          ${option.count !== undefined
+                            ? html`<span class="filter-tap-row-count"
+                                >${option.count.toLocaleString()}</span
+                              >`
+                            : nothing}
                         </button>
                       `
                     })}

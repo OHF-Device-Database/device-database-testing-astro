@@ -7,24 +7,25 @@ import {
   FACET_SIDEBAR_LIMIT,
   type FacetDimension,
   type FilterMode,
+  type FilterOption,
+  type ManufacturerFacet,
   browseFiltersHref,
   categoryOptions,
   groupByLetter,
   parseBrowseFilters,
 } from "../lib/browse-filters.js"
 import { defineElementOnce } from "../lib/define-element.js"
-import type { Category } from "../lib/device.js"
 import { icon } from "../lib/icons.js"
 
 interface DimensionConfig {
   dim: FacetDimension
   label: string
-  options: Category[]
+  options: FilterOption[]
   letterGroups: boolean
 }
 
 export class DeviceFilters extends LitElement {
-  @property({ type: Array }) manufacturers: string[] = []
+  @property({ type: Array }) manufacturers: ManufacturerFacet[] = []
 
   @state() private _moreDim: FacetDimension | null = null
   @state() private _moreQuery = ""
@@ -67,7 +68,7 @@ export class DeviceFilters extends LitElement {
       {
         dim: "manufacturer",
         label: "Manufacturer",
-        options: this.manufacturers.map((name) => ({ id: name, label: name })),
+        options: this.manufacturers.map(({ name, count }) => ({ id: name, label: name, count })),
         letterGroups: true,
       },
     ]
@@ -143,7 +144,7 @@ export class DeviceFilters extends LitElement {
     `
   }
 
-  private _renderRow(dim: FacetDimension, option: Category, selected: Set<string>) {
+  private _renderRow(dim: FacetDimension, option: FilterOption, selected: Set<string>) {
     return html`
       <label class="filter-row">
         <input
@@ -152,11 +153,14 @@ export class DeviceFilters extends LitElement {
           @change=${() => this._toggle(dim, option.id)}
         />
         <span class="filter-row-text">${option.label}</span>
+        ${option.count !== undefined
+          ? html`<span class="count">${option.count.toLocaleString()}</span>`
+          : nothing}
       </label>
     `
   }
 
-  private _visibleOptions(config: DimensionConfig, selected: Set<string>): Category[] {
+  private _visibleOptions(config: DimensionConfig, selected: Set<string>): FilterOption[] {
     const visible = config.options.slice(0, FACET_SIDEBAR_LIMIT)
     const shown = new Set(visible.map((o) => o.id))
     for (const option of config.options) {

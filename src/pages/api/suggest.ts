@@ -36,7 +36,11 @@ export const GET: APIRoute = async ({ url, cache }) => {
     manufacturer: d.manufacturer,
     category: d.category,
   }))
-  const facets = pickFacetSuggestions(q, manufacturers, DEVICE_CATEGORIES)
+  const facets = pickFacetSuggestions(
+    q,
+    manufacturers.map((m) => m.name),
+    DEVICE_CATEGORIES,
+  )
 
   const out: Suggestions = {}
   if (facets.categories.length) {

@@ -9,7 +9,7 @@ import {
   type DerivedDevicePoly,
   type DeviceQuery,
 } from "./api-client"
-import { applyFilters, type BrowseFilters } from "./browse-filters"
+import { applyFilters, type BrowseFilters, type ManufacturerFacet } from "./browse-filters"
 import { toApiCategories, toUiCategory } from "./category-map"
 import { Device, type VersionInfo } from "./device"
 import { MOCK_DEVICES } from "./mock-devices"
@@ -148,9 +148,16 @@ export async function fetchDeviceCount(): Promise<number> {
   return getDeviceCount()
 }
 
-export async function fetchManufacturers(): Promise<string[]> {
+export async function fetchManufacturers(): Promise<ManufacturerFacet[]> {
   if (!apiConfigured) {
-    return [...new Set(MOCK_DEVICES.map((d) => d.manufacturer))].sort((a, b) => a.localeCompare(b))
+    const counts = new Map<string, number>()
+    for (const device of MOCK_DEVICES) {
+      counts.set(device.manufacturer, (counts.get(device.manufacturer) ?? 0) + 1)
+    }
+
+    return [...counts.entries()]
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
   }
   const { manufacturers } = await getDimensions()
 

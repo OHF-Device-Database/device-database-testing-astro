@@ -38,6 +38,9 @@
   font-size: var(--fs-13);
   color: var(--fg-muted);
 }
+.appfoot-legal-inline a {
+  font-size: inherit;
+}
 .appfoot-ohf-logo {
   display: inline-flex;
   align-items: center;

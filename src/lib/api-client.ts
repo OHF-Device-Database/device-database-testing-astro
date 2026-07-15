@@ -57,10 +57,30 @@ export type DerivedDeviceMono = z.infer<typeof DerivedDeviceMono>
 
 const DerivedDeviceList = z.array(DerivedDevicePoly)
 
+export const DimensionManufacturer = z.object({
+  name: z.string(),
+  count: z.number(),
+})
+export type DimensionManufacturer = z.infer<typeof DimensionManufacturer>
+
+export interface DimensionCategory {
+  name: string
+  count: number
+  children: Record<string, DimensionCategory>
+}
+
+const DimensionCategory: z.ZodType<DimensionCategory> = z.lazy(() =>
+  z.object({
+    name: z.string(),
+    count: z.number(),
+    children: z.record(z.string(), DimensionCategory),
+  }),
+)
+
 export const Dimensions = z.object({
-  manufacturers: z.array(z.string()).default([]),
-  connectivity: z.array(ApiConnectivity).default([]),
-  categories: z.record(z.string(), z.unknown()).default({}),
+  manufacturers: z.array(DimensionManufacturer).default([]),
+  connectivity: z.partialRecord(ApiConnectivity, z.object({ count: z.number() })).default({}),
+  categories: z.record(z.string(), DimensionCategory).default({}),
 })
 export type Dimensions = z.infer<typeof Dimensions>
 
@@ -212,6 +232,12 @@ export function getDerivedDevice(id: string): Promise<DerivedDeviceMono | null> 
   })
 }
 
-export function getDimensions(): Promise<Dimensions> {
-  return memoized("dimensions", 600_000, () => apiFetch("/api/unstable/dimensions", Dimensions))
+export type DimensionsQuery = Omit<DeviceQuery, "page" | "size">
+
+export function getDimensions(query: DimensionsQuery = {}): Promise<Dimensions> {
+  const params = queryToParams(query)
+
+  return memoized(`dimensions:${params.toString()}`, 600_000, () =>
+    apiFetch("/api/unstable/dimensions", Dimensions, params),
+  )
 }

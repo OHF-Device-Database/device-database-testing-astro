@@ -5,6 +5,15 @@ import { DEVICE_CATEGORIES, CATEGORY_LABEL } from "./categories";
 export type FilterMode = "include" | "exclude";
 export type FacetDimension = "category" | "manufacturer";
 
+export interface FilterOption extends Category {
+    count?: number;
+}
+
+export interface ManufacturerFacet {
+    name: string;
+    count: number;
+}
+
 export interface BrowseFilters {
     q: string;
     category: Set<string>;
@@ -239,8 +248,8 @@ export function topOptions(
     return byFreq.filter((o) => top.has(o.id));
 }
 
-export function groupByLetter(options: Category[]): (readonly [string, Category[]])[] {
-    const groups = new Map<string, Category[]>();
+export function groupByLetter<T extends Category>(options: T[]): (readonly [string, T[]])[] {
+    const groups = new Map<string, T[]>();
     for (const option of options) {
         const head = (option.label[0] ?? "#").toUpperCase();
         const key = /[A-Z]/.test(head) ? head : "#";
