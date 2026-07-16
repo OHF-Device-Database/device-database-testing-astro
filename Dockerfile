@@ -5,6 +5,14 @@ FROM node:24-alpine AS build
 ENV DEPLOY_TARGET=node
 WORKDIR /app
 
+# Build-time config. Prerendered pages (e.g. "/") bake these in at build time,
+# so they must be passed with --build-arg, not just at runtime. For a real
+# production image, build with: --build-arg NOINDEX=false
+ARG NOINDEX
+ARG API_AUTHORITY
+ENV NOINDEX=${NOINDEX}
+ENV API_AUTHORITY=${API_AUTHORITY}
+
 # Enable pnpm via corepack, pinned to the version in package.json.
 RUN corepack enable
 
@@ -17,7 +25,9 @@ COPY . .
 RUN pnpm build
 
 # Reinstall only production dependencies for a lean runtime image.
-RUN pnpm prune --prod
+# --ignore-scripts skips the "prepare" (husky) lifecycle hook, which would
+# otherwise fail here since husky is a devDependency being pruned away.
+RUN pnpm prune --prod --ignore-scripts
 
 # Runtime image: just Node + the built server and its production deps.
 FROM node:24-alpine AS runtime

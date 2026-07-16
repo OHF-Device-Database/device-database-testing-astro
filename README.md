@@ -79,12 +79,16 @@ Set `API_AUTHORITY` (and `NOINDEX=false` for production) in the Netlify site's *
 The app can also run as a self-contained Node server via the [`@astrojs/node`](https://docs.astro.build/en/guides/integrations-guide/node/) adapter. The adapter is selected at build time by `DEPLOY_TARGET`: it defaults to `netlify`, and the `Dockerfile` sets `DEPLOY_TARGET=node` to produce a standalone server.
 
 ```bash
-docker build -t device-database-frontend .
+# Production image (allow indexing). Prerendered pages such as "/" bake
+# NOINDEX in at build time, so it must be passed as a --build-arg.
+docker build --build-arg NOINDEX=false -t device-database-frontend .
+
 docker run -p 4321:4321 \
   -e API_AUTHORITY=https://api.example.com \
-  -e NOINDEX=false \
   device-database-frontend
 ```
+
+**Build-time vs runtime config.** Prerendered pages (e.g. `/`) resolve `NOINDEX`/`API_AUTHORITY` when the image is built, so pass those as `--build-arg` for pages you want affected. SSR pages read the same values from the runtime environment (`-e`). `NOINDEX` defaults to `true` (no indexing) when unset.
 
 The server listens on `HOST=0.0.0.0` and `PORT=4321` (both overridable via env vars). Pushes to `main` and version tags build and publish the image to GitHub Container Registry (`ghcr.io/<owner>/<repo>`) via `.github/workflows/docker.yml`.
 
