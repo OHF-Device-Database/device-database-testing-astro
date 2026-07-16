@@ -2,6 +2,12 @@
 import { defineConfig, envField, memoryCache } from "astro/config";
 
 import netlify from "@astrojs/netlify";
+import node from "@astrojs/node";
+
+// Switch the deploy target with DEPLOY_TARGET. Defaults to "netlify" so the
+// existing Netlify build is unaffected; the Docker image sets "node".
+const adapter =
+  process.env.DEPLOY_TARGET === "node" ? node({ mode: "standalone" }) : netlify();
 
 // https://astro.build/config
 export default defineConfig({
@@ -16,7 +22,7 @@ export default defineConfig({
       NOINDEX: envField.boolean({ context: "server", access: "public", optional: true, default: true }),
     },
   },
-  adapter: netlify(),
+  adapter,
   experimental: {
     cache: {
       provider: memoryCache(),
