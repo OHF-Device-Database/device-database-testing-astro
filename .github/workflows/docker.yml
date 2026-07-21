@@ -44,6 +44,8 @@ jobs:
           REPO: ${{ github.repository }}
         run: echo "name=ghcr.io/${REPO,,}" >> "$GITHUB_OUTPUT"
 
+      # Branch pushes get ":main" + ":sha-*"; semver tags get ":X.Y.Z", ":X.Y"
+      # and (via the default latest=auto flavor) ":latest".
       - name: Derive tags & labels
         id: meta
         uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9 # v6.1.0
@@ -51,7 +53,6 @@ jobs:
           images: ${{ steps.image.outputs.name }}
           tags: |
             type=ref,event=branch
-            type=ref,event=pr
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=sha,prefix=sha-
@@ -65,13 +66,21 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          # Published images are production images: allow indexing, and point
+          # prerendered pages (e.g. the homepage device count) at the API.
+          # API_AUTHORITY comes from a repository variable — set it under
+          # Settings → Secrets and variables → Actions → Variables. If unset,
+          # prerendered pages degrade gracefully (no baked API data).
+          build-args: |
+            NOINDEX=false
+            API_AUTHORITY=${{ vars.API_AUTHORITY }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       # Attestation requires the image to have been pushed, so skip it on PRs.
       - name: Generate artifact attestation
         if: github.event_name != 'pull_request'
-        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
+        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
         with:
           subject-name: ${{ steps.image.outputs.name }}
           subject-digest: ${{ steps.build.outputs.digest }}

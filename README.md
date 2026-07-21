@@ -90,7 +90,9 @@ docker run -p 4321:4321 \
 
 **Build-time vs runtime config.** Prerendered pages (e.g. `/`) resolve `NOINDEX`/`API_AUTHORITY` when the image is built, so pass those as `--build-arg` for pages you want affected. SSR pages read the same values from the runtime environment (`-e`). `NOINDEX` defaults to `true` (no indexing) when unset.
 
-The server listens on `HOST=0.0.0.0` and `PORT=4321` (both overridable via env vars). Pushes to `main` and version tags build and publish the image to GitHub Container Registry (`ghcr.io/<owner>/<repo>`) via `.github/workflows/docker.yml`.
+The server listens on `HOST=0.0.0.0` and `PORT=4321` (both overridable via env vars). The runtime image ships only the bundled server output — the node build bundles all dependencies into `dist/` (`vite.ssr.noExternal`), so there is no `node_modules` in the final image. One consequence: Astro's sharp-backed `/_image` endpoint is unavailable in the container (the project doesn't use `astro:assets`, so nothing depends on it — revisit if that changes).
+
+Pushes to `main` and version tags build and publish a **production image** (`NOINDEX=false`, `API_AUTHORITY` from the repository's Actions variable of the same name) to GitHub Container Registry (`ghcr.io/<owner>/<repo>`) via `.github/workflows/docker.yml`.
 
 ## ⚡ Caching
 

@@ -20,16 +20,13 @@ RUN corepack enable
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 RUN pnpm install --frozen-lockfile
 
-# Build the standalone server output into dist/.
+# Build the standalone server output into dist/. The node target bundles all
+# dependencies into dist/ (vite.ssr.noExternal in astro.config.mjs), so the
+# runtime image needs no node_modules.
 COPY . .
 RUN pnpm build
 
-# Reinstall only production dependencies for a lean runtime image.
-# --ignore-scripts skips the "prepare" (husky) lifecycle hook, which would
-# otherwise fail here since husky is a devDependency being pruned away.
-RUN pnpm prune --prod --ignore-scripts
-
-# Runtime image: just Node + the built server and its production deps.
+# Runtime image: just Node + the self-contained server bundle.
 FROM node:24-alpine AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
@@ -37,13 +34,19 @@ ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=4321
 
+# tini reaps zombies and forwards signals so `docker stop` shuts down cleanly.
+RUN apk add --no-cache tini
+
 COPY --from=build /app/dist ./dist
-COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/package.json ./package.json
 
 EXPOSE 4321
 
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD wget -q --spider "http://127.0.0.1:${PORT}/" || exit 1
+
 # Run as the built-in unprivileged node user.
 USER node
 
+ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["node", "./dist/server/entry.mjs"]
