@@ -1,0 +1,16 @@
+.git
+.github
+node_modules
+dist
+.astro
+.netlify
+.vscode
+.idea
+test
+*.log
+npm-debug.log*
+pnpm-debug.log*
+.DS_Store
+.env
+.env.production
+README.md

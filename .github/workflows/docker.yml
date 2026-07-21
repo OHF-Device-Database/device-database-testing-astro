@@ -1,0 +1,111 @@
+name: Build and push Docker image
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  # Version images are published when a GitHub Release is published (covers
+  # both UI-created releases and releases cut from an existing tag, without
+  # double-building on the underlying tag push). Mirrors device-database's
+  # deploy_sw.yml.
+  release:
+    types: [published]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write # push to GHCR
+      attestations: write # build provenance attestation
+      id-token: write # OIDC token for the attestation
+    steps:
+      # The `release` trigger can't glob tags, so reject non-semver tags up front
+      # rather than publishing an image under a junk tag.
+      - name: Require a semver release tag
+        if: github.event_name == 'release'
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          if [[ ! "$TAG" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::Release tag '$TAG' is not semver (expected MAJOR.MINOR.PATCH or vMAJOR.MINOR.PATCH). Refusing to publish."
+            exit 1
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      # Multi-arch builds need QEMU for the non-native (arm64) platform.
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@06116385d9baf250c9f4dcb4858b16962ea869c3 # v4.1.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4.1.0
+
+      # Only log in and push on pushes to the repo, not on PRs from forks.
+      - name: Log in to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Derive the GHCR image from the repository so the path isn't hardcoded.
+      # GHCR requires a lowercase name, hence ${REPO,,} (the org is
+      # "OHF-Device-Database", which would otherwise be rejected).
+      - name: Derive image name
+        id: image
+        env:
+          REPO: ${{ github.repository }}
+        run: echo "name=ghcr.io/${REPO,,}" >> "$GITHUB_OUTPUT"
+
+      # Branch pushes get ":main" + ":sha-*"; releases get ":X.Y.Z", ":X.Y"
+      # and — for full (non-pre) releases only — ":latest".
+      - name: Derive tags & labels
+        id: meta
+        uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9 # v6.1.0
+        with:
+          images: ${{ steps.image.outputs.name }}
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable=${{ github.event_name == 'release' && github.event.release.prerelease == false }}
+
+      - name: Build & push
+        id: build
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # Published images are production images: allow indexing, and point
+          # prerendered pages (e.g. the homepage device count) at the API.
+          # API_AUTHORITY comes from a repository variable — set it under
+          # Settings → Secrets and variables → Actions → Variables. If unset,
+          # prerendered pages degrade gracefully (no baked API data).
+          build-args: |
+            NOINDEX=false
+            API_AUTHORITY=${{ vars.API_AUTHORITY }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Attestation requires the image to have been pushed, so skip it on PRs.
+      # Same action + pin as device-database; actions/attest v4 emits build
+      # provenance by default when no predicate is given.
+      - name: Generate artifact attestation
+        if: github.event_name != 'pull_request'
+        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
+        with:
+          subject-name: ${{ steps.image.outputs.name }}
+          subject-digest: ${{ steps.build.outputs.digest }}
+          push-to-registry: true
