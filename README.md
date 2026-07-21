@@ -92,7 +92,7 @@ docker run -p 4321:4321 \
 
 The server listens on `HOST=0.0.0.0` and `PORT=4321` (both overridable via env vars). The runtime image ships only the bundled server output — the node build bundles all dependencies into `dist/` (`vite.ssr.noExternal`), so there is no `node_modules` in the final image. One consequence: Astro's sharp-backed `/_image` endpoint is unavailable in the container (the project doesn't use `astro:assets`, so nothing depends on it — revisit if that changes).
 
-Pushes to `main` and version tags build and publish a **production image** (`NOINDEX=false`, `API_AUTHORITY` from the repository's Actions variable of the same name) to GitHub Container Registry (`ghcr.io/<owner>/<repo>`) via `.github/workflows/docker.yml`.
+Pushes to `main` and published GitHub Releases build and publish a **production image** (`NOINDEX=false`, `API_AUTHORITY` from the repository's Actions variable of the same name) to GitHub Container Registry (`ghcr.io/<owner>/<repo>`) via `.github/workflows/docker.yml`.
 
 ## ⚡ Caching
 

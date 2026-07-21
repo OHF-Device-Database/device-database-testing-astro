@@ -3,9 +3,13 @@ name: Build and push Docker image
 on:
   push:
     branches: [main]
-    tags: ["v*"]
   pull_request:
     branches: [main]
+  # Version images are published when a GitHub Release is published (covers
+  # both UI-created releases and releases cut from an existing tag, without
+  # double-building on the underlying tag push).
+  release:
+    types: [published]
 
 jobs:
   docker:
