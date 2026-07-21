@@ -98,6 +98,7 @@ const { title, page = "page", back } = Astro.props;
         <title>Device Database{typeof title !== "undefined" ? ` · ${title}` : ""}</title>
     </head>
     <body>
+        <div class="nav-loading-bar" aria-hidden="true" transition:persist="loading-bar"></div>
         <div class="app-shell">
             <Nav page={page} back={back} />
             <main class="app-main">
@@ -105,6 +106,26 @@ const { title, page = "page", back } = Astro.props;
             </main>
             <Footer flush={page === "home"} />
         </div>
+        <script is:inline>
+            (function () {
+                var bar = document.querySelector(".nav-loading-bar");
+                if (bar === null) {
+                  return;
+                }
+
+                document.addEventListener("astro:before-preparation", function () {
+                    bar.classList.remove("is-done");
+                    // force reflow so the removal of "is-done" takes effect before adding "is-loading"
+                    // https://gist.github.com/paulirish/5d52fb081b3570c81e3a
+                    void bar.offsetWidth;
+                    bar.classList.add("is-loading");
+                });
+                document.addEventListener("astro:page-load", function () {
+                    bar.classList.remove("is-loading");
+                    bar.classList.add("is-done");
+                });
+            })();
+        </script>
         <script>
             import "../islands/client";
         </script>
