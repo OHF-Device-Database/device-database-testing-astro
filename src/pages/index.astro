@@ -2,6 +2,14 @@
 import Layout from "../layouts/Layout.astro";
 import SearchBox from "../components/SearchBox.astro";
 import { fetchDeviceCount } from "../lib/api";
+import { CACHE_POLICY, applyCdnCache } from "../lib/cache";
+
+// Server-rendered so the device count reflects the runtime API_AUTHORITY
+// instead of whatever was available when the image was built.
+export const prerender = false;
+
+Astro.cache.set({ maxAge: CACHE_POLICY.home.maxAge, swr: CACHE_POLICY.home.swr, tags: ["devices"] });
+applyCdnCache(Astro.response.headers, CACHE_POLICY.home);
 
 const total = await fetchDeviceCount();
 ---

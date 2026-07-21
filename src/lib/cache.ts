@@ -3,6 +3,11 @@
 export type CachePolicy = { maxAge: number; swr: number }
 
 export const CACHE_POLICY = {
+  // The homepage only varies by the total device count, which moves slowly.
+  home: { maxAge: 300, swr: 3600 },
+  // Content pages and robots.txt only change on deploy or a NOINDEX flip; the
+  // moderate TTL keeps either change propagating within minutes without a purge.
+  static: { maxAge: 300, swr: 3600 },
   browse: { maxAge: 60, swr: 300 },
   device: { maxAge: 300, swr: 3600 },
   // A missing device is cached only briefly so a newly-added one shows up quickly.
