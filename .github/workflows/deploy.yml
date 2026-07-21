@@ -1,11 +1,10 @@
 name: Build and push Docker image
 
 on:
-  push:
-    branches: [main]
+  # PRs build the image without pushing, as a validation check.
   pull_request:
     branches: [main]
-  # Version images are published when a GitHub Release is published (covers
+  # Images are only published when a GitHub Release is published (covers
   # both UI-created releases and releases cut from an existing tag, without
   # double-building on the underlying tag push). Mirrors device-database's
   # deploy_sw.yml.
@@ -47,9 +46,9 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4.1.0
 
-      # Only log in and push on pushes to the repo, not on PRs from forks.
+      # Only log in and push when publishing a release, never on PRs.
       - name: Log in to GHCR
-        if: github.event_name != 'pull_request'
+        if: github.event_name == 'release'
         uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
         with:
           registry: ghcr.io
@@ -65,15 +64,14 @@ jobs:
           REPO: ${{ github.repository }}
         run: echo "name=ghcr.io/${REPO,,}" >> "$GITHUB_OUTPUT"
 
-      # Branch pushes get ":main" + ":sha-*"; releases get ":X.Y.Z", ":X.Y"
-      # and — for full (non-pre) releases only — ":latest".
+      # Releases get ":X.Y.Z", ":X.Y", ":sha-*" and — for full (non-pre)
+      # releases only — ":latest".
       - name: Derive tags & labels
         id: meta
         uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9 # v6.1.0
         with:
           images: ${{ steps.image.outputs.name }}
           tags: |
-            type=ref,event=branch
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=sha,prefix=sha-
@@ -85,25 +83,20 @@ jobs:
         with:
           context: .
           platforms: linux/amd64,linux/arm64
-          push: ${{ github.event_name != 'pull_request' }}
+          push: ${{ github.event_name == 'release' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          # Published images are production images: allow indexing, and point
-          # prerendered pages (e.g. the homepage device count) at the API.
-          # API_AUTHORITY comes from a repository variable — set it under
-          # Settings → Secrets and variables → Actions → Variables. If unset,
-          # prerendered pages degrade gracefully (no baked API data).
-          build-args: |
-            NOINDEX=false
-            API_AUTHORITY=${{ vars.API_AUTHORITY }}
+          # Nothing is baked into the image: NOINDEX and API_AUTHORITY are read
+          # from the runtime environment, so set both where the container runs
+          # (NOINDEX=false for a production deploy — it defaults to true).
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # Attestation requires the image to have been pushed, so skip it on PRs.
+      # Attestation requires the image to have been pushed, so releases only.
       # Same action + pin as device-database; actions/attest v4 emits build
       # provenance by default when no predicate is given.
       - name: Generate artifact attestation
-        if: github.event_name != 'pull_request'
+        if: github.event_name == 'release'
         uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
         with:
           subject-name: ${{ steps.image.outputs.name }}
