@@ -17,9 +17,13 @@ export default defineConfig({
   },
   env: {
     schema: {
-      API_AUTHORITY: envField.string({ context: "server", access: "public", optional: true }),
-      // Preview edition is no-indexed by default. Set NOINDEX=false for a real production deploy.
-      NOINDEX: envField.boolean({ context: "server", access: "public", optional: true, default: true }),
+      // access: "secret" keeps the value out of the build output; it is read
+      // from process.env when the server starts, so one image works per environment.
+      API_AUTHORITY: envField.string({ context: "server", access: "secret", optional: true }),
+      // Preview edition is no-indexed by default. Set NOINDEX=false in the runtime
+      // environment for a real production deploy. Like API_AUTHORITY it is not baked
+      // into the image: every page that consumes it is server-rendered.
+      NOINDEX: envField.boolean({ context: "server", access: "secret", optional: true, default: true }),
     },
   },
   adapter,

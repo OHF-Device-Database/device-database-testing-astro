@@ -1,5 +1,14 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import { CACHE_POLICY, applyCdnCache } from "../lib/cache";
+
+// Server-rendered so the NOINDEX robots meta reflects the runtime environment
+// instead of being baked in at build time. The content is effectively static,
+// so it is cached at the origin and the CDN edge.
+export const prerender = false;
+
+Astro.cache.set({ maxAge: CACHE_POLICY.static.maxAge, swr: CACHE_POLICY.static.swr });
+applyCdnCache(Astro.response.headers, CACHE_POLICY.static);
 ---
 
 <Layout page="page" title="Editorial stance">

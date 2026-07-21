@@ -5,13 +5,9 @@ FROM node:24-alpine AS build
 ENV DEPLOY_TARGET=node
 WORKDIR /app
 
-# Build-time config. Prerendered pages (e.g. "/") bake these in at build time,
-# so they must be passed with --build-arg, not just at runtime. For a real
-# production image, build with: --build-arg NOINDEX=false
-ARG NOINDEX
-ARG API_AUTHORITY
-ENV NOINDEX=${NOINDEX}
-ENV API_AUTHORITY=${API_AUTHORITY}
+# All app config (NOINDEX, API_AUTHORITY) is runtime-only (astro:env secrets):
+# nothing is baked in at build time, so one image serves every environment.
+# Pass the values with -e at run time; NOINDEX defaults to true (no indexing).
 
 # Enable pnpm via corepack, pinned to the version in package.json.
 RUN corepack enable
