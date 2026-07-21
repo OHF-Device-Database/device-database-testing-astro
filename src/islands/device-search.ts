@@ -180,12 +180,12 @@ export class DeviceSearch extends LitElement {
     return this._open && selectable.length > 0
   }
 
-  private _goBrowse(params: Record<string, string>): void {
+  private _browseUrl(params: Record<string, string>): string {
     const qs = new URLSearchParams(params).toString()
-    navigate(`/browse${qs ? "?" + qs : ""}`)
+    return `/browse${qs ? "?" + qs : ""}`
   }
 
-  private _goBrowseFilters(filters: QuickFilter["filters"]): void {
+  private _browseFiltersUrl(filters: QuickFilter["filters"]): string {
     const p = new URLSearchParams()
     for (const v of filters.category ?? []) {
       p.append("category", v)
@@ -197,32 +197,42 @@ export class DeviceSearch extends LitElement {
       p.set("local", "1")
     }
     const qs = p.toString()
-    navigate(`/browse${qs ? "?" + qs : ""}`)
+    return `/browse${qs ? "?" + qs : ""}`
+  }
+
+  // Navigating away while the fullscreen overlay is open must not pop the history entry
+  // pushed in _openFullscreen: history.back() + navigate() makes Astro's router handle the
+  // popstate as a same-URL traversal, refetching the current page and aborting the real
+  // navigation. Instead leave the entry in place and replace it with the target page —
+  // Back on the target page then returns to the page the search was opened from.
+  private _navigateTo(url: string): void {
+    const replace = this._fullscreen
+    this._open = false
+    this._q = ""
+    this._resetSuggest()
+    this._closeFullscreen({ pop: false })
+    navigate(url, replace ? { history: "replace" } : undefined)
   }
 
   private _select(row: Row): void {
     if ("header" in row) {
       return
     }
-    this._open = false
-    this._closeFullscreen()
-    this._q = ""
-    this._resetSuggest()
     switch (row.kind) {
       case "category":
-        this._goBrowse({ category: row.value.id })
+        this._navigateTo(this._browseUrl({ category: row.value.id }))
         break
       case "device":
-        navigate(`/device/${row.value.id}`)
+        this._navigateTo(`/device/${row.value.id}`)
         break
       case "device-more":
-        this._goBrowse({ q: row.value.term })
+        this._navigateTo(this._browseUrl({ q: row.value.term }))
         break
       case "manufacturer":
-        this._goBrowse({ manufacturer: row.value })
+        this._navigateTo(this._browseUrl({ manufacturer: row.value }))
         break
       case "quick-filter":
-        this._goBrowseFilters(row.value.filters)
+        this._navigateTo(this._browseFiltersUrl(row.value.filters))
         break
     }
   }
@@ -238,11 +248,7 @@ export class DeviceSearch extends LitElement {
     if (!term) {
       return
     }
-    this._open = false
-    this._closeFullscreen()
-    this._q = ""
-    this._resetSuggest()
-    this._goBrowse({ q: term })
+    this._navigateTo(this._browseUrl({ q: term }))
   }
 
   private _onKeyDown = (event: KeyboardEvent): void => {
@@ -324,21 +330,33 @@ export class DeviceSearch extends LitElement {
     this._fullscreen = true
     document.body.classList.add("search-fullscreen-open")
     try {
-      window.history.pushState({ searchFs: true }, "")
+      // Mirror the shape of Astro's history entries (index/scroll) so that when a
+      // suggestion navigation replaces this entry (see _navigateTo), the router's
+      // direction detection and scroll restoration keep working.
+      const base = window.history.state ?? {}
+      window.history.pushState(
+        {
+          searchFs: true,
+          index: (base.index ?? 0) + 1,
+          scrollX: window.scrollX,
+          scrollY: window.scrollY,
+        },
+        "",
+      )
     } catch (e) {}
     this.updateComplete.then(() => {
       this.querySelector<HTMLInputElement>(".searchbox-fs input")?.focus()
     })
   }
 
-  private _closeFullscreen(opts: { fromPopState?: boolean } = {}): void {
+  private _closeFullscreen(opts: { fromPopState?: boolean; pop?: boolean } = {}): void {
     if (!this._fullscreen) {
       return
     }
     this._fullscreen = false
     this._open = false
     this._releaseBody()
-    if (!opts.fromPopState) {
+    if (!opts.fromPopState && (opts.pop ?? true)) {
       try {
         window.history.back()
       } catch (e) {}
