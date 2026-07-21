@@ -1,7 +1,10 @@
 # syntax=docker/dockerfile:1
 
 # Build the Astro app with the standalone Node adapter.
-FROM node:24-alpine AS build
+# --platform=$BUILDPLATFORM: dist/ is architecture-independent (pure JS — the
+# node build bundles every dependency, no native modules), so run the build
+# once natively instead of once per target platform under QEMU emulation.
+FROM --platform=$BUILDPLATFORM node:24-alpine AS build
 ENV DEPLOY_TARGET=node
 WORKDIR /app
 
