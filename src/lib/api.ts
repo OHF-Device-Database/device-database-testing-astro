@@ -100,6 +100,9 @@ function filtersToQuery(filters: BrowseFilters, page: number, size: number): Dev
     if (filters.manufacturerMode === "exclude") query.notManufacturer = manufacturers
     else query.manufacturer = manufacturers
   }
+  if (filters.localOnly) {
+    query.notConnectivity = ["online"]
+  }
 
   return query
 }
