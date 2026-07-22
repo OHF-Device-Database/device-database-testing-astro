@@ -44,6 +44,7 @@ export class DeviceSearch extends LitElement {
   @state() private _activeIdx = -1
   @state() private _fullscreen = false
   @state() private _fsScrolled = false
+  @state() private _navigating = false
   @state() private _suggestions: Suggestions | null = null
 
   private _suggestTimer?: ReturnType<typeof setTimeout>
@@ -205,13 +206,40 @@ export class DeviceSearch extends LitElement {
   // popstate as a same-URL traversal, refetching the current page and aborting the real
   // navigation. Instead leave the entry in place and replace it with the target page —
   // Back on the target page then returns to the page the search was opened from.
+  //
+  // The overlay itself stays on screen until the destination swaps in: closing it up front
+  // would reveal the underlying page for the whole fetch. The swap disconnects this island
+  // (disconnectedCallback releases the body class), so cleanup below only matters when the
+  // navigation does not replace the DOM (same-URL selection).
   private _navigateTo(url: string): void {
-    const replace = this._fullscreen
-    this._open = false
-    this._q = ""
-    this._resetSuggest()
-    this._closeFullscreen({ pop: false })
-    navigate(url, replace ? { history: "replace" } : undefined)
+    if (!this._fullscreen) {
+      this._open = false
+      this._q = ""
+      this._resetSuggest()
+      navigate(url)
+      return
+    }
+    // Selecting the page we're already on: a replace-navigation would skip the history
+    // write (the router only rewrites the entry when the URL changes), stranding the
+    // overlay's entry on the stack. Treat it as a plain close — back() unwinds the entry
+    // and the router's same-URL traversal refreshes the page once.
+    const target = new URL(url, location.href)
+    if (target.pathname + target.search === location.pathname + location.search) {
+      this._open = false
+      this._q = ""
+      this._resetSuggest()
+      this._closeFullscreen()
+      return
+    }
+    this._navigating = true
+    ;(document.activeElement as HTMLElement | null)?.blur()
+    navigate(url, { history: "replace" }).then(() => {
+      this._navigating = false
+      this._open = false
+      this._q = ""
+      this._resetSuggest()
+      this._closeFullscreen({ pop: false })
+    })
   }
 
   private _select(row: Row): void {
@@ -510,7 +538,7 @@ export class DeviceSearch extends LitElement {
         : nothing}
       ${this._fullscreen
         ? html`
-            <div class="searchbox-fs">
+            <div class=${"searchbox-fs" + (this._navigating ? " is-navigating" : "")}>
               <div class="searchbox-fs-bg" aria-hidden="true"></div>
               <button
                 type="button"
