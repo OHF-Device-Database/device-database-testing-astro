@@ -1,4 +1,5 @@
 ---
+import { icon } from "../lib/icons";
 import { LOGO_SVG } from "../lib/logo";
 import SearchBox from "./SearchBox.astro";
 
@@ -11,6 +12,28 @@ const { page } = Astro.props;
 const showSearch = page !== "home";
 ---
 
+<div class="preview-banner">
+    <div class="container preview-banner-inner">
+        <p class="preview-banner-text">
+            You are viewing a preview edition of the Device Database. Data may be incomplete
+            or change at any time.
+            <a
+                href="https://github.com/OHF-Device-Database"
+                target="_blank"
+                rel="noopener noreferrer">Learn more</a
+            >
+        </p>
+        <button
+            type="button"
+            class="preview-banner-close"
+            aria-label="Dismiss preview notice"
+            data-preview-banner-close
+        >
+            <Fragment set:html={icon("x", 16)} />
+        </button>
+    </div>
+</div>
+
 <header class="appnav" data-appnav>
     <div class="container appnav-inner">
         <div class="appnav-left">
@@ -22,16 +45,7 @@ const showSearch = page !== "home";
             />
         </div>
         {showSearch ? <SearchBox size="header" /> : <div class="appnav-search-empty"></div>}
-        <div class="appnav-right">
-            <a
-                class="preview-badge"
-                href="https://github.com/OHF-Device-Database"
-                target="_blank"
-                rel="noopener noreferrer"
-            >
-                <span>Preview Edition</span>
-            </a>
-        </div>
+        <div class="appnav-right"></div>
     </div>
 </header>
 
@@ -49,5 +63,18 @@ const showSearch = page !== "home";
         window.addEventListener("scroll", sync, { passive: true });
     };
 
-    document.addEventListener("astro:page-load", bind);
+    const bindBanner = () => {
+        document
+            .querySelector<HTMLButtonElement>("[data-preview-banner-close]")
+            ?.addEventListener("click", () => {
+                (
+                    window as unknown as { DemoState?: { dismissPreviewBanner?: () => void } }
+                ).DemoState?.dismissPreviewBanner?.();
+            });
+    };
+
+    document.addEventListener("astro:page-load", () => {
+        bind();
+        bindBanner();
+    });
 </script>
