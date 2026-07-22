@@ -271,6 +271,13 @@ body.search-fullscreen-open .appnav {
 .searchbox-fs .searchbox-dropdown.is-scrolled {
   border-top-color: var(--border);
 }
+/* Selection made, destination page loading: keep the overlay up but signal progress
+   and stop further taps from queueing a second navigation. */
+.searchbox-fs.is-navigating .searchbox-dropdown {
+  opacity: 0.45;
+  pointer-events: none;
+  transition: opacity var(--transition-fast) ease;
+}
 @media (min-width: 1024px) {
   .searchbox-fs {
     display: none;
