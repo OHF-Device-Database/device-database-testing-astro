@@ -45,7 +45,16 @@ const showSearch = page !== "home";
             />
         </div>
         {showSearch ? <SearchBox size="header" /> : <div class="appnav-search-empty"></div>}
-        <div class="appnav-right"></div>
+        <div class="appnav-right">
+            <a
+                class="preview-badge"
+                href="https://github.com/OHF-Device-Database"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                <span>Preview Edition</span>
+            </a>
+        </div>
     </div>
 </header>
 

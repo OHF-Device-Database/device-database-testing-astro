@@ -57,6 +57,33 @@
   width: auto;
   color: var(--fg);
 }
+.preview-badge {
+  display: none;
+  align-items: center;
+  padding: 7px 16px;
+  border: 1px solid var(--fg);
+  border-radius: var(--radius-pill);
+  background: var(--fg);
+  font-family: var(--font-sans);
+  font-size: var(--fs-14);
+  font-weight: var(--fw-semibold);
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+}
+html[data-preview-banner="off"] .preview-badge {
+  display: inline-flex;
+}
+.preview-badge,
+.preview-badge:visited,
+.preview-badge:hover {
+  color: var(--fg-on-primary);
+}
+.preview-badge:hover {
+  opacity: 0.85;
+  text-decoration: none;
+}
 .preview-banner {
   background: var(--fg);
   color: var(--fg-on-primary);
