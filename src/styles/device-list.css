@@ -19,9 +19,11 @@
   text-decoration: none;
   color: inherit;
 }
+/* Square, sized to visually match the standard 4-line text block beside it
+   (category + name + manufacturer + connection badge ≈ 93px). */
 .device-thumb {
-  width: 72px;
-  align-self: stretch;
+  width: 93px;
+  aspect-ratio: 1 / 1;
   flex-shrink: 0;
   background: var(--surface-tint-mid);
   border-radius: var(--radius-1);
