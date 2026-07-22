@@ -69,7 +69,11 @@ const pages = results.pageCount > 1 ? paginationItems(results.page, results.page
             <div class="browse-main">
                 {
                     results.devices.length === 0 ? (
-                        <p class="browse-empty">No devices match these filters.</p>
+                        <div class="browse-empty">
+                            <h2>No devices match these filters.</h2>
+                            <p>Try loosening a filter or clearing the search.</p>
+                            <a class="btn btn-secondary" href="/browse">Clear all filters</a>
+                        </div>
                     ) : (
                         <>
                             <div class="device-list">
