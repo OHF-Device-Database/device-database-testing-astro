@@ -1,5 +1,12 @@
 name: Build and push Docker image
 
+# The Nomad job ("device-database-frontend") is created and owned by
+# infrastructure-ansible (roles/device_database). That role cedes image-tag
+# rollouts to this workflow: on each converge it reads the *running* image
+# tag back from Nomad, so a deploy made here is never reverted by a later
+# Ansible run. The deploy job therefore only swaps the image on the live
+# job spec (via the shared nomad-set-image action) — it never renders one.
+
 on:
   # PRs build the image without pushing, as a validation check.
   pull_request:
@@ -23,6 +30,9 @@ jobs:
       packages: write # push to GHCR
       attestations: write # build provenance attestation
       id-token: write # OIDC token for the attestation
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+      image: ${{ steps.image.outputs.name }}
     steps:
       # The `release` trigger can't glob tags, so reject non-semver tags up front
       # rather than publishing an image under a junk tag.
@@ -102,3 +112,30 @@ jobs:
           subject-name: ${{ steps.image.outputs.name }}
           subject-digest: ${{ steps.build.outputs.digest }}
           push-to-registry: true
+
+  deploy:
+    name: Deploy to Nomad
+    # PRs only build as a validation check; only releases deploy.
+    if: github.event_name == 'release'
+    needs: publish
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+    steps:
+      # The shared action joins the tailnet, fetches the running
+      # device-database-frontend job, swaps only the `server` task image and
+      # resubmits — so anything else Ansible set on the job is preserved.
+      # The tailnet ACLs must allow the OAuth client's tagged node to reach
+      # the device-database host's :4646.
+      - name: Roll out new image tag
+        uses: OpenHomeFoundation/nomad-set-image@98397137ec91225862aa383c9c832f9a5213a8fc # v1.0.0
+        with:
+          image: ${{ needs.publish.outputs.image }}:${{ needs.publish.outputs.version }}
+          job: device-database-frontend
+          # Nomad HTTP API on the device-database host, reached over the
+          # tailnet. Set via a `production` environment secret.
+          nomad-addr: ${{ secrets.NOMAD_ADDR }}
+          nomad-token: ${{ secrets.NOMAD_TOKEN }}
+          tailscale-oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          tailscale-oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
