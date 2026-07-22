@@ -56,8 +56,8 @@
 /* Numbered "how it works" steps. */
 .steps {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--space-7);
+  grid-template-columns: 1fr;
+  gap: var(--space-6);
 }
 .step-num {
   display: grid;
@@ -107,11 +107,4 @@
   font-weight: var(--fw-semibold);
   font-size: var(--fs-18);
   color: var(--fg);
-}
-
-@media (max-width: 767px) {
-  .steps {
-    grid-template-columns: 1fr;
-    gap: var(--space-6);
-  }
 }

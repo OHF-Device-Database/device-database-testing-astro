@@ -39,7 +39,7 @@
   padding-top: 2px;
 }
 .device-category {
-  font-size: var(--fs-13);
+  font-size: var(--fs-12);
   color: var(--fg-muted);
   line-height: 1.35;
 }
