@@ -94,6 +94,11 @@ browse-toolbar {
   border-radius: var(--radius-2);
   overflow: hidden;
 }
+@media (max-width: 767px) {
+  .view-toggle {
+    display: none;
+  }
+}
 .view-toggle-btn {
   display: inline-flex;
   align-items: center;

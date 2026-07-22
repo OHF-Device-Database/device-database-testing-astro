@@ -193,7 +193,7 @@ export class BrowseFiltersSheet extends LitElement {
             aria-label=${count ? `Filters, ${count} active` : "Filters"}
             @click=${() => this._openSheet(null)}
           >
-            ${unsafeHTML(icon("search", 16))}
+            ${unsafeHTML(icon("filter", 16))}
             <span
               >Filters${count > 0
                 ? html`<span class="filters-fab-count"> · ${count}</span>`

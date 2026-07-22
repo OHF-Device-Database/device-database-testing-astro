@@ -58,47 +58,74 @@
   margin-top: 2px;
 }
 
+@media (max-width: 767px) {
+  .device-row {
+    gap: var(--space-4);
+    padding: var(--space-4) 0;
+  }
+  .device-thumb {
+    width: 86px;
+  }
+  .device-thumb svg {
+    width: 28px;
+    height: 28px;
+  }
+  .device-category {
+    font-size: var(--fs-12);
+  }
+  .device-name {
+    font-size: var(--fs-16);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .device-manu {
+    font-size: var(--fs-13);
+    margin-top: 1px;
+  }
+  .device-row .local-indicator {
+    font-size: var(--fs-12);
+  }
+}
+
 /* Grid view — the same card markup, reflowed into a responsive photo-forward
    grid. Driven by the data-view attribute the DemoState script writes to <html>
-   (toggled from the logo menu), so it applies before first paint with no flash. */
-html[data-view="grid"] .device-list {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0;
-  background: transparent;
-  box-shadow:
-    1px 0 0 var(--border),
-    0 1px 0 var(--border);
-}
+   (toggled from the logo menu), so it applies before first paint with no flash.
+   Phones always use the list layout, so every rule here is scoped to 768px up. */
 @media (min-width: 768px) {
   html[data-view="grid"] .device-list {
+    display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0;
+    background: transparent;
+    box-shadow:
+      1px 0 0 var(--border),
+      0 1px 0 var(--border);
   }
-}
-@media (min-width: 1280px) {
-  html[data-view="grid"] .device-list {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+  html[data-view="grid"] .device-row {
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-5);
+    border-bottom: 0;
+    background: var(--surface);
+    box-shadow:
+      1px 0 0 var(--border),
+      0 1px 0 var(--border);
   }
-}
-html[data-view="grid"] .device-row {
-  flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-5);
-  border-bottom: 0;
-  background: var(--surface);
-  box-shadow:
-    1px 0 0 var(--border),
-    0 1px 0 var(--border);
-}
-html[data-view="grid"] .device-row:first-child {
-  padding-top: var(--space-5);
-}
-@media (max-width: 767px) {
-  html[data-view="grid"] .device-row:nth-last-child(-n + 2) {
-    box-shadow: 1px 0 0 var(--border);
+  html[data-view="grid"] .device-row:first-child {
+    padding-top: var(--space-5);
   }
-  html[data-view="grid"] .device-row:last-child:not(:nth-child(2n)) {
-    box-shadow: none;
+  html[data-view="grid"] .device-thumb {
+    width: 100%;
+    align-self: auto;
+    aspect-ratio: 1 / 1;
+  }
+  html[data-view="grid"] .device-thumb svg {
+    width: 38%;
+    height: auto;
+  }
+  html[data-view="grid"] .device-row-body {
+    padding-top: 0;
   }
 }
 @media (min-width: 768px) and (max-width: 1279px) {
@@ -110,22 +137,13 @@ html[data-view="grid"] .device-row:first-child {
   }
 }
 @media (min-width: 1280px) {
+  html[data-view="grid"] .device-list {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
   html[data-view="grid"] .device-row:nth-last-child(-n + 4) {
     box-shadow: 1px 0 0 var(--border);
   }
   html[data-view="grid"] .device-row:last-child:not(:nth-child(4n)) {
     box-shadow: none;
   }
-}
-html[data-view="grid"] .device-thumb {
-  width: 100%;
-  align-self: auto;
-  aspect-ratio: 1 / 1;
-}
-html[data-view="grid"] .device-thumb svg {
-  width: 38%;
-  height: auto;
-}
-html[data-view="grid"] .device-row-body {
-  padding-top: 0;
 }
