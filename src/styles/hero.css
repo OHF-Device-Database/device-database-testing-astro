@@ -50,6 +50,11 @@
 .hero-center h1 + .hero-lede {
   margin-top: calc((var(--space-5) - var(--space-2)) * -1);
 }
+@media (max-width: 767px) {
+  .hero-center .hero-lede {
+    font-size: var(--fs-18);
+  }
+}
 .hero-search-wrap {
   width: 100%;
   margin: var(--space-4) 0 var(--space-3);
