@@ -26,6 +26,7 @@ interface DimensionConfig {
 
 export class DeviceFilters extends LitElement {
   @property({ type: Array }) manufacturers: ManufacturerFacet[] = []
+  @property({ type: Object }) categoryCounts: Record<string, number> = {}
 
   @state() private _moreDim: FacetDimension | null = null
   @state() private _moreQuery = ""
@@ -64,7 +65,12 @@ export class DeviceFilters extends LitElement {
 
   private get _dimensions(): DimensionConfig[] {
     return [
-      { dim: "category", label: "Category", options: categoryOptions(), letterGroups: false },
+      {
+        dim: "category",
+        label: "Category",
+        options: categoryOptions().map((c) => ({ ...c, count: this.categoryCounts[c.id] ?? 0 })),
+        letterGroups: false,
+      },
       {
         dim: "manufacturer",
         label: "Manufacturer",

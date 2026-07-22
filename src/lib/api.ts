@@ -10,7 +10,7 @@ import {
   type DeviceQuery,
 } from "./api-client"
 import { applyFilters, type BrowseFilters, type ManufacturerFacet } from "./browse-filters"
-import { toApiCategories, toUiCategory } from "./category-map"
+import { toApiCategories, toUiCategory, uiCategoryCounts } from "./category-map"
 import { Device, type VersionInfo } from "./device"
 import { MOCK_DEVICES } from "./mock-devices"
 
@@ -162,6 +162,20 @@ export async function fetchManufacturers(): Promise<ManufacturerFacet[]> {
   const { manufacturers } = await getDimensions()
 
   return manufacturers
+}
+
+export async function fetchCategoryCounts(): Promise<Record<string, number>> {
+  if (!apiConfigured) {
+    const counts: Record<string, number> = {}
+    for (const device of MOCK_DEVICES) {
+      counts[device.category] = (counts[device.category] ?? 0) + 1
+    }
+
+    return counts
+  }
+  const { categories } = await getDimensions()
+
+  return uiCategoryCounts(categories)
 }
 
 export async function fetchDevice(id: string): Promise<Device | undefined> {

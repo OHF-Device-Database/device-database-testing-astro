@@ -26,6 +26,7 @@ interface DimensionConfig {
 
 export class BrowseFiltersSheet extends LitElement {
   @property({ type: Array }) manufacturers: ManufacturerFacet[] = []
+  @property({ type: Object }) categoryCounts: Record<string, number> = {}
 
   @state() private _open = false
   @state() private _subView: FacetDimension | null = null
@@ -82,7 +83,12 @@ export class BrowseFiltersSheet extends LitElement {
 
   private get _dimensions(): DimensionConfig[] {
     return [
-      { dim: "category", label: "Category", options: categoryOptions(), letterGroups: false },
+      {
+        dim: "category",
+        label: "Category",
+        options: categoryOptions().map((c) => ({ ...c, count: this.categoryCounts[c.id] ?? 0 })),
+        letterGroups: false,
+      },
       {
         dim: "manufacturer",
         label: "Manufacturer",

@@ -1,7 +1,7 @@
 ---
 import DeviceCard from "../components/DeviceCard.astro";
 import Layout from "../layouts/Layout.astro";
-import { fetchDeviceResults, fetchManufacturers } from "../lib/api";
+import { fetchCategoryCounts, fetchDeviceResults, fetchManufacturers } from "../lib/api";
 import { parseBrowseFilters } from "../lib/browse-filters";
 import { CACHE_POLICY, applyCdnCache } from "../lib/cache";
 import { icon } from "../lib/icons";
@@ -18,11 +18,13 @@ const filters = parseBrowseFilters(Astro.url.searchParams);
 const pageParam = Number(Astro.url.searchParams.get("page") ?? "0");
 const page = Number.isFinite(pageParam) && pageParam > 0 ? Math.floor(pageParam) : 0;
 
-const [results, manufacturers] = await Promise.all([
+const [results, manufacturers, categoryCounts] = await Promise.all([
     fetchDeviceResults(filters, page),
     fetchManufacturers(),
+    fetchCategoryCounts(),
 ]);
 const manufacturersJson = JSON.stringify(manufacturers);
+const categoryCountsJson = JSON.stringify(categoryCounts);
 
 const pageHref = (p: number): string => {
     const params = new URLSearchParams(Astro.url.searchParams);
@@ -56,10 +58,14 @@ const pages = results.pageCount > 1 ? paginationItems(results.page, results.page
 
 <Layout page="browse" title="Browse">
     <div class="browse">
-        <browse-filters-sheet manufacturers={manufacturersJson}></browse-filters-sheet>
+        <browse-filters-sheet
+            manufacturers={manufacturersJson}
+            categorycounts={categoryCountsJson}></browse-filters-sheet>
         <div class="container browse-grid">
             <browse-toolbar matchCount={results.total}></browse-toolbar>
-            <device-filters manufacturers={manufacturersJson}></device-filters>
+            <device-filters
+                manufacturers={manufacturersJson}
+                categorycounts={categoryCountsJson}></device-filters>
             <div class="browse-main">
                 {
                     results.devices.length === 0 ? (
