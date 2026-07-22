@@ -33,12 +33,27 @@
     transform: translateY(0);
   }
 }
+
+.sheet-grabber {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  padding: var(--space-3) 0 var(--space-2);
+  cursor: grab;
+  touch-action: none;
+}
+.sheet-grabber-bar {
+  width: 48px;
+  height: 5px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-tint-strong);
+}
 .sheet-head {
   position: relative;
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  padding: var(--space-5) var(--sheet-x);
+  padding: var(--space-3) var(--sheet-x) var(--space-5);
   border-bottom: 1px solid var(--border);
 }
 .sheet-head-row {
@@ -152,6 +167,17 @@
   margin-left: 0;
 }
 
+/* Letter headers reuse .modal-group-head, whose 20px centered box is built for the
+   desktop modal's padded body. Sheet rows are full-bleed with their own padding, so
+   indent the letter to sit over the row text (unchecked rows start at --sheet-x). */
+.sheet-body .modal-group-head {
+  width: auto;
+  text-align: left;
+  padding: 6px var(--sheet-x) 0;
+  font-size: var(--fs-16);
+  font-weight: var(--fw-bold);
+}
+
 .filter-tap-row {
   display: flex;
   align-items: center;
@@ -178,9 +204,12 @@
   width: 16px;
   height: 16px;
   color: var(--primary);
-  display: inline-flex;
+  display: none;
   align-items: center;
   justify-content: center;
+}
+.filter-tap-row.is-selected .filter-tap-row-check {
+  display: inline-flex;
 }
 .filter-tap-row-text {
   flex: 1;

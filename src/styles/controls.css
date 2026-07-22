@@ -16,11 +16,11 @@
   text-decoration: none;
 }
 .btn-primary {
-  background: var(--fg);
+  background: var(--primary);
   color: var(--fg-on-primary);
 }
 .btn-primary:hover {
-  background: var(--neutral-700);
+  background: var(--primary-hover);
 }
 .btn-secondary {
   background: transparent;

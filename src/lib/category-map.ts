@@ -131,6 +131,34 @@ export const UI_TO_API_CATEGORIES: Record<string, string[]> = (() => {
   return out
 })()
 
+interface CategoryCountNode {
+  count: number
+  children: Record<string, CategoryCountNode>
+}
+
+// Per-UI-category device counts from the dimensions tree. Node counts in the tree are
+// hierarchical rollups (a parent includes all descendants), but the devices endpoint
+// matches direct tags only, so a node's own contribution is count minus the child sum.
+// Summing those per mapped UI category makes each count equal what filtering by that
+// UI category actually returns.
+export function uiCategoryCounts(tree: Record<string, CategoryCountNode>): Record<string, number> {
+  const out: Record<string, number> = {}
+  const walk = (nodes: Record<string, CategoryCountNode>) => {
+    for (const [apiId, node] of Object.entries(nodes)) {
+      const childSum = Object.values(node.children).reduce((sum, child) => sum + child.count, 0)
+      const direct = Math.max(0, node.count - childSum)
+      const uiId = API_TO_UI_CATEGORY[apiId]
+      if (uiId && direct > 0) {
+        out[uiId] = (out[uiId] ?? 0) + direct
+      }
+      walk(node.children)
+    }
+  }
+  walk(tree)
+
+  return out
+}
+
 export function toApiCategories(uiCategoryIds: Iterable<string>): string[] {
   const out: string[] = []
 

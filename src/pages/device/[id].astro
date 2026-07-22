@@ -71,15 +71,9 @@ const hardware = device
     ? recentVersions(versionInfos(device.hardwareVersionInfo, device.hardwareVersions))
     : { hidden: 0, shown: [] };
 
-const versionMeta = (entry: VersionInfo): string => {
-    const seen = fmtDate(entry.firstEncountered);
-    return [
-        seen ? `First seen ${seen}` : "",
-        entry.active && entry.active > 0 ? `${entry.active.toLocaleString("en-US")} active installs` : "",
-    ]
-        .filter(Boolean)
-        .join(" · ");
-};
+// No "First seen" here: per-version first_encountered is not reliable data yet.
+const versionMeta = (entry: VersionInfo): string =>
+    entry.active && entry.active > 0 ? `${entry.active.toLocaleString("en-US")} active installs` : "";
 const toVersionEntries = (entries: VersionInfo[]) =>
     [...entries].reverse().map((entry, i) => ({
         version: entry.version,
@@ -148,8 +142,7 @@ const haDocsUrl = device?.haIntegrationDomain
                             {device.haIntegration ? (
                                 <>
                                     <p>
-                                        Add the matching integration from Settings, Devices and services, Add
-                                        integration. Follow the on-screen steps to connect this device.
+                                        Home Assistant is free software for running your smart home from a single app. To add this device, open Home Assistant, go to Settings > Devices and services, and click Add integration.
                                     </p>
                                     <dl class="ha-meta">
                                         <dt>Integration</dt>

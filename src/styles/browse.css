@@ -27,9 +27,7 @@ browse-toolbar {
 }
 .browse-main:has(.browse-empty) {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 50vh;
+  align-items: flex-start;
 }
 .browse-toolbar {
   display: grid;
@@ -93,6 +91,11 @@ browse-toolbar {
   border: 1px solid var(--border);
   border-radius: var(--radius-2);
   overflow: hidden;
+}
+@media (max-width: 767px) {
+  .view-toggle {
+    display: none;
+  }
 }
 .view-toggle-btn {
   display: inline-flex;
@@ -158,9 +161,59 @@ browse-toolbar {
   margin-right: 4px;
 }
 .browse-empty {
-  color: var(--fg-muted);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  min-height: 440px;
+  margin: var(--space-6);
+  padding: var(--space-9) var(--space-5);
   text-align: center;
-  padding: var(--space-7) var(--space-5);
+  --empty-dash-h: repeating-linear-gradient(
+    90deg,
+    var(--border-strong) 0 8px,
+    transparent 8px 14px
+  );
+  --empty-dash-v: repeating-linear-gradient(
+    180deg,
+    var(--border-strong) 0 8px,
+    transparent 8px 14px
+  );
+  background-image:
+    var(--empty-dash-h), var(--empty-dash-h), var(--empty-dash-v), var(--empty-dash-v);
+  background-size:
+    100% 1px,
+    100% 1px,
+    1px 100%,
+    1px 100%;
+  background-position:
+    top left,
+    bottom left,
+    top left,
+    top right;
+  background-repeat: no-repeat;
+}
+.browse-empty h2 {
+  margin: 0;
+  max-width: 18ch;
+  font-family: var(--font-display);
+  font-size: var(--fs-30);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-tight);
+  line-height: 1.2;
+  color: var(--fg);
+}
+.browse-empty p {
+  margin: 0;
+  max-width: 34ch;
+  font-size: var(--fs-20);
+  line-height: var(--lh-loose);
+  color: var(--fg-muted);
+}
+.browse-empty .btn {
+  margin-top: var(--space-3);
 }
 .browse-pagination {
   display: flex;

@@ -11,6 +11,11 @@ h1,
 .hero-center h1 {
   font-size: 56px;
 }
+@media (max-width: 767px) {
+  .hero-center h1 {
+    font-size: 40px;
+  }
+}
 .badge,
 .chip {
   border-radius: var(--radius-2);

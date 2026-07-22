@@ -26,6 +26,7 @@ interface DimensionConfig {
 
 export class BrowseFiltersSheet extends LitElement {
   @property({ type: Array }) manufacturers: ManufacturerFacet[] = []
+  @property({ type: Object }) categoryCounts: Record<string, number> = {}
 
   @state() private _open = false
   @state() private _subView: FacetDimension | null = null
@@ -82,7 +83,12 @@ export class BrowseFiltersSheet extends LitElement {
 
   private get _dimensions(): DimensionConfig[] {
     return [
-      { dim: "category", label: "Category", options: categoryOptions(), letterGroups: false },
+      {
+        dim: "category",
+        label: "Category",
+        options: categoryOptions().map((c) => ({ ...c, count: this.categoryCounts[c.id] ?? 0 })),
+        letterGroups: false,
+      },
       {
         dim: "manufacturer",
         label: "Manufacturer",
@@ -120,6 +126,62 @@ export class BrowseFiltersSheet extends LitElement {
 
   private _releaseBody(): void {
     document.body.classList.remove("modal-open")
+  }
+
+  // Swipe-down on the grabber dismisses the sheet: the panel follows the pointer,
+  // then either slides out (far enough or flicked) or springs back.
+  private _dragStartY: number | null = null
+  private _dragDy = 0
+  private _dragStartT = 0
+
+  private get _panel(): HTMLElement | null {
+    return this.querySelector<HTMLElement>(".sheet-panel")
+  }
+
+  private _onGrabStart = (e: PointerEvent): void => {
+    this._dragStartY = e.clientY
+    this._dragDy = 0
+    this._dragStartT = performance.now()
+    try {
+      ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+    } catch {}
+    if (this._panel) {
+      this._panel.style.transition = "none"
+    }
+  }
+
+  private _onGrabMove = (e: PointerEvent): void => {
+    if (this._dragStartY === null) {
+      return
+    }
+    this._dragDy = Math.max(0, e.clientY - this._dragStartY)
+    if (this._panel) {
+      this._panel.style.transform = `translateY(${this._dragDy}px)`
+    }
+  }
+
+  private _onGrabEnd = (): void => {
+    if (this._dragStartY === null) {
+      return
+    }
+    this._dragStartY = null
+    const panel = this._panel
+    if (!panel) {
+      return
+    }
+    const dy = this._dragDy
+    const velocity = dy / Math.max(1, performance.now() - this._dragStartT)
+    if (dy > panel.clientHeight * 0.25 || (dy > 24 && velocity > 0.5)) {
+      panel.style.transition = "transform 180ms ease-in"
+      panel.style.transform = "translateY(100%)"
+      setTimeout(() => this._close(), 160)
+    } else {
+      panel.style.transition = "transform 180ms ease"
+      panel.style.transform = ""
+      setTimeout(() => {
+        panel.style.transition = ""
+      }, 200)
+    }
   }
 
   private _setLocal(on: boolean): void {
@@ -187,7 +249,7 @@ export class BrowseFiltersSheet extends LitElement {
             aria-label=${count ? `Filters, ${count} active` : "Filters"}
             @click=${() => this._openSheet(null)}
           >
-            ${unsafeHTML(icon("search", 16))}
+            ${unsafeHTML(icon("filter", 16))}
             <span
               >Filters${count > 0
                 ? html`<span class="filters-fab-count"> · ${count}</span>`
@@ -297,6 +359,16 @@ export class BrowseFiltersSheet extends LitElement {
                 aria-label="Filters"
                 @click=${(e: Event) => e.stopPropagation()}
               >
+                <div
+                  class="sheet-grabber"
+                  aria-hidden="true"
+                  @pointerdown=${this._onGrabStart}
+                  @pointermove=${this._onGrabMove}
+                  @pointerup=${this._onGrabEnd}
+                  @pointercancel=${this._onGrabEnd}
+                >
+                  <span class="sheet-grabber-bar"></span>
+                </div>
                 <header class="sheet-head">
                   <div class="sheet-head-row">
                     ${this._subView

@@ -1,5 +1,6 @@
 import {
     Search,
+    Funnel,
     ArrowRight,
     ArrowLeft,
     Users,
@@ -35,6 +36,7 @@ import {
 
 const ICONS: Record<string, IconNode> = {
     search: Search,
+    filter: Funnel,
     arrow: ArrowRight,
     arrowL: ArrowLeft,
     users: Users,
