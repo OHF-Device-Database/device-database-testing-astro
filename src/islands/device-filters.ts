@@ -24,12 +24,20 @@ interface DimensionConfig {
   letterGroups: boolean
 }
 
+function sameSelection(a: ReadonlySet<string>, b: ReadonlySet<string>): boolean {
+  return a.size === b.size && [...a].every((id) => b.has(id))
+}
+
 export class DeviceFilters extends LitElement {
   @property({ type: Array }) manufacturers: ManufacturerFacet[] = []
   @property({ type: Object }) categoryCounts: Record<string, number> = {}
 
   @state() private _moreDim: FacetDimension | null = null
   @state() private _moreQuery = ""
+  // The dialog edits a draft and commits once on close (backdrop, X, or View results),
+  // so the page never re-renders under the open dialog. Sidebar rows commit live.
+  @state() private _draftSelected = new Set<string>()
+  @state() private _draftMode: FilterMode = "include"
 
   private _onChange = () => this.requestUpdate()
 
@@ -108,33 +116,58 @@ export class DeviceFilters extends LitElement {
     this._commit({ ...filters, [dim]: set })
   }
 
-  private _clearDimension(dim: FacetDimension): void {
-    this._commit({ ...this._filters, [dim]: new Set() })
-  }
-
   private _openMore(dim: FacetDimension): void {
+    const filters = this._filters
     this._moreDim = dim
     this._moreQuery = ""
+    this._draftSelected = new Set(filters[dim])
+    this._draftMode = this._modeOf(filters, dim)
     document.body.classList.add("modal-open")
   }
 
   private _closeMore(): void {
+    const dim = this._moreDim
     this._moreDim = null
     document.body.classList.remove("modal-open")
+    if (!dim) {
+      return
+    }
+    const filters = this._filters
+    if (
+      sameSelection(filters[dim], this._draftSelected) &&
+      this._modeOf(filters, dim) === this._draftMode
+    ) {
+      return
+    }
+    this._commit(
+      dim === "category"
+        ? { ...filters, category: this._draftSelected, categoryMode: this._draftMode }
+        : { ...filters, manufacturer: this._draftSelected, manufacturerMode: this._draftMode },
+    )
+  }
+
+  private _draftToggle(id: string): void {
+    const next = new Set(this._draftSelected)
+    if (next.has(id)) {
+      next.delete(id)
+    } else {
+      next.add(id)
+    }
+    this._draftSelected = next
   }
 
   private _modeOf(filters: BrowseFilters, dim: FacetDimension): FilterMode {
     return dim === "category" ? filters.categoryMode : filters.manufacturerMode
   }
 
-  private _renderModeToggle(dim: FacetDimension, mode: FilterMode) {
+  private _renderModeToggle(mode: FilterMode, onSet: (mode: FilterMode) => void) {
     return html`
       <div class="filter-mode" role="group" aria-label="Filter mode">
         <button
           type="button"
           class=${"filter-mode-btn" + (mode === "include" ? " is-active" : "")}
           aria-pressed=${mode === "include"}
-          @click=${() => this._setMode(dim, "include")}
+          @click=${() => onSet("include")}
         >
           <span>is</span>
         </button>
@@ -142,7 +175,7 @@ export class DeviceFilters extends LitElement {
           type="button"
           class=${"filter-mode-btn" + (mode === "exclude" ? " is-active" : "")}
           aria-pressed=${mode === "exclude"}
-          @click=${() => this._setMode(dim, "exclude")}
+          @click=${() => onSet("exclude")}
         >
           <span>is not</span>
         </button>
@@ -150,14 +183,10 @@ export class DeviceFilters extends LitElement {
     `
   }
 
-  private _renderRow(dim: FacetDimension, option: FilterOption, selected: Set<string>) {
+  private _renderRow(option: FilterOption, selected: Set<string>, onToggle: () => void) {
     return html`
       <label class="filter-row">
-        <input
-          type="checkbox"
-          .checked=${selected.has(option.id)}
-          @change=${() => this._toggle(dim, option.id)}
-        />
+        <input type="checkbox" .checked=${selected.has(option.id)} @change=${onToggle} />
         <span class="filter-row-text">${option.label}</span>
         ${option.count !== undefined
           ? html`<span class="count">${option.count.toLocaleString()}</span>`
@@ -186,10 +215,14 @@ export class DeviceFilters extends LitElement {
       <div class="filter-group">
         <div class="filter-group-head">
           <div class="filter-group-label">${config.label}</div>
-          ${this._renderModeToggle(config.dim, this._modeOf(filters, config.dim))}
+          ${this._renderModeToggle(this._modeOf(filters, config.dim), (mode) =>
+            this._setMode(config.dim, mode),
+          )}
         </div>
         <div class="filter-options">
-          ${visible.map((option) => this._renderRow(config.dim, option, selected))}
+          ${visible.map((option) =>
+            this._renderRow(option, selected, () => this._toggle(config.dim, option.id)),
+          )}
           ${hasMore
             ? html`<button
                 type="button"
@@ -204,12 +237,12 @@ export class DeviceFilters extends LitElement {
     `
   }
 
-  private _renderMore(filters: BrowseFilters) {
+  private _renderMore() {
     const config = this._dimensions.find((d) => d.dim === this._moreDim)
     if (!config) {
       return nothing
     }
-    const selected = filters[config.dim]
+    const selected = this._draftSelected
     const term = this._moreQuery.trim().toLowerCase()
     const matched = term
       ? config.options.filter((o) => o.label.toLowerCase().includes(term))
@@ -231,7 +264,7 @@ export class DeviceFilters extends LitElement {
                 ${unsafeHTML(icon("x", 18))}
               </button>
               <h2>${config.label}</h2>
-              ${this._renderModeToggle(config.dim, this._modeOf(filters, config.dim))}
+              ${this._renderModeToggle(this._draftMode, (mode) => (this._draftMode = mode))}
             </div>
             <div class="modal-head-search">
               <div class="modal-search-input">
@@ -254,7 +287,9 @@ export class DeviceFilters extends LitElement {
                     <section class="modal-group">
                       ${letter ? html`<div class="modal-group-head">${letter}</div>` : nothing}
                       <div class="modal-group-rows">
-                        ${opts.map((option) => this._renderRow(config.dim, option, selected))}
+                        ${opts.map((option) =>
+                          this._renderRow(option, selected, () => this._draftToggle(option.id)),
+                        )}
                       </div>
                     </section>
                   `,
@@ -266,7 +301,7 @@ export class DeviceFilters extends LitElement {
               : html`<button
                   type="button"
                   class="modal-foot-clear"
-                  @click=${() => this._clearDimension(config.dim)}
+                  @click=${() => (this._draftSelected = new Set())}
                 >
                   Clear ${selected.size} selected
                 </button>`}
@@ -303,7 +338,7 @@ export class DeviceFilters extends LitElement {
         </div>
         ${this._dimensions.map((config) => this._renderGroup(config, filters))}
       </aside>
-      ${this._moreDim ? this._renderMore(filters) : nothing}
+      ${this._moreDim ? this._renderMore() : nothing}
     `
   }
 }
