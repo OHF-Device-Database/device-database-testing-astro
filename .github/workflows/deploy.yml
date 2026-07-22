@@ -139,3 +139,7 @@ jobs:
           nomad-token: ${{ secrets.NOMAD_TOKEN }}
           tailscale-oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
           tailscale-oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          # ACL tag for the ephemeral runner node; the action no longer
+          # ships a default. Shared with the device-database backend's
+          # release workflow, which the tailnet ACLs already allow.
+          tailscale-tags: tag:ecosystem-device-database-release-action
