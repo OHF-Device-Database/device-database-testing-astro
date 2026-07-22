@@ -152,6 +152,17 @@
   margin-left: 0;
 }
 
+/* Letter headers reuse .modal-group-head, whose 20px centered box is built for the
+   desktop modal's padded body. Sheet rows are full-bleed with their own padding plus
+   a 16px check column, so indent the letter to sit over the row text instead. */
+.sheet-body .modal-group-head {
+  width: auto;
+  text-align: left;
+  padding: 6px var(--sheet-x) 0 calc(var(--sheet-x) + 16px + var(--space-3));
+  font-size: var(--fs-16);
+  font-weight: var(--fw-bold);
+}
+
 .filter-tap-row {
   display: flex;
   align-items: center;
