@@ -153,12 +153,12 @@
 }
 
 /* Letter headers reuse .modal-group-head, whose 20px centered box is built for the
-   desktop modal's padded body. Sheet rows are full-bleed with their own padding plus
-   a 16px check column, so indent the letter to sit over the row text instead. */
+   desktop modal's padded body. Sheet rows are full-bleed with their own padding, so
+   indent the letter to sit over the row text (unchecked rows start at --sheet-x). */
 .sheet-body .modal-group-head {
   width: auto;
   text-align: left;
-  padding: 6px var(--sheet-x) 0 calc(var(--sheet-x) + 16px + var(--space-3));
+  padding: 6px var(--sheet-x) 0;
   font-size: var(--fs-16);
   font-weight: var(--fw-bold);
 }
@@ -189,9 +189,12 @@
   width: 16px;
   height: 16px;
   color: var(--primary);
-  display: inline-flex;
+  display: none;
   align-items: center;
   justify-content: center;
+}
+.filter-tap-row.is-selected .filter-tap-row-check {
+  display: inline-flex;
 }
 .filter-tap-row-text {
   flex: 1;
