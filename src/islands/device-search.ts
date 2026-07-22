@@ -332,14 +332,19 @@ export class DeviceSearch extends LitElement {
     try {
       // Mirror the shape of Astro's history entries (index/scroll) so that when a
       // suggestion navigation replaces this entry (see _navigateTo), the router's
-      // direction detection and scroll restoration keep working.
+      // direction detection and scroll restoration keep working. Scroll is 0/0 to
+      // match what the router writes for a fresh push: on replace it copies these
+      // values into the destination entry, and the destination starts at the top.
+      // Residual quirk: the router's private history counter can't be bumped from
+      // here, so the push after a replace reuses this index — worst case a single
+      // traversal animates in the wrong direction, navigation itself is unaffected.
       const base = window.history.state ?? {}
       window.history.pushState(
         {
           searchFs: true,
           index: (base.index ?? 0) + 1,
-          scrollX: window.scrollX,
-          scrollY: window.scrollY,
+          scrollX: 0,
+          scrollY: 0,
         },
         "",
       )
