@@ -42,6 +42,8 @@ export class DeviceFilters extends LitElement {
     window.addEventListener("popstate", this._onChange)
     document.addEventListener("astro:page-load", this._onChange)
     window.addEventListener("browse:open-filter", this._onOpenFilter as EventListener)
+    document.addEventListener('astro:before-preparation', this._onTransition)
+    document.addEventListener('astro:before-swap', this._onTransition)
   }
 
   disconnectedCallback(): void {
@@ -50,6 +52,8 @@ export class DeviceFilters extends LitElement {
     window.removeEventListener("popstate", this._onChange)
     document.removeEventListener("astro:page-load", this._onChange)
     window.removeEventListener("browse:open-filter", this._onOpenFilter as EventListener)
+    document.removeEventListener('astro:before-preparation', this._onTransition)
+    document.removeEventListener('astro:before-swap', this._onTransition)
   }
 
   private _onOpenFilter = (e: CustomEvent<{ dim: FacetDimension }>) => {
@@ -58,8 +62,17 @@ export class DeviceFilters extends LitElement {
     }
   }
 
+  private _onTransition = (e: CustomEvent<{to: URL}>) => {
+    this._transitioningTo = e.to;
+  }
+
   private get _filters(): BrowseFilters {
-    return parseBrowseFilters(new URLSearchParams(window.location.search))
+    return parseBrowseFilters(
+      // use target url of pending transition if available
+      // this way selections that happen during the transition are combined
+      this._transitioningTo?.searchParams ??
+      new URLSearchParams(window.location.search)
+    )
   }
 
   private get _dimensions(): DimensionConfig[] {
