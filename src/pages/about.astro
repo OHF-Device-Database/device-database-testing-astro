@@ -2,6 +2,9 @@
 import Layout from "../layouts/Layout.astro";
 import { CACHE_POLICY, applyCdnCache } from "../lib/cache";
 
+import byOhfLight from "../assets/by-ohf-light.svg";
+import byOhfDark from "../assets/by-ohf-dark.svg";
+
 // Server-rendered so the NOINDEX robots meta reflects the runtime environment
 // instead of being baked in at build time. The content is effectively static,
 // so it is cached at the origin and the CDN edge.
@@ -28,9 +31,12 @@ applyCdnCache(Astro.response.headers, CACHE_POLICY.static);
                 Read about <a href="/how-it-works">how it works</a> to see exactly what is shared, and how it is
                 protected.
             </p>
+
             <a class="content-ohf" href="https://www.openhomefoundation.org/" target="_blank" rel="noopener">
-                <span class="content-ohf-eyebrow">A project from the</span>
-                <span class="content-ohf-name">Open Home Foundation</span>
+                <picture>
+                  <source srcset={byOhfDark.src} media="(prefers-color-scheme: dark)" />
+                  <img src={byOhfLight.src} alt="Open Home Foundation Logo" />
+                </picture>
             </a>
         </section>
     </div>
