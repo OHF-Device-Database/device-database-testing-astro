@@ -32,13 +32,6 @@ export const QUICK_FILTERS: QuickFilter[] = [
     filters: { category: ["camera"], localOnly: true },
   },
   {
-    id: "switches-local",
-    title: "Switches with local connection",
-    icon: "button-switch-and-control",
-    breadcrumb: "Buttons, switches and controls · Local connection",
-    filters: { category: ["button-switch-and-control"], localOnly: true },
-  },
-  {
     id: "hubs",
     title: "Hubs and bridges",
     icon: "networking",
