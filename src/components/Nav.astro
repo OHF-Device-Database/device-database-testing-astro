@@ -23,14 +23,6 @@ const showSearch = page !== "home";
                 rel="noopener noreferrer">Learn more</a
             >
         </p>
-        <button
-            type="button"
-            class="preview-banner-close"
-            aria-label="Dismiss preview notice"
-            data-preview-banner-close
-        >
-            <Fragment set:html={icon("x", 16)} />
-        </button>
     </div>
 </div>
 
@@ -45,16 +37,6 @@ const showSearch = page !== "home";
             />
         </div>
         {showSearch ? <SearchBox size="header" /> : <div class="appnav-search-empty"></div>}
-        <div class="appnav-right">
-            <a
-                class="preview-badge"
-                href="https://github.com/OHF-Device-Database"
-                target="_blank"
-                rel="noopener noreferrer"
-            >
-                <span>Preview Edition</span>
-            </a>
-        </div>
     </div>
 </header>
 
@@ -72,18 +54,7 @@ const showSearch = page !== "home";
         window.addEventListener("scroll", sync, { passive: true });
     };
 
-    const bindBanner = () => {
-        document
-            .querySelector<HTMLButtonElement>("[data-preview-banner-close]")
-            ?.addEventListener("click", () => {
-                (
-                    window as unknown as { DemoState?: { dismissPreviewBanner?: () => void } }
-                ).DemoState?.dismissPreviewBanner?.();
-            });
-    };
-
     document.addEventListener("astro:page-load", () => {
         bind();
-        bindBanner();
     });
 </script>
