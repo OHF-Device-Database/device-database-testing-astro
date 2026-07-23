@@ -114,11 +114,15 @@ async function filtersToQuery(
   size: number,
 ): Promise<DeviceQuery | null> {
   const query: DeviceQuery = { page, size, term: filters.q }
-  const queryIds = categoryQueryIds(await categoryTree())
+  const tree = await categoryTree()
+  const queryIds = categoryQueryIds(tree)
+  // Any id in the tree at any depth (topLevelCategory is keyed by all of them,
+  // including children like "camera" that quick filters target directly).
+  const treeIds = topLevelCategory(tree)
   // Only ids the API accepts may be sent: anything else fails the endpoint's
   // schema validation and 400s the whole request. Ids from the curated list that
   // have no devices yet (absent from the tree) are still valid and return 0.
-  const knownIds = [...filters.category].filter((id) => id in queryIds || id in CATEGORY_LABEL)
+  const knownIds = [...filters.category].filter((id) => id in treeIds || id in CATEGORY_LABEL)
   const categories = knownIds.flatMap((id) => queryIds[id] ?? [id])
   if (filters.category.size > 0 && knownIds.length === 0 && filters.categoryMode !== "exclude") {
     return null
