@@ -250,14 +250,23 @@ export function topOptions(
 
 export function groupByLetter<T extends Category>(options: T[]): (readonly [string, T[]])[] {
     const groups = new Map<string, T[]>();
+    const ungrouped: T[] = [];
     for (const option of options) {
-        const head = (option.label[0] ?? "#").toUpperCase();
-        const key = /[A-Z]/.test(head) ? head : "#";
-        const list = groups.get(key) ?? [];
+        const firstLetter = option.label.at(0)?.normalize()?.trim()?.toUpperCase()
+        if (typeof firstLetter === "undefined" || !/[A-Z]/.test(firstLetter)) {
+          ungrouped.push(option)
+          continue
+        }
+
+        const list = groups.get(firstLetter) ?? [];
         list.push(option);
-        groups.set(key, list);
+        groups.set(firstLetter, list);
     }
-    return [...groups.entries()].sort(([a], [b]) => a.localeCompare(b));
+
+    return [
+      ...[...groups.entries()].sort(([a], [b]) => a.localeCompare(b)),
+      ["#", ungrouped]
+    ];
 }
 
 export const FACET_SIDEBAR_LIMIT = 5;
