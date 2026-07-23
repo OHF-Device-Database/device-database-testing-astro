@@ -11,7 +11,7 @@ import {
   type Dimensions,
 } from "./api-client"
 import { applyFilters, type BrowseFilters, type ManufacturerFacet } from "./browse-filters"
-import { DEFAULT_CATEGORY } from "./categories"
+import { CATEGORY_LABEL, DEFAULT_CATEGORY } from "./categories"
 import { categoryQueryIds, topLevelCategory, topLevelCategoryCounts } from "./category-tree"
 import { Device, type VersionInfo } from "./device"
 import { MOCK_DEVICES } from "./mock-devices"
@@ -105,14 +105,24 @@ async function categoryTree(): Promise<Dimensions["categories"]> {
   return categories
 }
 
+// Returns null when the selection provably matches nothing: every selected
+// category id is unknown to the API (an old bookmark, a mistyped URL), so there
+// is no valid query to send and the caller should show zero results instead.
 async function filtersToQuery(
   filters: BrowseFilters,
   page: number,
   size: number,
-): Promise<DeviceQuery> {
+): Promise<DeviceQuery | null> {
   const query: DeviceQuery = { page, size, term: filters.q }
   const queryIds = categoryQueryIds(await categoryTree())
-  const categories = [...filters.category].flatMap((id) => queryIds[id] ?? [id])
+  // Only ids the API accepts may be sent: anything else fails the endpoint's
+  // schema validation and 400s the whole request. Ids from the curated list that
+  // have no devices yet (absent from the tree) are still valid and return 0.
+  const knownIds = [...filters.category].filter((id) => id in queryIds || id in CATEGORY_LABEL)
+  const categories = knownIds.flatMap((id) => queryIds[id] ?? [id])
+  if (filters.category.size > 0 && knownIds.length === 0 && filters.categoryMode !== "exclude") {
+    return null
+  }
   if (categories.length) {
     if (filters.categoryMode === "exclude") query.notCategory = categories
     else query.category = categories
@@ -154,8 +164,12 @@ export async function fetchDeviceResults(
       pageCount: Math.max(1, Math.ceil(matched.length / size)),
     }
   }
+  const query = await filtersToQuery(filters, page, size)
+  if (query === null) {
+    return { devices: [], total: 0, page, size, pageCount: 1 }
+  }
   const [result, topOf] = await Promise.all([
-    filtersToQuery(filters, page, size).then(getDevicesPage),
+    getDevicesPage(query),
     categoryTree().then(topLevelCategory),
   ])
 
