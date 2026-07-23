@@ -99,7 +99,9 @@ export class DeviceFilters extends LitElement {
       {
         dim: "category",
         label: "Category",
-        options: categoryOptions().map((c) => ({ ...c, count: this.categoryCounts[c.id] ?? 0 })),
+        options: categoryOptions()
+          .map((c) => ({ ...c, count: this.categoryCounts[c.id] ?? 0 }))
+          .sort((a, b) => (b.count ?? 0) - (a.count ?? 0) || a.label.localeCompare(b.label)),
         letterGroups: false,
       },
       {
