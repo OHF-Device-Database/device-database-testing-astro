@@ -7,7 +7,7 @@
   z-index: 100;
   pointer-events: none;
   opacity: 0;
-  background: var(--fg);
+  background: var(--fg-muted);
   transform: scaleX(0);
   transform-origin: left;
   transition:
