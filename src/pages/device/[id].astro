@@ -38,7 +38,7 @@ const view = device
               status === "requires"
                   ? "This device requires an active internet connection to function. Setup, day-to-day control, or both rely on a manufacturer service. If the manufacturer's servers go offline or the product is discontinued, the device may stop working."
                   : status === "local"
-                    ? "This device works fully on your local network. It does not need an internet connection or a manufacturer account to be set up or controlled. If your internet goes down, the device keeps working."
+                    ? "This device can be controlled locally on your home network. Keep in mind that \"without the cloud\" isn't always absolute: some devices may still need internet, a manufacturer account for setup, or the cloud for certain features."
                     : "We don't yet have connectivity data for this device, so we can't say whether it depends on the manufacturer's cloud. This page will update as more reports come in.";
           return {
               category: CATEGORY_LABEL[device.category] ?? device.category,
