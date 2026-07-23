@@ -13,9 +13,9 @@ export const QUICK_FILTERS: QuickFilter[] = [
   {
     id: "sensors-local",
     title: "Sensors with local connection",
-    icon: "sensors",
+    icon: "monitoring",
     breadcrumb: "Sensors · Occupancy and motion · Local connection",
-    filters: { category: ["sensors", "presence"], localOnly: true },
+    filters: { category: ["monitoring", "weather"], localOnly: true },
   },
   {
     id: "lighting-local",
@@ -27,30 +27,30 @@ export const QUICK_FILTERS: QuickFilter[] = [
   {
     id: "cameras-local",
     title: "Cameras with local connection",
-    icon: "cameras",
+    icon: "camera",
     breadcrumb: "Cameras and NVRs · Local connection",
-    filters: { category: ["cameras"], localOnly: true },
+    filters: { category: ["camera"], localOnly: true },
   },
   {
     id: "switches-local",
     title: "Switches with local connection",
-    icon: "controls",
+    icon: "button-switch-and-control",
     breadcrumb: "Buttons, switches and controls · Local connection",
-    filters: { category: ["controls"], localOnly: true },
+    filters: { category: ["button-switch-and-control"], localOnly: true },
   },
   {
     id: "hubs",
     title: "Hubs and bridges",
-    icon: "hubs",
+    icon: "networking",
     breadcrumb: "Hubs, routers and bridges",
-    filters: { category: ["hubs"] },
+    filters: { category: ["networking"] },
   },
   {
     id: "energy",
     title: "Energy monitoring",
-    icon: "power",
+    icon: "power-and-energy",
     breadcrumb: "Power and energy",
-    filters: { category: ["power"] },
+    filters: { category: ["power-and-energy"] },
   },
 ]
 
