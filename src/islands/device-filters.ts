@@ -1,4 +1,8 @@
-import { navigate } from "astro:transitions/client"
+import {
+  navigate,
+  type TransitionBeforePreparationEvent,
+  type TransitionBeforeSwapEvent,
+} from "astro:transitions/client"
 import { LitElement, html, nothing } from "lit"
 import { property, state } from "lit/decorators.js"
 import { unsafeHTML } from "lit/directives/unsafe-html.js"
@@ -51,8 +55,8 @@ export class DeviceFilters extends LitElement {
     window.addEventListener("popstate", this._onChange)
     document.addEventListener("astro:page-load", this._onChange)
     window.addEventListener("browse:open-filter", this._onOpenFilter as EventListener)
-    document.addEventListener('astro:before-preparation', this._onTransition)
-    document.addEventListener('astro:before-swap', this._onTransition)
+    document.addEventListener("astro:before-preparation", this._onTransition)
+    document.addEventListener("astro:before-swap", this._onTransition)
   }
 
   disconnectedCallback(): void {
@@ -61,8 +65,8 @@ export class DeviceFilters extends LitElement {
     window.removeEventListener("popstate", this._onChange)
     document.removeEventListener("astro:page-load", this._onChange)
     window.removeEventListener("browse:open-filter", this._onOpenFilter as EventListener)
-    document.removeEventListener('astro:before-preparation', this._onTransition)
-    document.removeEventListener('astro:before-swap', this._onTransition)
+    document.removeEventListener("astro:before-preparation", this._onTransition)
+    document.removeEventListener("astro:before-swap", this._onTransition)
   }
 
   private _onOpenFilter = (e: CustomEvent<{ dim: FacetDimension }>) => {
@@ -71,8 +75,14 @@ export class DeviceFilters extends LitElement {
     }
   }
 
-  private _onTransition = (e: CustomEvent<{to: URL}>) => {
-    this._transitioningTo = e.to;
+  // Target URL of an in-flight page transition, so selections made while a commit
+  // is still swapping combine with it instead of resetting to the old URL.
+  private _transitioningTo: URL | null = null
+
+  private _onTransition = (
+    e: TransitionBeforePreparationEvent | TransitionBeforeSwapEvent,
+  ): void => {
+    this._transitioningTo = e.to
   }
 
   private get _filters(): BrowseFilters {

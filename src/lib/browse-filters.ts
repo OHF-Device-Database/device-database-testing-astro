@@ -1,6 +1,6 @@
 import type { Category, Device } from "./device";
 import { requiresInternet } from "./device";
-import { DEVICE_CATEGORIES, CATEGORY_LABEL } from "./categories";
+import { categoryLabel, DEVICE_CATEGORIES } from "./categories";
 
 export type FilterMode = "include" | "exclude";
 export type FacetDimension = "category" | "manufacturer";
@@ -169,7 +169,7 @@ export function activeFilterChips(filters: BrowseFilters): FilterChip[] {
     }
 
     chips.push(
-        ...dimensionChips(filters, "category", (id) => CATEGORY_LABEL[id] ?? id, "category", "categories"),
+        ...dimensionChips(filters, "category", categoryLabel, "category", "categories"),
     );
     chips.push(
         ...dimensionChips(filters, "manufacturer", (id) => id, "manufacturer", "manufacturers"),

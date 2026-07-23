@@ -19,11 +19,13 @@ import {
     PawPrint,
     Zap,
     Lock,
-    Radio,
     Speaker,
     Car,
-    Watch,
     Blinds,
+    Printer,
+    CloudSun,
+    Sprout,
+    Droplet,
     Check,
     ExternalLink,
     List,
@@ -51,25 +53,29 @@ const ICONS: Record<string, IconNode> = {
     chevronDown: ChevronDown,
 };
 
+// Keyed by the API's top-level category ids, plus the child ids that quick
+// filters target directly (camera).
 const GLYPHS: Record<string, IconNode> = {
-    hubs: Router,
-    controls: ToggleRight,
-    cameras: Video,
+    "button-switch-and-control": ToggleRight,
+    camera: Video,
     cleaning: Bot,
-    climate: Thermometer,
-    irrigation: Droplets,
-    kitchen: Refrigerator,
-    lighting: Lightbulb,
-    presence: Radar,
-    pool: Waves,
-    pets: PawPrint,
-    power: Zap,
-    security: Lock,
-    sensors: Radio,
+    "climate-control": Thermometer,
+    cover: Blinds,
     entertainment: Speaker,
-    vehicles: Car,
-    wearables: Watch,
-    shading: Blinds,
+    garden: Sprout,
+    irrigation: Droplets,
+    "kitchen-and-household": Refrigerator,
+    lighting: Lightbulb,
+    monitoring: Radar,
+    networking: Router,
+    pets: PawPrint,
+    "pool-and-spa": Waves,
+    "power-and-energy": Zap,
+    printing: Printer,
+    "security-and-access-control": Lock,
+    "vehicle-and-mobility": Car,
+    "water-management": Droplet,
+    weather: CloudSun,
 };
 
 function render(node: IconNode, size: number, strokeWidth: number, className?: string): string {
@@ -89,6 +95,6 @@ export function icon(name: string, size = 20, strokeWidth = 2): string {
 }
 
 export function categoryGlyph(category: string, size = 40): string {
-    const node = GLYPHS[category] ?? GLYPHS.hubs;
+    const node = GLYPHS[category] ?? GLYPHS.networking;
     return render(node, size, 1.5);
 }

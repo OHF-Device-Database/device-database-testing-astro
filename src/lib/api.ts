@@ -8,9 +8,11 @@ import {
   type DerivedDeviceMono,
   type DerivedDevicePoly,
   type DeviceQuery,
+  type Dimensions,
 } from "./api-client"
 import { applyFilters, type BrowseFilters, type ManufacturerFacet } from "./browse-filters"
-import { toApiCategories, toUiCategory, uiCategoryCounts } from "./category-map"
+import { DEFAULT_CATEGORY } from "./categories"
+import { categoryQueryIds, topLevelCategory, topLevelCategoryCounts } from "./category-tree"
 import { Device, type VersionInfo } from "./device"
 import { MOCK_DEVICES } from "./mock-devices"
 
@@ -59,7 +61,11 @@ function entityDomains(entities: { domain: string }[]): string[] {
   return [...new Set(entities.map((entity) => entity.domain).filter(Boolean))]
 }
 
-function toDevice(dto: DerivedDevicePoly | DerivedDeviceMono, id: string): Device {
+function toDevice(
+  dto: DerivedDevicePoly | DerivedDeviceMono,
+  id: string,
+  topOf: Record<string, string>,
+): Device {
   const software = versionInfo(dto.versions.software)
   const hardware = versionInfo(dto.versions.hardware)
   const softwareVersions = software.map((entry) => entry.version)
@@ -70,7 +76,10 @@ function toDevice(dto: DerivedDevicePoly | DerivedDeviceMono, id: string): Devic
     name: deviceName(dto),
     manufacturer: dto.manufacturer,
     model: dto.model_id || dto.model || "",
-    category: toUiCategory(dto.categories.map((c) => c.id)),
+    category:
+      dto.categories.map((c) => topOf[c.id]).find(Boolean) ??
+      dto.categories[0]?.id ??
+      DEFAULT_CATEGORY,
     connectivity: dto.connectivity,
     summary: "",
     reports: dto.count,
@@ -88,9 +97,22 @@ function toDevice(dto: DerivedDevicePoly | DerivedDeviceMono, id: string): Devic
   })
 }
 
-function filtersToQuery(filters: BrowseFilters, page: number, size: number): DeviceQuery {
+// The devices endpoint matches direct category tags only, so a selected top-level
+// category expands to itself plus all of its descendants (see category-tree.ts).
+async function categoryTree(): Promise<Dimensions["categories"]> {
+  const { categories } = await getDimensions()
+
+  return categories
+}
+
+async function filtersToQuery(
+  filters: BrowseFilters,
+  page: number,
+  size: number,
+): Promise<DeviceQuery> {
   const query: DeviceQuery = { page, size, term: filters.q }
-  const categories = toApiCategories(filters.category)
+  const queryIds = categoryQueryIds(await categoryTree())
+  const categories = [...filters.category].flatMap((id) => queryIds[id] ?? [id])
   if (categories.length) {
     if (filters.categoryMode === "exclude") query.notCategory = categories
     else query.category = categories
@@ -132,10 +154,13 @@ export async function fetchDeviceResults(
       pageCount: Math.max(1, Math.ceil(matched.length / size)),
     }
   }
-  const result = await getDevicesPage(filtersToQuery(filters, page, size))
+  const [result, topOf] = await Promise.all([
+    filtersToQuery(filters, page, size).then(getDevicesPage),
+    categoryTree().then(topLevelCategory),
+  ])
 
   return {
-    devices: result.devices.map((dto) => toDevice(dto, dto.id)),
+    devices: result.devices.map((dto) => toDevice(dto, dto.id, topOf)),
     total: result.total,
     page: result.page,
     size: result.size,
@@ -176,16 +201,14 @@ export async function fetchCategoryCounts(): Promise<Record<string, number>> {
 
     return counts
   }
-  const { categories } = await getDimensions()
-
-  return uiCategoryCounts(categories)
+  return topLevelCategoryCounts(await categoryTree())
 }
 
 export async function fetchDevice(id: string): Promise<Device | undefined> {
   if (!apiConfigured) {
     return MOCK_DEVICES.find((candidate) => candidate.id === id)
   }
-  const dto = await getDerivedDevice(id)
+  const [dto, topOf] = await Promise.all([getDerivedDevice(id), categoryTree().then(topLevelCategory)])
 
-  return dto ? toDevice(dto, id) : undefined
+  return dto ? toDevice(dto, id, topOf) : undefined
 }
