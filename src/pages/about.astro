@@ -1,43 +1,45 @@
 ---
-import Layout from "../layouts/Layout.astro";
-import { CACHE_POLICY, applyCdnCache } from "../lib/cache";
-
-import byOhfLight from "../assets/by-ohf-light.svg";
 import byOhfDark from "../assets/by-ohf-dark.svg";
+import byOhfLight from "../assets/by-ohf-light.svg";
+
+import Layout from "../layouts/Layout.astro";
 
 // Server-rendered so the NOINDEX robots meta reflects the runtime environment
 // instead of being baked in at build time. The content is effectively static,
 // so it is cached at the origin and the CDN edge.
 export const prerender = false;
-
-Astro.cache.set({ maxAge: CACHE_POLICY.static.maxAge, swr: CACHE_POLICY.static.swr });
-applyCdnCache(Astro.response.headers, CACHE_POLICY.static);
 ---
 
 <Layout page="page" title="About">
-    <div class="container-narrow content-page">
-        <section class="content-section content-intro">
-            <h1>About the Device Database</h1>
-            <p class="content-lede">
-                The Device Database is a project of the Open Home Foundation, the non-profit stewards of Home
-                Assistant, ESPHome, Music Assistant, and friends.
-            </p>
-            <p class="content-prose">
-                It is built and maintained in the open. Manufacturer specs say what a device should do. We record
-                what it actually does, drawn from anonymized data the community shares, and kept editorially
-                neutral.
-            </p>
-            <p class="content-prose">
-                Read about <a href="/how-it-works">how it works</a> to see exactly what is shared, and how it is
-                protected.
-            </p>
+	<div class="container-narrow content-page">
+		<section class="content-section content-intro">
+			<h1>About the Device Database</h1>
+			<p class="content-lede">
+				The Device Database is a project of the Open Home Foundation, the
+				non-profit stewards of Home Assistant, ESPHome, Music Assistant, and
+				friends.
+			</p>
+			<p class="content-prose">
+				It is built and maintained in the open. Manufacturer specs say what a
+				device should do. We record what it actually does, drawn from anonymized
+				data the community shares, and kept editorially neutral.
+			</p>
+			<p class="content-prose">
+				Read about <a href="/how-it-works">how it works</a> to see exactly what is
+				shared, and how it is protected.
+			</p>
 
-            <a class="content-ohf" href="https://www.openhomefoundation.org/" target="_blank" rel="noopener">
-                <picture>
-                  <source srcset={byOhfDark.src} media="(prefers-color-scheme: dark)" />
-                  <img src={byOhfLight.src} alt="Open Home Foundation Logo" />
-                </picture>
-            </a>
-        </section>
-    </div>
+			<a
+				class="content-ohf"
+				href="https://www.openhomefoundation.org/"
+				target="_blank"
+				rel="noopener"
+			>
+				<picture>
+					<source srcset={byOhfDark.src} media="(prefers-color-scheme: dark)" />
+					<img src={byOhfLight.src} alt="Open Home Foundation Logo" />
+				</picture>
+			</a>
+		</section>
+	</div>
 </Layout>

@@ -1,0 +1,26 @@
+{
+	"$schema": "https://json.schemastore.org/prettierrc",
+	"useTabs": true,
+	"tabWidth": 2,
+	"printWidth": 80,
+	"singleQuote": false,
+	"semi": true,
+	"trailingComma": "all",
+	"plugins": ["@ianvs/prettier-plugin-sort-imports", "prettier-plugin-astro"],
+	"importOrderParserPlugins": ["typescript", "jsx", "decorators"],
+	"importOrder": [
+		"<BUILTIN_MODULES>",
+		"",
+		"<THIRD_PARTY_MODULES>",
+		"<TYPES>",
+		"",
+		".*\\.(?:(?:png)|(?:jpg)||(?:png)|(?:svg(?:\\?raw)?))$",
+		"",
+		".astro$",
+		"",
+		"^[.]",
+		"<TYPES>^[.]",
+		""
+	],
+	"importOrderTypeScriptVersion": "6.0.0"
+}

@@ -1,29 +1,29 @@
 .nav-loading-bar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  z-index: 100;
-  pointer-events: none;
-  opacity: 0;
-  background: var(--fg-muted);
-  transform: scaleX(0);
-  transform-origin: left;
-  transition:
-    opacity 0.2s ease,
-    transform 8s cubic-bezier(0.1, 0.4, 0.2, 1);
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 3px;
+	z-index: 100;
+	pointer-events: none;
+	opacity: 0;
+	background: var(--fg-muted);
+	transform: scaleX(0);
+	transform-origin: left;
+	transition:
+		opacity 0.2s ease,
+		transform 8s cubic-bezier(0.1, 0.4, 0.2, 1);
 }
 
 .nav-loading-bar.is-loading {
-  opacity: 1;
-  transform: scaleX(0.8);
+	opacity: 1;
+	transform: scaleX(0.8);
 }
 
 .nav-loading-bar.is-done {
-  transform: scaleX(1);
-  transition:
-    opacity 0.3s ease 0.1s,
-    transform 0.2s ease;
-  opacity: 0;
+	transform: scaleX(1);
+	transition:
+		opacity 0.3s ease 0.1s,
+		transform 0.2s ease;
+	opacity: 0;
 }

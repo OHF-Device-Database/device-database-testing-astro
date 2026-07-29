@@ -1,46 +1,44 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import { CACHE_POLICY, applyCdnCache } from "../lib/cache";
 
 // Server-rendered so the NOINDEX robots meta reflects the runtime environment
 // instead of being baked in at build time. The content is effectively static,
 // so it is cached at the origin and the CDN edge.
 export const prerender = false;
-
-Astro.cache.set({ maxAge: CACHE_POLICY.static.maxAge, swr: CACHE_POLICY.static.swr });
-applyCdnCache(Astro.response.headers, CACHE_POLICY.static);
 ---
 
 <Layout page="page" title="Imprint">
-    <div class="container-narrow content-page">
-        <section class="content-section content-intro">
-            <h1>Imprint</h1>
-            <p class="content-lede">
-                This site, the Open Home Foundation Device Database, is operated by the Open Home
-                Foundation, the non-profit stewards of Home Assistant, ESPHome, Music Assistant, and
-                friends.
-            </p>
-        </section>
+	<div class="container-narrow content-page">
+		<section class="content-section content-intro">
+			<h1>Imprint</h1>
+			<p class="content-lede">
+				This site, the Open Home Foundation Device Database, is operated by the
+				Open Home Foundation, the non-profit stewards of Home Assistant,
+				ESPHome, Music Assistant, and friends.
+			</p>
+		</section>
 
-        <section class="content-section">
-            <h2>Operator</h2>
-            <p class="content-prose">
-                Open Home Foundation<br />
-                Grabenstrasse 25<br />
-                6340 Baar<br />
-                Switzerland<br />
-                CHE-416.988.952
-            </p>
-        </section>
+		<section class="content-section">
+			<h2>Operator</h2>
+			<p class="content-prose">
+				Open Home Foundation<br />
+				Grabenstrasse 25<br />
+				6340 Baar<br />
+				Switzerland<br />
+				CHE-416.988.952
+			</p>
+		</section>
 
-        <section class="content-section">
-            <h2>Contact</h2>
-            <p class="content-prose">
-                <a href="mailto:hello@openhomefoundation.org">hello@openhomefoundation.org</a>
-            </p>
-            <p class="content-prose">
-                <a href="tel:+41412444123">+41 041 244 41 23</a>
-            </p>
-        </section>
-    </div>
+		<section class="content-section">
+			<h2>Contact</h2>
+			<p class="content-prose">
+				<a href="mailto:hello@openhomefoundation.org"
+					>hello@openhomefoundation.org</a
+				>
+			</p>
+			<p class="content-prose">
+				<a href="tel:+41412444123">+41 041 244 41 23</a>
+			</p>
+		</section>
+	</div>
 </Layout>

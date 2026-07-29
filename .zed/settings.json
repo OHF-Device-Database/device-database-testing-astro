@@ -1,0 +1,35 @@
+{
+	"languages": {
+		"JavaScript": {
+			"formatter": "prettier",
+			"code_actions_on_format": {
+				"source.fixAll.eslint": true,
+			},
+		},
+		"TypeScript": {
+			"formatter": "prettier",
+			"code_actions_on_format": {
+				"source.fixAll.eslint": true,
+			},
+		},
+		"TSX": {
+			"formatter": "prettier",
+			"code_actions_on_format": {
+				"source.fixAll.eslint": true,
+			},
+		},
+		"CSS": {
+			"formatter": "prettier",
+		},
+		"Astro": {
+			"formatter": "prettier",
+			"code_actions_on_format": {
+				"source.fixAll.eslint": true,
+			},
+		},
+		"HTML": {
+			"formatter": "prettier",
+		},
+	},
+	"language_servers": ["eslint", "vtsls", "codebook", "!biome"],
+}

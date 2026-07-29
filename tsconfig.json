@@ -1,10 +1,10 @@
 {
-  "extends": "astro/tsconfigs/strict",
-  "compilerOptions": {
-    "moduleResolution": "bundler",
-    "experimentalDecorators": true,
-    "useDefineForClassFields": false
-  },
-  "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["dist"]
+	"extends": "astro/tsconfigs/strictest",
+	"compilerOptions": {
+		"moduleResolution": "bundler",
+		"experimentalDecorators": true,
+		"useDefineForClassFields": false,
+	},
+	"include": [".astro/types.d.ts", "src/**/*"],
+	"exclude": ["dist"],
 }

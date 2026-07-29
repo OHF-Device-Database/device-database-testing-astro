@@ -1,11 +1,13 @@
 ---
-import { icon } from "../lib/icons";
-import { LOGO_SVG } from "../lib/logo";
 import SearchBox from "./SearchBox.astro";
 
+import { LOGO_SVG } from "../utilities/logo";
+import { generic, render } from "../utilities/presentation";
+import { PresentationRenderPresetRoleIcon } from "../utilities/presentation/preset";
+
 interface Props {
-    page: string;
-    back?: string;
+	page: string;
+	back?: string | undefined;
 }
 
 const { page } = Astro.props;
@@ -13,77 +15,87 @@ const showSearch = page !== "home";
 ---
 
 <div class="preview-banner">
-    <div class="container preview-banner-inner">
-        <p class="preview-banner-text">
-            You are viewing a preview edition of the Device Database. Data may be incomplete
-            or change at any time.
-            <a
-                href="https://github.com/OHF-Device-Database"
-                target="_blank"
-                rel="noopener noreferrer">Learn more</a
-            >
-        </p>
-        <button
-            type="button"
-            class="preview-banner-close"
-            aria-label="Dismiss preview notice"
-            data-preview-banner-close
-        >
-            <Fragment set:html={icon("x", 16)} />
-        </button>
-    </div>
+	<div class="container preview-banner-inner">
+		<p class="preview-banner-text">
+			You are viewing a preview edition of the Device Database. Data may be
+			incomplete or change at any time.
+			<a
+				href="https://github.com/OHF-Device-Database"
+				target="_blank"
+				rel="noopener noreferrer">Learn more</a
+			>
+		</p>
+		<button
+			type="button"
+			class="preview-banner-close"
+			aria-label="Dismiss preview notice"
+			data-preview-banner-close
+		>
+			<Fragment
+				set:html={render(generic("x"), PresentationRenderPresetRoleIcon)}
+			/>
+		</button>
+	</div>
 </div>
 
 <header class="appnav" data-appnav>
-    <div class="container appnav-inner">
-        <div class="appnav-left">
-            <a
-                href="/"
-                class="brand"
-                aria-label="Device Database, home"
-                set:html={LOGO_SVG}
-            />
-        </div>
-        {showSearch ? <SearchBox size="header" /> : <div class="appnav-search-empty"></div>}
-        <div class="appnav-right">
-            <a
-                class="preview-badge"
-                href="https://github.com/OHF-Device-Database"
-                target="_blank"
-                rel="noopener noreferrer"
-            >
-                <span>Preview Edition</span>
-            </a>
-        </div>
-    </div>
+	<div class="container appnav-inner">
+		<div class="appnav-left">
+			<a
+				href="/"
+				class="brand"
+				aria-label="Device Database, home"
+				set:html={LOGO_SVG}
+			/>
+		</div>
+		{
+			showSearch ? (
+				<SearchBox size="header" />
+			) : (
+				<div class="appnav-search-empty" />
+			)
+		}
+		<div class="appnav-right">
+			<a
+				class="preview-badge"
+				href="https://github.com/OHF-Device-Database"
+				target="_blank"
+				rel="noopener noreferrer"
+			>
+				<span>Preview Edition</span>
+			</a>
+		</div>
+	</div>
 </header>
 
 <script>
-    const sync = () => {
-        const nav = document.querySelector("[data-appnav]");
-        if (nav) nav.classList.toggle("is-scrolled", window.scrollY > 0);
-    };
+	const sync = () => {
+		const nav = document.querySelector("[data-appnav]");
+		if (nav) nav.classList.toggle("is-scrolled", window.scrollY > 0);
+	};
 
-    let bound = false;
-    const bind = () => {
-        if (bound) return;
-        bound = true;
-        sync();
-        window.addEventListener("scroll", sync, { passive: true });
-    };
+	let bound = false;
+	const bind = () => {
+		if (bound) return;
+		bound = true;
+		sync();
+		window.addEventListener("scroll", sync, { passive: true });
+	};
 
-    const bindBanner = () => {
-        document
-            .querySelector<HTMLButtonElement>("[data-preview-banner-close]")
-            ?.addEventListener("click", () => {
-                (
-                    window as unknown as { DemoState?: { dismissPreviewBanner?: () => void } }
-                ).DemoState?.dismissPreviewBanner?.();
-            });
-    };
+	const bindBanner = () => {
+		document
+			.querySelector<HTMLButtonElement>("[data-preview-banner-close]")
+			?.addEventListener("click", () => {
+				(
+					window as unknown as {
+						DemoState?: { dismissPreviewBanner?: () => void };
+					}
+				).DemoState?.dismissPreviewBanner?.();
+			});
+	};
 
-    document.addEventListener("astro:page-load", () => {
-        bind();
-        bindBanner();
-    });
+	document.addEventListener("astro:page-load", () => {
+		bind();
+		bindBanner();
+	});
 </script>
