@@ -19,10 +19,7 @@
 	"dependencies": {
 		"@astrojs/netlify": "^7.0.13",
 		"@eslint-community/eslint-plugin-eslint-comments": "^4.7.2",
-		"@mdi/js": "^7.4.47",
 		"astro": "^6.4.4",
-		"dev": "^0.1.5",
-		"eslint-plugin-lit": "^2.3.1",
 		"lit": "^3.3.2",
 		"lucide": "^1.17.0"
 	},
@@ -38,6 +35,7 @@
 		"prettier-plugin-astro": "^0.14.1",
 		"typescript": "^6.0.3",
 		"typescript-eslint": "^8.65.0",
-		"vitest": "^3"
+		"vitest": "^3",
+		"eslint-plugin-lit": "^2.3.1"
 	}
 }
