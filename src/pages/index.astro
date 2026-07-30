@@ -1,32 +1,35 @@
 ---
-import Layout from "../layouts/Layout.astro";
 import SearchBox from "../components/SearchBox.astro";
-import { fetchDeviceCount } from "../lib/api";
-import { CACHE_POLICY, applyCdnCache } from "../lib/cache";
+import Layout from "../layouts/Layout.astro";
 
-// Server-rendered so the device count reflects the runtime API_AUTHORITY
-// instead of whatever was available when the image was built.
+import { getDeviceCount } from "../io/device";
+import { cachePolicy } from "../utilities/cache";
+
 export const prerender = false;
 
-Astro.cache.set({ maxAge: CACHE_POLICY.home.maxAge, swr: CACHE_POLICY.home.swr, tags: ["devices"] });
-applyCdnCache(Astro.response.headers, CACHE_POLICY.home);
+const { total, caching } = await getDeviceCount();
 
-const total = await fetchDeviceCount();
+Astro.cache.set({
+	...cachePolicy(caching),
+	tags: ["device-count"],
+});
 ---
 
 <Layout page="home">
-    <div class="home-screen">
-        <section class="hero">
-            <div class="container hero-center">
-                <h1>Find the right device for your smart home</h1>
-                <p class="hero-lede">Real-world data from millions of Home Assistant installations</p>
-                <div class="hero-search-wrap">
-                    <SearchBox size="hero" placeholder="Search" />
-                </div>
-                <div class="hero-actions">
-                    <a href="/browse">Browse all {total} devices →</a>
-                </div>
-            </div>
-        </section>
-    </div>
+	<div class="home-screen">
+		<section class="hero">
+			<div class="container hero-center">
+				<h1>Find the right device for your smart home</h1>
+				<p class="hero-lede">
+					Real-world data from millions of Home Assistant installations
+				</p>
+				<div class="hero-search-wrap">
+					<SearchBox size="hero" placeholder="Search" />
+				</div>
+				<div class="hero-actions">
+					<a href="/browse">Browse all {total} devices →</a>
+				</div>
+			</div>
+		</section>
+	</div>
 </Layout>

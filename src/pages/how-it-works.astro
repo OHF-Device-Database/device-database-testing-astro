@@ -1,117 +1,124 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import { CACHE_POLICY, applyCdnCache } from "../lib/cache";
-import { icon } from "../lib/icons";
 
-// Server-rendered so the NOINDEX robots meta reflects the runtime environment
-// instead of being baked in at build time. The content is effectively static,
-// so it is cached at the origin and the CDN edge.
-export const prerender = false;
+import { generic, render } from "../utilities/presentation";
+import { PresentationRenderPresetRoleIcon } from "../utilities/presentation/preset";
 
-Astro.cache.set({ maxAge: CACHE_POLICY.static.maxAge, swr: CACHE_POLICY.static.swr });
-applyCdnCache(Astro.response.headers, CACHE_POLICY.static);
-
-const ext = icon("open", 13);
+const ext = render(
+	generic("open"),
+	PresentationRenderPresetRoleIcon.withSize(14),
+);
 ---
 
 <Layout page="page" title="How it works">
-    <div class="content-page">
-        <section class="content-section content-intro">
-            <div class="container-narrow">
-                <div class="content-eyebrow">About</div>
-                <h1>How it works</h1>
-                <p class="content-lede">
-                    Manufacturer specs say what a device <strong>should</strong> do. The Device Database tracks
-                    what it <strong>actually</strong> does, built from anonymized real-world data shared by the
-                    community.
-                </p>
-            </div>
-        </section>
+	<div class="content-page">
+		<section class="content-section content-intro">
+			<div class="container-narrow">
+				<div class="content-eyebrow">About</div>
+				<h1>How it works</h1>
+				<p class="content-lede">
+					Manufacturer specs say what a device <strong>should</strong> do. The Device
+					Database tracks what it <strong>actually</strong> does, built from anonymized
+					real-world data shared by the community.
+				</p>
+			</div>
+		</section>
 
-        <section class="content-section">
-            <div class="container-narrow">
-                <div class="steps">
-                    <div class="step">
-                        <div class="step-num">1</div>
-                        <h3>Community shares anonymized data</h3>
-                        <p>
-                            Home Assistant users opt in to share what devices they run and how those devices
-                            behave. No personal data, no identifiers, no addresses.
-                            <a
-                                class="content-link"
-                                href="https://www.home-assistant.io/blog/2026/02/02/about-device-database/#now-its-over-to-you"
-                                target="_blank"
-                                rel="noopener">Opt in today.<span set:html={ext} /></a>
-                        </p>
-                    </div>
-                    <div class="step">
-                        <div class="step-num">2</div>
-                        <h3>The database aggregates and verifies</h3>
-                        <p>
-                            Submissions are validated, then aggregated. A device only appears once enough
-                            independent contributions have been received.
-                        </p>
-                    </div>
-                    <div class="step">
-                        <div class="step-num">3</div>
-                        <h3>Anyone can look it up, no account needed</h3>
-                        <p>
-                            You don't have to use Home Assistant to benefit. The Device Database is free, open, and
-                            built to help you make more informed decisions.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </section>
+		<section class="content-section">
+			<div class="container-narrow">
+				<div class="steps">
+					<div class="step">
+						<div class="step-num">1</div>
+						<h3>Community shares anonymized data</h3>
+						<p>
+							Home Assistant users opt in to share what devices they run and how
+							those devices behave. No personal data, no identifiers, no
+							addresses.
+							<a
+								class="content-link"
+								href="https://www.home-assistant.io/blog/2026/02/02/about-device-database/#now-its-over-to-you"
+								target="_blank"
+								rel="noopener">Opt in today.<span set:html={ext} /></a
+							>
+						</p>
+					</div>
+					<div class="step">
+						<div class="step-num">2</div>
+						<h3>The database aggregates and verifies</h3>
+						<p>
+							Submissions are validated, then aggregated. A device only appears
+							once enough independent contributions have been received.
+						</p>
+					</div>
+					<div class="step">
+						<div class="step-num">3</div>
+						<h3>Anyone can look it up, no account needed</h3>
+						<p>
+							You don't have to use Home Assistant to benefit. The Device
+							Database is free, open, and built to help you make more informed
+							decisions.
+						</p>
+					</div>
+				</div>
+			</div>
+		</section>
 
-        <section class="content-section">
-            <div class="container-narrow">
-                <h2>What's in an entry</h2>
-                <p class="content-prose">
-                    Each device page aims to answer the questions that matter most when choosing a device,
-                    including compatibility, whether it requires an internet connection, which Home Assistant
-                    integration controls it, and what others have actually experienced running it, good or bad.
-                </p>
-                <p class="content-prose">
-                    Where a claim is unverified, the entry says so explicitly. Where the device works one way on
-                    one firmware and a different way on another, both are noted. The goal is editorial neutrality
-                    and source-backed precision, not marketing copy.
-                </p>
-            </div>
-        </section>
+		<section class="content-section">
+			<div class="container-narrow">
+				<h2>What's in an entry</h2>
+				<p class="content-prose">
+					Each device page aims to answer the questions that matter most when
+					choosing a device, including compatibility, whether it requires an
+					internet connection, which Home Assistant integration controls it, and
+					what others have actually experienced running it, good or bad.
+				</p>
+				<p class="content-prose">
+					Where a claim is unverified, the entry says so explicitly. Where the
+					device works one way on one firmware and a different way on another,
+					both are noted. The goal is editorial neutrality and source-backed
+					precision, not marketing copy.
+				</p>
+			</div>
+		</section>
 
-        <section class="content-section">
-            <div class="container-narrow">
-                <h2>How to contribute</h2>
-                <p class="content-prose">
-                    For now, the best way to contribute is to
-                    <a
-                        class="content-link"
-                        href="https://www.home-assistant.io/blog/2026/02/02/about-device-database/#now-its-over-to-you"
-                        target="_blank"
-                        rel="noopener">opt in to Device Analytics in Home Assistant<span set:html={ext} /></a>. Every
-                    submission helps grow the database and improve the data available to everyone.
-                </p>
-                <p class="content-prose">
-                    Direct contributions to device pages, such as adding context, correcting details, or sharing
-                    first-hand experience, are on our
-                    <a
-                        class="content-link"
-                        href="https://github.com/orgs/OpenHomeFoundation/projects/8/views/1"
-                        target="_blank"
-                        rel="noopener">roadmap<span set:html={ext} /></a>. We're starting light: the immediate focus
-                    is making the device data collected so far accessible and useful to everyone through the
-                    Preview edition of this website.
-                </p>
-                <p class="content-prose">
-                    <a
-                        class="content-link"
-                        href="https://github.com/orgs/OHF-Device-Database/discussions"
-                        target="_blank"
-                        rel="noopener">Join the community discussion<span set:html={ext} /></a> and help shape the
-                    future of the Device Database.
-                </p>
-            </div>
-        </section>
-    </div>
+		<section class="content-section">
+			<div class="container-narrow">
+				<h2>How to contribute</h2>
+				<p class="content-prose">
+					For now, the best way to contribute is to
+					<a
+						class="content-link"
+						href="https://www.home-assistant.io/blog/2026/02/02/about-device-database/#now-its-over-to-you"
+						target="_blank"
+						rel="noopener"
+						>opt in to Device Analytics in Home Assistant<span
+							set:html={ext}
+						/></a
+					>. Every submission helps grow the database and improve the data
+					available to everyone.
+				</p>
+				<p class="content-prose">
+					Direct contributions to device pages, such as adding context,
+					correcting details, or sharing first-hand experience, are on our
+					<a
+						class="content-link"
+						href="https://github.com/orgs/OpenHomeFoundation/projects/8/views/1"
+						target="_blank"
+						rel="noopener">roadmap<span set:html={ext} /></a
+					>. We're starting light: the immediate focus is making the device data
+					collected so far accessible and useful to everyone through the Preview
+					edition of this website.
+				</p>
+				<p class="content-prose">
+					<a
+						class="content-link"
+						href="https://github.com/orgs/OHF-Device-Database/discussions"
+						target="_blank"
+						rel="noopener"
+						>Join the community discussion<span set:html={ext} /></a
+					> and help shape the future of the Device Database.
+				</p>
+			</div>
+		</section>
+	</div>
 </Layout>

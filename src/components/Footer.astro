@@ -1,29 +1,31 @@
 ---
-import ohfLogoLight from "../assets/ohf-logo-light.svg?raw";
 import ohfLogoDark from "../assets/ohf-logo-dark.svg?raw";
+import ohfLogoLight from "../assets/ohf-logo-light.svg?raw";
 
 interface Props {
-    flush?: boolean;
+	flush?: boolean;
 }
 
 const { flush = false } = Astro.props;
 ---
 
 <footer class={"appfoot" + (flush ? " appfoot-flush" : "")}>
-    <div class="container appfoot-row">
-        <ul class="appfoot-links">
-            <li><a href="/browse">Browse</a></li>
-            <li><a href="/how-it-works">How it works</a></li>
-            <li><a href="/editorial-stance">Editorial stance</a></li>
-            <li><a href="/about">About</a></li>
-            <li><a href="https://www.openhomefoundation.org/">Open Home Foundation</a></li>
-        </ul>
-        <span class="appfoot-legal-inline">
-            <span class="appfoot-ohf-logo" aria-hidden="true">
-                <span class="ohf-logo-light" set:html={ohfLogoLight} />
-                <span class="ohf-logo-dark" set:html={ohfLogoDark} />
-            </span>
-            © 2026 Open Home Foundation · <a href="/imprint">Imprint</a>
-        </span>
-    </div>
+	<div class="container appfoot-row">
+		<ul class="appfoot-links">
+			<li><a href="/browse">Browse</a></li>
+			<li><a href="/how-it-works">How it works</a></li>
+			<li><a href="/editorial-stance">Editorial stance</a></li>
+			<li><a href="/about">About</a></li>
+			<li>
+				<a href="https://www.openhomefoundation.org/">Open Home Foundation</a>
+			</li>
+		</ul>
+		<span class="appfoot-legal-inline">
+			<span class="appfoot-ohf-logo" aria-hidden="true">
+				<span class="ohf-logo-light" set:html={ohfLogoLight} />
+				<span class="ohf-logo-dark" set:html={ohfLogoDark} />
+			</span>
+			© 2026 Open Home Foundation · <a href="/imprint">Imprint</a>
+		</span>
+	</div>
 </footer>

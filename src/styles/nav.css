@@ -1,165 +1,165 @@
 .appnav {
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  height: 72px;
-  background: var(--nav-bg);
-  border-bottom: 1px solid transparent;
-  transition: border-color 0.15s ease;
+	position: sticky;
+	top: 0;
+	z-index: 20;
+	height: 72px;
+	background: var(--nav-bg);
+	border-bottom: 1px solid transparent;
+	transition: border-color 0.15s ease;
 }
 .appnav.is-scrolled {
-  border-bottom-color: var(--border);
+	border-bottom-color: var(--border);
 }
 .appnav-inner {
-  height: 100%;
-  display: grid;
-  grid-template-columns: minmax(180px, 260px) minmax(0, 1fr) minmax(0, 1fr);
-  align-items: center;
-  gap: var(--space-5);
+	height: 100%;
+	display: grid;
+	grid-template-columns: minmax(180px, 260px) minmax(0, 1fr) minmax(0, 1fr);
+	align-items: center;
+	gap: var(--space-5);
 }
 .appnav-left {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  gap: 0;
-  min-height: 32px;
+	display: flex;
+	justify-content: flex-start;
+	align-items: center;
+	gap: 0;
+	min-height: 32px;
 }
 .appnav-right {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
 }
 .appnav .searchbox-header {
-  justify-self: center;
-  width: min(560px, 100%);
-  max-width: 100%;
+	justify-self: center;
+	width: min(560px, 100%);
+	max-width: 100%;
 }
 .brand {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-3);
-  color: var(--fg);
-  font-family: var(--font-display);
-  font-weight: 600;
-  text-decoration: none;
-  -webkit-user-select: none;
-  user-select: none;
-  -webkit-touch-callout: none;
-  touch-action: manipulation;
+	display: inline-flex;
+	align-items: center;
+	gap: var(--space-3);
+	color: var(--fg);
+	font-family: var(--font-display);
+	font-weight: 600;
+	text-decoration: none;
+	-webkit-user-select: none;
+	user-select: none;
+	-webkit-touch-callout: none;
+	touch-action: manipulation;
 }
 .brand:hover {
-  text-decoration: none;
-  color: var(--fg);
+	text-decoration: none;
+	color: var(--fg);
 }
 .brand-logo {
-  display: block;
-  height: 32px;
-  width: auto;
-  color: var(--fg);
+	display: block;
+	height: 32px;
+	width: auto;
+	color: var(--fg);
 }
 .preview-badge {
-  display: none;
-  align-items: center;
-  padding: 7px 16px;
-  border: 1px solid var(--fg);
-  border-radius: var(--radius-pill);
-  background: var(--fg);
-  font-family: var(--font-sans);
-  font-size: var(--fs-14);
-  font-weight: var(--fw-semibold);
-  line-height: 1;
-  white-space: nowrap;
-  text-decoration: none;
-  transition: opacity 0.15s ease;
+	display: none;
+	align-items: center;
+	padding: 7px 16px;
+	border: 1px solid var(--fg);
+	border-radius: var(--radius-pill);
+	background: var(--fg);
+	font-family: var(--font-sans);
+	font-size: var(--fs-14);
+	font-weight: var(--fw-semibold);
+	line-height: 1;
+	white-space: nowrap;
+	text-decoration: none;
+	transition: opacity 0.15s ease;
 }
 html[data-preview-banner="off"] .preview-badge {
-  display: inline-flex;
+	display: inline-flex;
 }
 .preview-badge,
 .preview-badge:visited,
 .preview-badge:hover {
-  color: var(--fg-on-primary);
+	color: var(--fg-on-primary);
 }
 .preview-badge:hover {
-  opacity: 0.85;
-  text-decoration: none;
+	opacity: 0.85;
+	text-decoration: none;
 }
 .preview-banner {
-  background: var(--fg);
-  color: var(--fg-on-primary);
+	background: var(--fg);
+	color: var(--fg-on-primary);
 }
 html[data-preview-banner="off"] .preview-banner {
-  display: none;
+	display: none;
 }
 .preview-banner-inner {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-  padding-top: var(--space-3);
-  padding-bottom: var(--space-3);
+	display: flex;
+	align-items: center;
+	gap: var(--space-4);
+	padding-top: var(--space-3);
+	padding-bottom: var(--space-3);
 }
 .preview-banner-text {
-  margin: 0;
-  font-size: var(--fs-13);
-  line-height: 1.45;
+	margin: 0;
+	font-size: var(--fs-13);
+	line-height: 1.45;
 }
 .preview-banner-text a {
-  color: inherit;
-  font-weight: var(--fw-medium);
-  text-decoration: underline;
-  text-underline-offset: 2px;
+	color: inherit;
+	font-weight: var(--fw-medium);
+	text-decoration: underline;
+	text-underline-offset: 2px;
 }
 .preview-banner-close {
-  flex-shrink: 0;
-  margin-left: auto;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  padding: 0;
-  border: 0;
-  border-radius: var(--radius-pill);
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
-  opacity: 0.8;
+	flex-shrink: 0;
+	margin-left: auto;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	padding: 0;
+	border: 0;
+	border-radius: var(--radius-pill);
+	background: transparent;
+	color: inherit;
+	cursor: pointer;
+	opacity: 0.8;
 }
 .preview-banner-close:hover {
-  opacity: 1;
-  background: color-mix(in srgb, currentColor 14%, transparent);
+	opacity: 1;
+	background: color-mix(in srgb, currentColor 14%, transparent);
 }
 @media (max-width: 899px) {
-  .appnav {
-    height: auto;
-  }
-  .appnav-inner {
-    grid-template-columns: 1fr auto;
-    grid-template-areas:
-      "logo badge"
-      "search search";
-    align-items: center;
-    gap: var(--space-3);
-    /* Only add vertical room — keep .container's left/right padding so the logo and
+	.appnav {
+		height: auto;
+	}
+	.appnav-inner {
+		grid-template-columns: 1fr auto;
+		grid-template-areas:
+			"logo badge"
+			"search search";
+		align-items: center;
+		gap: var(--space-3);
+		/* Only add vertical room — keep .container's left/right padding so the logo and
        search aren't flush against the screen edges. */
-    padding-top: var(--space-3);
-    padding-bottom: var(--space-3);
-  }
-  .appnav-left {
-    grid-area: logo;
-  }
-  .appnav-right {
-    grid-area: badge;
-  }
-  .appnav-inner > device-search {
-    grid-area: search;
-  }
-  .appnav-search-empty {
-    display: none;
-  }
-  .appnav .searchbox-header {
-    width: 100%;
-    max-width: none;
-    justify-self: stretch;
-  }
+		padding-top: var(--space-3);
+		padding-bottom: var(--space-3);
+	}
+	.appnav-left {
+		grid-area: logo;
+	}
+	.appnav-right {
+		grid-area: badge;
+	}
+	.appnav-inner > device-search {
+		grid-area: search;
+	}
+	.appnav-search-empty {
+		display: none;
+	}
+	.appnav .searchbox-header {
+		width: 100%;
+		max-width: none;
+		justify-self: stretch;
+	}
 }

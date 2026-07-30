@@ -1,28 +1,61 @@
 ---
-import { CATEGORY_LABEL } from "../lib/categories";
-import type { Device } from "../lib/device";
-import { connectivityDisplay } from "../lib/device";
-import { categoryGlyph } from "../lib/icons";
+import { Unknown } from "../types/unknown";
+import * as presentation from "../utilities/presentation";
+import { PresentationRenderPresetRoleGlyph } from "../utilities/presentation/preset";
+import type { DevicePoly } from "../types/device";
 
 interface Props {
-    device: Device;
+	device: DevicePoly;
 }
 
 const { device } = Astro.props;
-const connectivity = connectivityDisplay(device);
+
+const presentedConnectivity = presentation.device.connectivity(
+	device.connectivity,
+);
+const presentedCategories =
+	device.categories?.map((c) => presentation.device.category(c)) ?? [];
+
+let name: string;
+if (
+	typeof device.model !== "undefined" &&
+	typeof device.modelId !== "undefined"
+) {
+	name = `${device.model} / ${device.modelId}`;
+} else if (
+	typeof device.model !== "undefined" &&
+	typeof device.modelId === "undefined"
+) {
+	name = `${device.model}`;
+} else {
+	name = `${device.modelId}`;
+}
 ---
 
 <a class="device-row" href={`/device/${device.id}`}>
-    <div class="device-thumb" set:html={categoryGlyph(device.category, 36)}></div>
-    <div class="device-row-body">
-        <div class="device-category">{CATEGORY_LABEL[device.category] ?? device.category}</div>
-        <div class="device-name">{device.name}</div>
-        <div class="device-manu">{device.manufacturer}</div>
-        <div>
-            <span class={"local-indicator " + connectivity.cls}>
-                <span class="dot"></span>
-                {connectivity.label}
-            </span>
-        </div>
-    </div>
+	<div
+		class="device-thumb"
+		set:html={presentation.render(
+			presentation.device.category(device.categories?.at(0) ?? Unknown),
+			PresentationRenderPresetRoleGlyph,
+		)}
+	/>
+	<div class="device-row-body">
+		<div>
+			{
+				presentedCategories.length > 0 &&
+					presentedCategories.map((c) => (
+						<div class="device-category">{c.label}</div>
+					))
+			}
+		</div>
+		<div class="device-name">{name}</div>
+		<div class="device-manufacturer">{device.manufacturer}</div>
+		<div>
+			<span class={"local-indicator " + presentedConnectivity.cls}>
+				<span class="dot"></span>
+				{presentedConnectivity.label}
+			</span>
+		</div>
+	</div>
 </a>

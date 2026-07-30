@@ -1,148 +1,170 @@
 ---
-import { ClientRouter } from "astro:transitions";
 import { NOINDEX } from "astro:env/server";
-import Nav from "../components/Nav.astro";
+import { ClientRouter } from "astro:transitions";
+
 import Footer from "../components/Footer.astro";
+import Nav from "../components/Nav.astro";
+
 import globalCss from "../styles/global.css?url";
 
 interface Props {
-    title?: string;
-    page?: "home" | "browse" | "detail" | "page";
-    back?: string;
+	title?: string;
+	page?: "home" | "browse" | "detail" | "page";
+	back?: string;
 }
 
 const { title, page = "page", back } = Astro.props;
 ---
 
 <html lang="en" transition:animate="none">
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <meta name="generator" content={Astro.generator} />
-        <meta name="theme-color" content="#2a2a27" />
-        {NOINDEX && <meta name="robots" content="noindex, nofollow" />}
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1" />
+		<meta name="generator" content={Astro.generator} />
+		<meta name="theme-color" content="#2a2a27" />
+		{NOINDEX && <meta name="robots" content="noindex, nofollow" />}
 
-        <script is:inline>
-            (function () {
-                var KEY = "devicedb.demoState.v1";
-                function read() {
-                    try {
-                        return JSON.parse(localStorage.getItem(KEY)) || {};
-                    } catch (e) {
-                        return {};
-                    }
-                }
-                function resolve(pref) {
-                    if (pref === "light" || pref === "dark") return pref;
-                    return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
-                        ? "dark"
-                        : "light";
-                }
-                function apply(state) {
-                    document.documentElement.setAttribute("data-resolved-theme", resolve(state.theme));
-                    document.documentElement.setAttribute("data-view", state.view === "grid" ? "grid" : "list");
-                    document.documentElement.setAttribute(
-                        "data-preview-banner",
-                        state.previewBanner === "off" ? "off" : "on",
-                    );
-                }
-                var state = read();
-                apply(state);
-                document.addEventListener("astro:after-swap", function () {
-                    apply(read());
-                });
-                window.DemoState = {
-                    getTheme: function () {
-                        return read().theme || "auto";
-                    },
-                    setTheme: function (theme) {
-                        var s = read();
-                        s.theme = theme;
-                        try {
-                            localStorage.setItem(KEY, JSON.stringify(s));
-                        } catch (e) {}
-                        apply(s);
-                        window.dispatchEvent(new CustomEvent("devicedb:demostate", { detail: s }));
-                    },
-                    getView: function () {
-                        return read().view === "grid" ? "grid" : "list";
-                    },
-                    dismissPreviewBanner: function () {
-                        var s = read();
-                        s.previewBanner = "off";
-                        try {
-                            localStorage.setItem(KEY, JSON.stringify(s));
-                        } catch (e) {}
-                        apply(s);
-                    },
-                    setView: function (view) {
-                        var s = read();
-                        s.view = view === "grid" ? "grid" : "list";
-                        try {
-                            localStorage.setItem(KEY, JSON.stringify(s));
-                        } catch (e) {}
-                        apply(s);
-                        window.dispatchEvent(new CustomEvent("devicedb:demostate", { detail: s }));
-                    },
-                };
-                if (window.matchMedia) {
-                    var mql = window.matchMedia("(prefers-color-scheme: dark)");
-                    var onChange = function () {
-                        var s = read();
-                        if (!s.theme || s.theme === "auto") apply(s);
-                    };
-                    if (mql.addEventListener) mql.addEventListener("change", onChange);
-                    else if (mql.addListener) mql.addListener(onChange);
-                }
-            })();
-        </script>
+		<script is:inline>
+			(function () {
+				var KEY = "device-database.demoState.v1";
+				function read() {
+					try {
+						return JSON.parse(localStorage.getItem(KEY)) || {};
+					} catch (e) {
+						return {};
+					}
+				}
+				function resolve(pref) {
+					if (pref === "light" || pref === "dark") return pref;
+					return window.matchMedia &&
+						window.matchMedia("(prefers-color-scheme: dark)").matches
+						? "dark"
+						: "light";
+				}
+				function apply(state) {
+					document.documentElement.setAttribute(
+						"data-resolved-theme",
+						resolve(state.theme),
+					);
+					document.documentElement.setAttribute(
+						"data-view",
+						state.view === "grid" ? "grid" : "list",
+					);
+					document.documentElement.setAttribute(
+						"data-preview-banner",
+						state.previewBanner === "off" ? "off" : "on",
+					);
+				}
+				var state = read();
+				apply(state);
+				document.addEventListener("astro:after-swap", function () {
+					apply(read());
+				});
+				window.DemoState = {
+					getTheme: function () {
+						return read().theme || "auto";
+					},
+					setTheme: function (theme) {
+						var s = read();
+						s.theme = theme;
+						try {
+							localStorage.setItem(KEY, JSON.stringify(s));
+						} catch (e) {}
+						apply(s);
+						window.dispatchEvent(
+							new CustomEvent("device-database:demostate", { detail: s }),
+						);
+					},
+					getView: function () {
+						return read().view === "grid" ? "grid" : "list";
+					},
+					dismissPreviewBanner: function () {
+						var s = read();
+						s.previewBanner = "off";
+						try {
+							localStorage.setItem(KEY, JSON.stringify(s));
+						} catch (e) {}
+						apply(s);
+					},
+					setView: function (view) {
+						var s = read();
+						s.view = view === "grid" ? "grid" : "list";
+						try {
+							localStorage.setItem(KEY, JSON.stringify(s));
+						} catch (e) {}
+						apply(s);
+						window.dispatchEvent(
+							new CustomEvent("device-database:demostate", { detail: s }),
+						);
+					},
+				};
+				if (window.matchMedia) {
+					var mql = window.matchMedia("(prefers-color-scheme: dark)");
+					var onChange = function () {
+						var s = read();
+						if (!s.theme || s.theme === "auto") apply(s);
+					};
+					if (mql.addEventListener) mql.addEventListener("change", onChange);
+					else if (mql.addListener) mql.addListener(onChange);
+				}
+			})();
+		</script>
 
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-        <link
-            rel="stylesheet"
-            href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
-        />
-        <link rel="stylesheet" href={globalCss} transition:persist="app-styles" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			rel="stylesheet"
+			href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+		/>
+		<link rel="stylesheet" href={globalCss} transition:persist="app-styles" />
 
-        <slot name="head" />
-        <ClientRouter fallback="swap" />
-        <title>Device Database{typeof title !== "undefined" ? ` · ${title}` : ""}</title>
-    </head>
-    <body>
-        <div class="nav-loading-bar" aria-hidden="true" transition:persist="loading-bar"></div>
-        <div class="app-shell">
-            <Nav page={page} back={back} />
-            <main class="app-main">
-                <slot />
-            </main>
-            <Footer flush={page === "home"} />
-        </div>
-        <script is:inline>
-            (function () {
-                var bar = document.querySelector(".nav-loading-bar");
-                if (bar === null) {
-                  return;
-                }
+		<slot name="head" />
+		<ClientRouter fallback="swap" />
+		<title>
+			Device Database{typeof title !== "undefined" ? ` · ${title}` : ""}
+		</title>
+	</head>
+	<body>
+		<div
+			class="nav-loading-bar"
+			aria-hidden="true"
+			transition:persist="loading-bar"
+		>
+		</div>
+		<div class="app-shell">
+			<Nav page={page} back={back} />
+			<main class="app-main">
+				<slot />
+			</main>
+			<Footer flush={page === "home"} />
+		</div>
+		<script is:inline>
+			(function () {
+				var bar = document.querySelector(".nav-loading-bar");
+				if (bar === null) {
+					return;
+				}
 
-                document.addEventListener("astro:before-preparation", function () {
-                    var banner = document.querySelector(".preview-banner");
-                    var offset = banner ? Math.max(0, banner.getBoundingClientRect().bottom) : 0;
-                    bar.style.top = offset + "px";
-                    bar.classList.remove("is-done");
-                    // force reflow so the removal of "is-done" takes effect before adding "is-loading"
-                    // https://gist.github.com/paulirish/5d52fb081b3570c81e3a
-                    void bar.offsetWidth;
-                    bar.classList.add("is-loading");
-                });
-                document.addEventListener("astro:page-load", function () {
-                    bar.classList.remove("is-loading");
-                    bar.classList.add("is-done");
-                });
-            })();
-        </script>
-        <script>
-            import "../islands/client";
-        </script>
-    </body>
+				document.addEventListener("astro:before-preparation", function () {
+					var banner = document.querySelector(".preview-banner");
+					var offset = banner
+						? Math.max(0, banner.getBoundingClientRect().bottom)
+						: 0;
+					bar.style.top = offset + "px";
+					bar.classList.remove("is-done");
+					// force reflow so the removal of "is-done" takes effect before adding "is-loading"
+					// https://gist.github.com/paulirish/5d52fb081b3570c81e3a
+					void bar.offsetWidth;
+					bar.classList.add("is-loading");
+				});
+				document.addEventListener("astro:page-load", function () {
+					bar.classList.remove("is-loading");
+					bar.classList.add("is-done");
+				});
+			})();
+		</script>
+		<script>
+			import "../islands/client";
+		</script>
+	</body>
 </html>

@@ -1,0 +1,398 @@
+---
+import haLogo from "../../assets/ha-logo.svg?raw";
+
+import Layout from "../../layouts/Layout.astro";
+
+import { getDevice, getDeviceCount } from "../../io/device";
+import { deviceMonoMap } from "../../types/device";
+import { Unknown } from "../../types/unknown";
+import { cachePolicy } from "../../utilities/cache";
+import * as presentation from "../../utilities/presentation";
+import {
+	PresentationRenderPresetRoleGlyph,
+	PresentationRenderPresetRoleIcon,
+} from "../../utilities/presentation/preset";
+
+export const prerender = false;
+
+const { id } = Astro.params;
+const result = typeof id !== "undefined" ? await getDevice(id) : undefined;
+
+if (typeof result !== "undefined") {
+	Astro.cache.set({ ...cachePolicy(result.caching) });
+} else {
+	Astro.cache.set({ maxAge: 60 });
+	Astro.response.status = 404;
+}
+
+const total = await getDeviceCount();
+
+const formatDate = (date: Date): string =>
+	date.toLocaleDateString("en-US", {
+		day: "numeric",
+		month: "short",
+		year: "numeric",
+	});
+
+const view =
+	typeof result !== "undefined"
+		? (() => {
+				const device = deviceMonoMap(result.device);
+
+				const firstCategoryId = device.categories?.at(0);
+
+				let name: string;
+				if (
+					typeof device.model !== "undefined" &&
+					typeof device.modelId !== "undefined"
+				) {
+					name = `${device.model} / ${device.modelId}`;
+				} else if (
+					typeof device.model !== "undefined" &&
+					typeof device.modelId === "undefined"
+				) {
+					name = `${device.model}`;
+				} else {
+					name = `${device.modelId}`;
+				}
+
+				return {
+					device,
+					derived: {
+						name,
+						categories: {
+							first:
+								typeof firstCategoryId !== "undefined"
+									? {
+											id: firstCategoryId,
+											presented: presentation.device.category(firstCategoryId),
+										}
+									: undefined,
+						},
+						connectivity: {
+							presented: presentation.device.connectivity(device.connectivity),
+							explanation:
+								device.connectivity === "online"
+									? "This device requires an active internet connection to function. Setup, day-to-day control, or both rely on a manufacturer service. If the manufacturer's servers go offline or the product is discontinued, the device may stop working."
+									: device.connectivity === "offline"
+										? 'This device can be controlled locally on your home network. Keep in mind that "without the cloud" isn\'t always absolute: some devices may still need internet, a manufacturer account for setup, or the cloud for certain features.'
+										: "We don't yet have connectivity data for this device, so we can't say whether it depends on the manufacturer's cloud. This page will update as more reports come in.",
+						},
+						docsUrl: `https://www.home-assistant.io/integrations/${device.integration.domain}`,
+						firstEncountered: formatDate(device.firstEncountered),
+						versions: {
+							software: device.versions.software.toSorted(
+								(a, b) =>
+									a.firstEncountered.getTime() - b.firstEncountered.getTime(),
+							),
+							hardware: device.versions.hardware,
+						},
+					},
+				};
+			})()
+		: null;
+---
+
+{
+	view ? (
+		<Layout
+			page="detail"
+			back="/browse"
+			title={`${view.device.manufacturer} ${view.derived.name}`}
+		>
+			<div class="container detail-wrap">
+				<nav class="breadcrumb" aria-label="Breadcrumb">
+					<a href="/browse">Devices</a>
+					{typeof view.derived.categories.first?.id === "string" ? (
+						<>
+							<span class="sep">›</span>
+							<a href={`/browse?category=${view.derived.categories.first.id}`}>
+								{view.derived.categories.first.presented.label}
+							</a>
+						</>
+					) : (
+						<p />
+					)}
+				</nav>
+
+				<header class="detail-head">
+					<div
+						class="detail-image"
+						set:html={presentation.render(
+							presentation.device.category(
+								view.device.categories?.at(0) ?? Unknown,
+							),
+							PresentationRenderPresetRoleGlyph,
+						)}
+					/>
+					<div class="detail-title">
+						<h1>{view.derived.name}</h1>
+						<div class="detail-manu">
+							by{" "}
+							<a
+								href={`/browse?manufacturer=${encodeURIComponent(view.device.manufacturer)}`}
+							>
+								{view.device.manufacturer}
+							</a>
+						</div>
+						<div class="glance">
+							<span class="glance-key">Connectivity</span>
+							<span
+								class={
+									"local-indicator " + view.derived.connectivity.presented.cls
+								}
+							>
+								<span class="dot" />
+								{view.derived.connectivity.presented.label}
+							</span>
+							<span class="glance-key">Home Assistant Integration</span>
+							<span>{view.device.integration.name}</span>
+						</div>
+					</div>
+				</header>
+
+				<div class="detail-body">
+					<section class="detail-connectivity">
+						<figure class="detail-figure">
+							<div class="detail-figure-frame">
+								<div class="detail-connectivity connectivity-flush">
+									<span
+										class="detail-connectivity-dot"
+										style={`background: ${view.derived.connectivity.presented.color}`}
+									/>
+									<span class="detail-connectivity-text">
+										{view.derived.connectivity.presented.label}
+									</span>
+								</div>
+								<p class="detail-connectivity-body">
+									{view.derived.connectivity.explanation}
+								</p>
+							</div>
+						</figure>
+					</section>
+
+					<main class="article">
+						<section class="article-section ha-connect">
+							<span
+								class="ha-connect-logo"
+								aria-hidden="true"
+								set:html={haLogo}
+							/>
+							<h2>Connects with Home Assistant</h2>
+
+							<p>
+								Home Assistant is free software for running your smart home from
+								a single app. To add this device, open Home Assistant, go to
+								Settings &gt; Devices and services, and click Add integration.
+							</p>
+							<dl class="ha-meta">
+								<dt>Integration</dt>
+								<dd>{view.device.integration.name}</dd>
+								{view.device.entities.length > 0 && (
+									<>
+										<dt>Supported entities</dt>
+										<dd class="ha-entity-chips">
+											{view.device.entities.map((et) => (
+												<span class="ha-entity-chip mono">{et.domain}</span>
+											))}
+										</dd>
+									</>
+								)}
+							</dl>
+
+							<p class="ha-docs-link">
+								<a href={view.derived.docsUrl} target="_blank" rel="noopener">
+									Read the Home Assistant documentation{" "}
+									<span
+										set:html={presentation.render(
+											presentation.generic("open"),
+											PresentationRenderPresetRoleIcon,
+										)}
+									/>
+								</a>
+							</p>
+						</section>
+
+						<section class="article-section">
+							<h2>Specifications</h2>
+							<div class="spec-accordions">
+								<details class="spec-acc" open>
+									<summary class="spec-acc-summary">
+										<span>Ecosystems</span>
+										<span
+											class="spec-acc-chevron"
+											set:html={presentation.render(
+												presentation.generic("chevronDown"),
+												PresentationRenderPresetRoleIcon,
+											)}
+										/>
+									</summary>
+									<div class="spec-acc-body">
+										<dl class="spec-dl">
+											<div class="trait-row">
+												<dt>Connects with</dt>
+												<dd>
+													<span class="ha-chip">
+														<span
+															class="ha-chip-badge"
+															aria-hidden="true"
+															set:html={haLogo}
+														/>
+														Home Assistant
+													</span>
+												</dd>
+											</div>
+										</dl>
+									</div>
+								</details>
+
+								{view.derived.versions.software.length > 0 && (
+									<details class="spec-acc" open>
+										<summary class="spec-acc-summary">
+											<span>Software version</span>
+											<span
+												class="spec-acc-chevron"
+												set:html={presentation.render(
+													presentation.generic("chevronDown"),
+													PresentationRenderPresetRoleIcon,
+												)}
+											/>
+										</summary>
+										<div class="spec-acc-body">
+											<dl class="spec-dl">
+												<div class="trait-row">
+													<dt>Current</dt>
+													<dd class="spec-version-dd">
+														<span class="mono">
+															{view.derived.versions.software.at(0)?.version}
+														</span>
+														{view.derived.versions.software.length > 1 && (
+															<version-history
+																entries={JSON.stringify(
+																	view.device.versions.software.map((v) => ({
+																		version: v.version,
+																		installs: v.active,
+																		current:
+																			v.version ===
+																			view.derived.versions.software.at(0)
+																				?.version,
+																	})),
+																)}
+															/>
+														)}
+													</dd>
+												</div>
+											</dl>
+										</div>
+									</details>
+								)}
+
+								{view.derived.versions.hardware.length > 0 && (
+									<details class="spec-acc" open>
+										<summary class="spec-acc-summary">
+											<span>Hardware version</span>
+											<span
+												class="spec-acc-chevron"
+												set:html={presentation.render(
+													presentation.generic("chevronDown"),
+													PresentationRenderPresetRoleIcon,
+												)}
+											/>
+										</summary>
+										<div class="spec-acc-body">
+											<dl class="spec-dl">
+												<div class="trait-row">
+													{view.derived.versions.hardware.length > 1 && (
+														<version-history
+															entries={JSON.stringify(
+																view.device.versions.hardware.map((v) => ({
+																	version: v.version,
+																	current: false,
+																})),
+															)}
+														/>
+													)}
+												</div>
+											</dl>
+										</div>
+									</details>
+								)}
+
+								<details class="spec-acc" open>
+									<summary class="spec-acc-summary">
+										<span>Product identifiers</span>
+										<span
+											class="spec-acc-chevron"
+											set:html={presentation.render(
+												presentation.generic("chevronDown"),
+												PresentationRenderPresetRoleIcon,
+											)}
+										/>
+									</summary>
+									{typeof view.device.modelId !== "undefined" && (
+										<div class="spec-acc-body">
+											<dl class="spec-dl">
+												<div class="trait-row">
+													<dt>Model number</dt>
+													<dd>
+														<span class="spec-chip mono">
+															{view.device.modelId}
+														</span>
+													</dd>
+												</div>
+											</dl>
+										</div>
+									)}
+								</details>
+							</div>
+						</section>
+					</main>
+
+					<aside>
+						<div class="aside-card aside-stats">
+							<h4>Real-world data</h4>
+							<dl class="aside-stat-list">
+								<div class="aside-stat">
+									<dt>Reports</dt>
+									<dd>{view.device.count.toLocaleString("en-US")}</dd>
+								</div>
+
+								<div class="aside-stat">
+									<dt>First seen</dt>
+									<dd>{view.derived.firstEncountered}</dd>
+								</div>
+							</dl>
+							<p class="aside-stats-note">
+								Anonymized telemetry from opt-in Home Assistant users. No
+								accounts, no personal data, no tracking.
+							</p>
+							<p class="aside-source-linkrow">
+								<a href="/how-it-works">
+									Learn about the methodology{" "}
+									<span
+										set:html={presentation.render(
+											presentation.generic("open"),
+											PresentationRenderPresetRoleIcon.withSize(12),
+										)}
+									/>
+								</a>
+							</p>
+						</div>
+					</aside>
+				</div>
+			</div>
+		</Layout>
+	) : (
+		<Layout page="page" title="Not found">
+			<div class="container" style="padding: 80px 0; text-align: center;">
+				<div class="eyebrow" style="margin-bottom: 12px;">
+					404
+				</div>
+				<h1 style="margin-bottom: 16px;">Device not found.</h1>
+				<a class="btn btn-primary" href="/browse">
+					Browse all {total} devices
+				</a>
+			</div>
+		</Layout>
+	)
+}
