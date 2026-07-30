@@ -124,7 +124,7 @@ export const getDevices = async (
 		searchParameters(query),
 	);
 
-	const pages = Number(new URL(headers.link.last).searchParams.get("last"));
+	const pages = Number(new URL(headers.link.last).searchParams.get("page"));
 
 	return {
 		devices: body,
