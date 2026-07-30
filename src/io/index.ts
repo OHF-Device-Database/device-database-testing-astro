@@ -51,12 +51,12 @@ export const ioFetch = async <
 	OutputBody,
 	OutputHeaders,
 >(
-	path: string,
+	path: string | URL,
 	decoder: FetchDecoder<InputBody, InputHeaders, OutputBody, OutputHeaders>,
 	searchParams?: URLSearchParams,
 	accept: "application/json" | "text/plain" = "application/json",
 ): Promise<{ body: OutputBody; headers: OutputHeaders }> => {
-	const url = new URL(path, ioBaseUrl());
+	const url = typeof path === "string" ? new URL(path, ioBaseUrl()) : path;
 	if (searchParams) {
 		url.search = searchParams.toString();
 	}

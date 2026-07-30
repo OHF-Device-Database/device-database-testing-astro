@@ -90,8 +90,6 @@ export const IoDevicePoly = IoDeviceMono.and(
 export type IoDevicePoly = z.infer<typeof IoDevicePoly>;
 
 export type IoGetDevicesQuery = {
-	page?: number;
-	size?: number;
 	term?: string;
 	manufacturer?: Set<string>;
 	"!manufacturer"?: Set<string>;
@@ -99,6 +97,10 @@ export type IoGetDevicesQuery = {
 	"!connectivity"?: Set<IoDeviceConnectivityId>;
 	category?: Set<IoDeviceCategoryId>;
 	"!category"?: Set<IoDeviceCategoryId>;
+};
+const GetDevicesPaginationSymbol = Symbol("GetDevicesPagination");
+export type IoGetDevicesPagination = {
+	[GetDevicesPaginationSymbol]: string;
 };
 
 const GetDevicesSchema = z.object({
@@ -109,16 +111,35 @@ const GetDevicesSchema = z.object({
 		...IoHeadersCaching.shape,
 	}),
 });
-export const getDevices = async (query: IoGetDevicesQuery) => {
+export const getDevices = async (
+	query: IoGetDevicesQuery,
+	pagination?: IoGetDevicesPagination,
+) => {
+	const peeked = pagination?.[GetDevicesPaginationSymbol];
 	const { body, headers } = await ioFetch(
-		"/api/unstable/derived/devices",
+		typeof peeked !== "undefined"
+			? new URL(peeked)
+			: "/api/unstable/derived/devices",
 		GetDevicesSchema,
 		searchParameters(query),
 	);
 
+	const pages = Number(new URL(headers.link.last).searchParams.get("last"));
+
 	return {
 		devices: body,
 		total: headers["content-range"].total,
+		pagination: {
+			links: {
+				first: { [GetDevicesPaginationSymbol]: headers.link.first },
+				next:
+					typeof headers.link.next !== "undefined"
+						? { [GetDevicesPaginationSymbol]: headers.link.next }
+						: undefined,
+				last: { [GetDevicesPaginationSymbol]: headers.link.last },
+			},
+			pages,
+		},
 		caching: pick(headers, ["cache-control", "last-modified"]),
 	};
 };
