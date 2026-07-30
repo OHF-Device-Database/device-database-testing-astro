@@ -7,7 +7,6 @@ import {
 	searchParameters,
 } from "./index";
 
-// biome-ignore lint/style/useNamingConvention: refers to constant
 vi.mock("astro:env/server", () => ({ API_AUTHORITY: "https://example.com" }));
 
 describe("IoHeaderLink", () => {

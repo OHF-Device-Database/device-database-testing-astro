@@ -1,4 +1,3 @@
-/** biome-ignore-all lint/style/useNamingConvention: api is snake_cased */
 import { z } from "astro/zod";
 
 import {
