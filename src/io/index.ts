@@ -12,7 +12,7 @@ export const ioBaseUrl = (): string =>
 
 export class IoError extends Error {
 	constructor(
-		public path: string,
+		public path: string | URL,
 		public status: number,
 		public received?: string | undefined,
 	) {
