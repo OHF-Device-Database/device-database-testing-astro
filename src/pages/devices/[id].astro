@@ -19,9 +19,9 @@ const { id } = Astro.params;
 const result = typeof id !== "undefined" ? await getDevice(id) : undefined;
 
 if (typeof result !== "undefined") {
-	Astro.cache.set({ ...cachePolicy(result.caching), tags: [`device:id`] });
+	Astro.cache.set({ ...cachePolicy(result.caching) });
 } else {
-	Astro.cache.set({ maxAge: 60, tags: [`device:id`] });
+	Astro.cache.set({ maxAge: 60 });
 	Astro.response.status = 404;
 }
 
