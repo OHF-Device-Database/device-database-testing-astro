@@ -123,10 +123,17 @@ export const getDevices = async (query: IoGetDevicesQuery) => {
 	};
 };
 
+const GetDeviceCountSchema = z.object({
+	body: z.any(),
+	headers: z.object({
+		"content-range": exactlyOne(IoHeaderContentRange("items")),
+		...IoHeadersCaching.shape,
+	}),
+});
 export const getDeviceCount = async () => {
 	const { headers } = await ioFetch(
 		"/api/unstable/derived/devices",
-		GetDevicesSchema,
+		GetDeviceCountSchema,
 		// don't constrain size, as there' a good chance the non-parametric endpoint is already cached upstream
 	);
 
