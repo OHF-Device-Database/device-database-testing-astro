@@ -4,11 +4,6 @@ import Layout from "../layouts/Layout.astro";
 import { generic, render } from "../utilities/presentation";
 import { PresentationRenderPresetRoleIcon } from "../utilities/presentation/preset";
 
-// Server-rendered so the NOINDEX robots meta reflects the runtime environment
-// instead of being baked in at build time. The content is effectively static,
-// so it is cached at the origin and the CDN edge.
-export const prerender = false;
-
 const ext = render(
 	generic("open"),
 	PresentationRenderPresetRoleIcon.withSize(14),

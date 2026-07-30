@@ -1,10 +1,5 @@
 ---
 import Layout from "../layouts/Layout.astro";
-
-// Server-rendered so the NOINDEX robots meta reflects the runtime environment
-// instead of being baked in at build time. The content is effectively static,
-// so it is cached at the origin and the CDN edge.
-export const prerender = false;
 ---
 
 <Layout page="page" title="Editorial stance">
