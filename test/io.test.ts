@@ -5,7 +5,7 @@ import {
 	IoHeaderLink,
 	IoHeadersCaching,
 	searchParameters,
-} from "./index";
+} from "../src/io";
 
 vi.mock("astro:env/server", () => ({ API_AUTHORITY: "https://example.com" }));
 

@@ -1,7 +1,7 @@
 import { z } from "astro/zod";
 import { test } from "vitest";
 
-import { exactlyOne } from "./exactly-one";
+import { exactlyOne } from "../src/types/exactly-one";
 
 const schema = exactlyOne(z.number());
 

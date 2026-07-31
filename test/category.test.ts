@@ -1,7 +1,7 @@
 import { describe, test, vi } from "vitest";
 
-import { Unknown } from "../unknown";
-import { topLevelCategoryResolver } from "./index";
+import { topLevelCategoryResolver } from "../src/types/category";
+import { Unknown } from "../src/types/unknown";
 
 vi.mock("astro:env/server", () => ({ API_AUTHORITY: "https://example.com" }));
 

@@ -1,6 +1,6 @@
 import { describe, test } from "vitest";
 
-import { paginationItems } from "./index";
+import { paginationItems } from "../src/types/pagination";
 
 describe("paginationItems", () => {
 	test("small page counts list every page without gaps", (t) => {

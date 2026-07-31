@@ -5,6 +5,6 @@
 		"experimentalDecorators": true,
 		"useDefineForClassFields": false,
 	},
-	"include": [".astro/types.d.ts", "src/**/*"],
+	"include": [".astro/types.d.ts", "src/**/*", "test/**/*"],
 	"exclude": ["dist"],
 }

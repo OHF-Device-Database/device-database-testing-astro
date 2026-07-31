@@ -1,6 +1,6 @@
 import { test } from "vitest";
 
-import { pick } from "./pick";
+import { pick } from "../src/utilities/pick";
 
 const obj = { name: "Alice", age: 30, email: "alice@example.com" };
 

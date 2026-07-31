@@ -7,7 +7,7 @@ import {
 	browseFiltersToSearchParams,
 	cleared,
 	withCategoryToggled,
-} from "./index";
+} from "../src/types/browse";
 
 vi.mock("astro:env/server", () => ({ API_AUTHORITY: "https://example.com" }));
 
