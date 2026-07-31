@@ -29,6 +29,7 @@
 		"@astrojs/netlify": "^7.0.13",
 		"@eslint-community/eslint-plugin-eslint-comments": "^4.7.2",
 		"astro": "^6.4.4",
+		"intl-messageformat": "^11.2.12",
 		"lit": "^3.3.2",
 		"lucide": "^1.17.0"
 	},

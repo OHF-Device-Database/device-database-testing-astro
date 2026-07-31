@@ -4,6 +4,7 @@ import Layout from "../layouts/Layout.astro";
 
 import { getDeviceCount } from "../io/device";
 import { cachePolicy } from "../utilities/cache";
+import { localize } from "../utilities/localize";
 
 export const prerender = false;
 
@@ -19,15 +20,16 @@ Astro.cache.set({
 	<div class="home-screen">
 		<section class="hero">
 			<div class="container hero-center">
-				<h1>Find the right device for your smart home</h1>
-				<p class="hero-lede">
-					Real-world data from millions of Home Assistant installations
-				</p>
+				<h1>{localize("home.title")}</h1>
+				<p class="hero-lede">{localize("home.lede")}</p>
 				<div class="hero-search-wrap">
-					<SearchBox size="hero" placeholder="Search" />
+					<SearchBox
+						size="hero"
+						placeholder={localize("home.search_placeholder")}
+					/>
 				</div>
 				<div class="hero-actions">
-					<a href="/browse">Browse all {total} devices →</a>
+					<a href="/browse">{localize("home.browse_all", { count: total })}</a>
 				</div>
 			</div>
 		</section>
