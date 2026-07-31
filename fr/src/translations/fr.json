@@ -1,0 +1,8 @@
+{
+    "home": {
+        "title": "Trouvez le bon appareil pour votre maison connectée",
+        "lede": "Des données réelles issues de millions d'installations Home Assistant",
+        "search_placeholder": "Rechercher",
+        "browse_all": "Parcourir les {count, number} appareils →"
+    }
+}
