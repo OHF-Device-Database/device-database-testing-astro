@@ -28,11 +28,10 @@ if (typeof result !== "undefined") {
 	Astro.response.status = 404;
 }
 
-const [total, { dimensions }] = await Promise.all([
+const [{ total }, { dimensions }] = await Promise.all([
 	getDeviceCount(),
 	getDimensions(),
 ]);
-const resolveCategory = topLevelCategoryResolver(dimensions.categories);
 
 const formatDate = (date: Date): string =>
 	date.toLocaleDateString("en-US", {
