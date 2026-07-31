@@ -16,6 +16,8 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Sync
+        run: pnpm exec astro sync
       - name: Format
         run: pnpm exec prettier --check .
       - name: Lint
