@@ -36,30 +36,80 @@ export const IoDeviceEntity = z.object({
 });
 
 export const IoDeviceCategoryId = z.enum([
+	"printing",
+	"3d-printer",
+	"ink-printer",
+	"networking",
+	"router",
+	"smart-home-hub",
 	"button-switch-and-control",
+	"button",
+	"control-panel",
+	"remote",
+	"switch",
 	"cleaning",
+	"vacuum",
 	"climate-control",
-	"cover",
-	"entertainment",
-	"garden",
+	"air-conditioner",
+	"air-purifier",
+	"dehumidifier",
+	"fan",
+	"heater",
+	"heat-pump",
+	"humidifier",
+	"hvac",
+	"thermostat",
 	"irrigation",
 	"kitchen-and-household",
+	"refrigerator",
+	"scale",
+	"sous-vide",
 	"lighting",
+	"bulb",
 	"monitoring",
-	"networking",
-	"pets",
+	"motion-and-presence-sensor",
+	"air-quality-sensor",
+	"contact-sensor",
+	"environment-sensor",
+	"device-tracker",
 	"pool-and-spa",
-	"power-and-energy",
-	"printing",
-	"security-and-access-control",
-	"vehicle-and-mobility",
 	"water-management",
+	"water-heater",
+	"valve",
+	"garden",
+	"lawn-mower",
 	"weather",
+	"pets",
+	"pet-feeder",
+	"power-and-energy",
+	"metering",
+	"plug-and-outlet",
+	"security-and-access-control",
+	"alarm-and-siren",
+	"camera",
+	"deadbolt",
+	"doorbell",
+	"door-lock",
+	"garage-door",
+	"gate-controller",
+	"keypad",
+	"entertainment",
+	"speaker",
+	"tv",
+	"streaming",
+	"vehicle-and-mobility",
+	"car",
+	"ev-charging",
+	"cover",
+	"blind",
+	"shade",
+	"curtain",
+	"awning",
 ]);
 export type IoDeviceCategoryId = z.infer<typeof IoDeviceCategoryId>;
 
 export const IoDeviceCategory = z.object({
-	id: z.string(),
+	id: withUnknown(IoDeviceCategoryId),
 	source: z.optional(z.string()),
 });
 export type IoDeviceCategory = z.infer<typeof IoDeviceCategory>;
@@ -105,11 +155,6 @@ export type IoGetDevicesQuery = {
 	category?: Set<IoDeviceCategoryId>;
 	"!category"?: Set<IoDeviceCategoryId>;
 };
-const GetDevicesPaginationSymbol = Symbol("GetDevicesPagination");
-export type IoGetDevicesPagination = {
-	[GetDevicesPaginationSymbol]: string;
-};
-
 const GetDevicesSchema = z.object({
 	body: z.array(IoDevicePoly),
 	headers: z.object({
@@ -118,35 +163,20 @@ const GetDevicesSchema = z.object({
 		...IoHeadersCaching.shape,
 	}),
 });
-export const getDevices = async (
-	query: IoGetDevicesQuery,
-	pagination?: IoGetDevicesPagination,
-) => {
-	const peeked = pagination?.[GetDevicesPaginationSymbol];
+export const getDevices = async (query: IoGetDevicesQuery) => {
 	const { body, headers } = await ioFetch(
-		typeof peeked !== "undefined"
-			? new URL(peeked)
-			: "/api/unstable/derived/devices",
+		"/api/unstable/derived/devices",
 		GetDevicesSchema,
 		searchParameters(query),
 	);
 
-	const pages = Number(new URL(headers.link.last).searchParams.get("page"));
+	const pages =
+		Number(new URL(headers.link.last).searchParams.get("page") ?? 0) + 1;
 
 	return {
 		devices: body,
 		total: headers["content-range"].total,
-		pagination: {
-			links: {
-				first: { [GetDevicesPaginationSymbol]: headers.link.first },
-				next:
-					typeof headers.link.next !== "undefined"
-						? { [GetDevicesPaginationSymbol]: headers.link.next }
-						: undefined,
-				last: { [GetDevicesPaginationSymbol]: headers.link.last },
-			},
-			pages,
-		},
+		pages,
 		caching: pick(headers, ["cache-control", "last-modified"]),
 	};
 };

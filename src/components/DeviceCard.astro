@@ -2,11 +2,14 @@
 import { Unknown } from "../types/unknown";
 import * as presentation from "../utilities/presentation";
 import { PresentationRenderPresetRoleGlyph } from "../utilities/presentation/preset";
+import type { DeviceCategoryTopLevelId } from "../types/category";
 import type { DeviceCategoryId, DevicePoly } from "../types/device";
 
 interface Props {
 	device: DevicePoly;
-	resolveCategory: (id: string) => DeviceCategoryId | Unknown;
+	resolveCategory: (
+		id: DeviceCategoryId | Unknown,
+	) => DeviceCategoryTopLevelId | Unknown;
 }
 
 const { device, resolveCategory } = Astro.props;

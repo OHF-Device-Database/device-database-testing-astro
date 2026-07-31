@@ -33,8 +33,14 @@ describe("topLevelCategoryResolver", () => {
 		t.expect(resolve("lighting")).toBe("lighting");
 	});
 
-	test("resolves ids outside the tree to Unknown", (t) => {
+	test("resolves known ids missing from the tree to Unknown", (t) => {
+		// a category without devices is absent from the dimensions tree
 		const resolve = topLevelCategoryResolver(TREE);
-		t.expect(resolve("does-not-exist")).toBe(Unknown);
+		t.expect(resolve("pets")).toBe(Unknown);
+	});
+
+	test("passes Unknown through", (t) => {
+		const resolve = topLevelCategoryResolver(TREE);
+		t.expect(resolve(Unknown)).toBe(Unknown);
 	});
 });

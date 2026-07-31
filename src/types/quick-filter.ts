@@ -1,4 +1,5 @@
-import type { DeviceCategoryId, DeviceConnectivityId } from "./device";
+import type { DeviceCategoryTopLevelId } from "./category";
+import type { DeviceConnectivityId } from "./device";
 
 export const QUICK_FILTERS = [
 	{
@@ -16,7 +17,7 @@ export const QUICK_FILTERS = [
 ] as const satisfies {
 	id: string;
 	filters: {
-		category?: DeviceCategoryId[];
+		category?: DeviceCategoryTopLevelId[];
 		connectivity?: DeviceConnectivityId;
 	};
 }[];

@@ -1,9 +1,9 @@
-import { DeviceCategoryId } from "../device";
+import { DeviceCategoryTopLevelId } from "../category";
 import type { IoGetDevicesQuery } from "../../io/device";
 
 export type BrowseFilters = {
 	term?: string | undefined;
-	category: Set<DeviceCategoryId>;
+	category: Set<DeviceCategoryTopLevelId>;
 	manufacturer: Set<string>;
 	localOnly: boolean;
 };
@@ -19,8 +19,8 @@ export const browseFiltersFromSearchParams = (
 			params
 				.getAll("category")
 				.flatMap((id) =>
-					DeviceCategoryId.safeParse(id).success
-						? [id as DeviceCategoryId]
+					DeviceCategoryTopLevelId.safeParse(id).success
+						? [id as DeviceCategoryTopLevelId]
 						: [],
 				),
 		),
@@ -88,7 +88,7 @@ const withToggled = <T>(set: Set<T>, value: T): Set<T> => {
 
 export const withCategoryToggled = (
 	filters: BrowseFilters,
-	id: DeviceCategoryId,
+	id: DeviceCategoryTopLevelId,
 ): BrowseFilters => ({
 	...filters,
 	category: withToggled(filters.category, id),

@@ -15,14 +15,17 @@ import {
 	withManufacturerToggled,
 	withoutTerm,
 } from "../types/browse";
-import { topLevelCategoryResolver } from "../types/category";
-import { DeviceCategoryId, devicePolyMap } from "../types/device";
+import {
+	DeviceCategoryTopLevelId,
+	topLevelCategoryResolver,
+} from "../types/category";
+import { devicePolyMap } from "../types/device";
+import { paginationItems } from "../types/pagination";
 import { cachePolicy } from "../utilities/cache";
 import * as presentation from "../utilities/presentation";
 import { PresentationRenderPresetRoleIcon } from "../utilities/presentation/preset";
 
 type Chip = { label: string; href: string };
-type PageItem = { gap: true } | { gap: false; page: number };
 
 export const prerender = false;
 
@@ -48,11 +51,11 @@ Astro.cache.set({ ...cachePolicy(result.caching), tags: ["devices"] });
 const devices = result.devices.map(devicePolyMap);
 const resolveCategory = topLevelCategoryResolver(dimensions.categories);
 const total = result.total;
-const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
+const pageCount = result.pages;
 
 const categoryFacets = Object.entries(dimensions.categories)
 	.flatMap(([id, node]) => {
-		const parsed = DeviceCategoryId.safeParse(id);
+		const parsed = DeviceCategoryTopLevelId.safeParse(id);
 
 		return parsed.success
 			? [{ id: parsed.data, label: node.name, count: node.count }]
@@ -121,29 +124,6 @@ const pageHref = (target: number): string => {
 	const qs = params.toString();
 
 	return qs.length > 0 ? `/browse?${qs}` : "/browse";
-};
-
-const paginationItems = (current: number, count: number): PageItem[] => {
-	const wanted = [
-		...new Set(
-			[0, count - 1, current - 1, current, current + 1].filter(
-				(p) => p >= 0 && p < count,
-			),
-		),
-	].toSorted((a, b) => a - b);
-
-	const items: PageItem[] = [];
-
-	let previous = -1;
-	for (const p of wanted) {
-		if (p - previous > 1) {
-			items.push({ gap: true });
-		}
-		items.push({ gap: false, page: p });
-		previous = p;
-	}
-
-	return items;
 };
 
 const pages = pageCount > 1 ? paginationItems(page, pageCount) : [];

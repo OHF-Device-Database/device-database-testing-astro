@@ -34,7 +34,7 @@ export type DeviceEntity = {
 
 export type DeviceMono = {
 	manufacturer: string;
-	categories?: string[] | undefined;
+	categories?: (DeviceCategoryId | Unknown)[] | undefined;
 	connectivity: DeviceConnectivityId | Unknown;
 	count: number;
 	integration: DeviceIntegration;

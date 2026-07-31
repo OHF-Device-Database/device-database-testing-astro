@@ -14,7 +14,7 @@ import {
 	PresentationRenderPresetRoleGlyph,
 	PresentationRenderPresetRoleIcon,
 } from "../../utilities/presentation/preset";
-import type { DeviceCategoryId } from "../../types/device";
+import type { DeviceCategoryTopLevelId } from "../../types/category";
 
 export const prerender = false;
 
@@ -32,6 +32,7 @@ const [{ total }, { dimensions }] = await Promise.all([
 	getDeviceCount(),
 	getDimensions(),
 ]);
+const resolveCategory = topLevelCategoryResolver(dimensions.categories);
 
 const formatDate = (date: Date): string =>
 	date.toLocaleDateString("en-US", {
@@ -47,7 +48,7 @@ const view =
 
 				const firstRawCategoryId = device.categories?.at(0);
 
-				const firstCategoryId: DeviceCategoryId | Unknown | undefined =
+				const firstCategoryId: DeviceCategoryTopLevelId | Unknown | undefined =
 					typeof firstRawCategoryId !== "undefined"
 						? resolveCategory(firstRawCategoryId)
 						: undefined;
