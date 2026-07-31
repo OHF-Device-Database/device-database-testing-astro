@@ -35,7 +35,11 @@ const page =
 	Number.isInteger(pageParam) && pageParam > 0 ? Math.floor(pageParam) : 0;
 
 const [result, { dimensions }] = await Promise.all([
-	getDevices({ ...browseFiltersToQuery(filters), page, size: PAGE_SIZE }),
+	getDevices({
+		...browseFiltersToQuery(filters),
+		...(page > 0 ? { page } : {}),
+		size: PAGE_SIZE,
+	}),
 	getDimensions(),
 ]);
 
