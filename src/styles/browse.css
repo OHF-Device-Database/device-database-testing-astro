@@ -14,9 +14,8 @@
 	align-content: start;
 	min-height: calc(100vh - 72px);
 }
-browse-toolbar {
+.browse-grid > .browse-toolbar {
 	grid-column: 1 / -1;
-	display: block;
 }
 .browse-main {
 	min-width: 0;

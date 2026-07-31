@@ -4,6 +4,8 @@ import haLogo from "../../assets/ha-logo.svg?raw";
 import Layout from "../../layouts/Layout.astro";
 
 import { getDevice, getDeviceCount } from "../../io/device";
+import { getDimensions } from "../../io/dimension";
+import { topLevelCategoryResolver } from "../../types/category";
 import { deviceMonoMap } from "../../types/device";
 import { Unknown } from "../../types/unknown";
 import { cachePolicy } from "../../utilities/cache";
@@ -12,6 +14,7 @@ import {
 	PresentationRenderPresetRoleGlyph,
 	PresentationRenderPresetRoleIcon,
 } from "../../utilities/presentation/preset";
+import type { DeviceCategoryId } from "../../types/device";
 
 export const prerender = false;
 
@@ -25,7 +28,11 @@ if (typeof result !== "undefined") {
 	Astro.response.status = 404;
 }
 
-const total = await getDeviceCount();
+const [total, { dimensions }] = await Promise.all([
+	getDeviceCount(),
+	getDimensions(),
+]);
+const resolveCategory = topLevelCategoryResolver(dimensions.categories);
 
 const formatDate = (date: Date): string =>
 	date.toLocaleDateString("en-US", {
@@ -39,7 +46,12 @@ const view =
 		? (() => {
 				const device = deviceMonoMap(result.device);
 
-				const firstCategoryId = device.categories?.at(0);
+				const firstRawCategoryId = device.categories?.at(0);
+
+				const firstCategoryId: DeviceCategoryId | Unknown | undefined =
+					typeof firstRawCategoryId !== "undefined"
+						? resolveCategory(firstRawCategoryId)
+						: undefined;
 
 				let name: string;
 				if (
@@ -63,10 +75,10 @@ const view =
 						categories: {
 							first:
 								typeof firstCategoryId !== "undefined"
-									? {
+									? ({
 											id: firstCategoryId,
 											presented: presentation.device.category(firstCategoryId),
-										}
+										} as const)
 									: undefined,
 						},
 						connectivity: {
@@ -120,7 +132,7 @@ const view =
 						class="detail-image"
 						set:html={presentation.render(
 							presentation.device.category(
-								view.device.categories?.at(0) ?? Unknown,
+								view.derived.categories.first?.id ?? Unknown,
 							),
 							PresentationRenderPresetRoleGlyph,
 						)}

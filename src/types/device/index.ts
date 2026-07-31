@@ -34,7 +34,7 @@ export type DeviceEntity = {
 
 export type DeviceMono = {
 	manufacturer: string;
-	categories?: (DeviceCategoryId | Unknown)[] | undefined;
+	categories?: string[] | undefined;
 	connectivity: DeviceConnectivityId | Unknown;
 	count: number;
 	integration: DeviceIntegration;
@@ -57,7 +57,7 @@ export type DevicePoly = DeviceMono & {
 export const deviceMonoMap = (repr: IoDeviceMono): DeviceMono => {
 	const base: Omit<DeviceMono, "model" | "modelId"> = {
 		manufacturer: repr.manufacturer,
-		categories: repr.categories,
+		categories: repr.categories?.map((category) => category.id),
 		connectivity: repr.connectivity,
 		count: repr.count,
 		integration: repr.integration,

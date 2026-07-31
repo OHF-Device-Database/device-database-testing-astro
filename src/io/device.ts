@@ -58,10 +58,16 @@ export const IoDeviceCategoryId = z.enum([
 ]);
 export type IoDeviceCategoryId = z.infer<typeof IoDeviceCategoryId>;
 
+export const IoDeviceCategory = z.object({
+	id: z.string(),
+	source: z.optional(z.string()),
+});
+export type IoDeviceCategory = z.infer<typeof IoDeviceCategory>;
+
 export const IoDeviceMono = z
 	.object({
 		manufacturer: z.string(),
-		categories: z.optional(z.array(withUnknown(IoDeviceCategoryId))),
+		categories: z.optional(z.array(IoDeviceCategory)),
 		connectivity: withUnknown(IoDeviceConnectivityId),
 		count: z.number(),
 		integration: IoDeviceIntegration,
@@ -89,6 +95,8 @@ export const IoDevicePoly = IoDeviceMono.and(
 export type IoDevicePoly = z.infer<typeof IoDevicePoly>;
 
 export type IoGetDevicesQuery = {
+	page?: number;
+	size?: number;
 	term?: string;
 	manufacturer?: Set<string>;
 	"!manufacturer"?: Set<string>;

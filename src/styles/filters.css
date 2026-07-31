@@ -11,13 +11,33 @@
 
 /* --- filter island: groups, mode toggle, options, switch, chips --- */
 
-device-filters {
+.browse-filters {
 	display: block;
 	min-width: 0;
 	align-self: stretch;
 }
-browse-filters-sheet {
-	display: block;
+.browse-filters-summary {
+	display: none;
+	align-items: center;
+	gap: var(--space-2);
+	padding: var(--space-4) 0;
+	font-size: var(--fs-16);
+	font-weight: var(--fw-semibold);
+	color: var(--fg);
+	cursor: pointer;
+	list-style: none;
+}
+.browse-filters-summary::-webkit-details-marker {
+	display: none;
+}
+.filter-overflow-note {
+	margin: var(--space-3) 0 0;
+	font-size: var(--fs-13);
+	color: var(--fg-muted);
+}
+.filters > .btn[type="submit"] {
+	align-self: flex-start;
+	margin-top: var(--space-5);
 }
 
 .filters {
@@ -222,8 +242,19 @@ button.filter-chip {
 	.browse-grid {
 		grid-template-columns: 1fr;
 	}
-	device-filters {
-		display: none;
+	.browse-filters {
+		padding: 0 0 var(--space-2);
+		border-bottom: 1px solid var(--border);
+	}
+	.browse-filters-summary {
+		display: flex;
+	}
+	.filters {
+		position: static;
+		max-height: none;
+		overflow: visible;
+		padding-right: 0;
+		padding-bottom: var(--space-4);
 	}
 	.browse-main {
 		padding-left: 0;
