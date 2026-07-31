@@ -33,16 +33,16 @@ export class VersionHistory extends LitElement {
 		this._release();
 	}
 
-	private _openPanel(): void {
+	private _openPanel = (): void => {
 		this._open = true;
 		document.body.classList.add("modal-open");
 		document.addEventListener("keydown", this._onKey);
-	}
+	};
 
-	private _close(): void {
+	private _close = (): void => {
 		this._open = false;
 		this._release();
-	}
+	};
 
 	private _release(): void {
 		document.body.classList.remove("modal-open");

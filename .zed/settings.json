@@ -3,33 +3,33 @@
 		"JavaScript": {
 			"formatter": "prettier",
 			"code_actions_on_format": {
-				"source.fixAll.eslint": true,
-			},
+				"source.fixAll.eslint": true
+			}
 		},
 		"TypeScript": {
 			"formatter": "prettier",
 			"code_actions_on_format": {
-				"source.fixAll.eslint": true,
-			},
+				"source.fixAll.eslint": true
+			}
 		},
 		"TSX": {
 			"formatter": "prettier",
 			"code_actions_on_format": {
-				"source.fixAll.eslint": true,
-			},
+				"source.fixAll.eslint": true
+			}
 		},
 		"CSS": {
-			"formatter": "prettier",
+			"formatter": "prettier"
 		},
 		"Astro": {
 			"formatter": "prettier",
 			"code_actions_on_format": {
-				"source.fixAll.eslint": true,
-			},
+				"source.fixAll.eslint": true
+			}
 		},
 		"HTML": {
-			"formatter": "prettier",
-		},
+			"formatter": "prettier"
+		}
 	},
-	"language_servers": ["eslint", "vtsls", "codebook", "!biome"],
+	"language_servers": ["eslint", "vtsls", "codebook", "!biome"]
 }

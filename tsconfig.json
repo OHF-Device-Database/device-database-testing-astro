@@ -3,8 +3,8 @@
 	"compilerOptions": {
 		"moduleResolution": "bundler",
 		"experimentalDecorators": true,
-		"useDefineForClassFields": false,
+		"useDefineForClassFields": false
 	},
 	"include": [".astro/types.d.ts", "src/**/*", "test/**/*"],
-	"exclude": ["dist"],
+	"exclude": ["dist"]
 }

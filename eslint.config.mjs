@@ -4,13 +4,17 @@ import { configs } from "eslint-plugin-lit";
 import unicorn from "eslint-plugin-unicorn";
 import tseslint from "typescript-eslint";
 
+import astro from "eslint-plugin-astro";
+
 export default tseslint.config(
 	eslint.configs.recommended,
 	tseslint.configs.recommendedTypeChecked,
 	{
 		languageOptions: {
 			parserOptions: {
-				projectService: true,
+				projectService: {
+					allowDefaultProject: ["*.mjs", "*.ts"],
+				},
 				tsconfigRootDir: import.meta.dirname,
 			},
 		},
@@ -22,6 +26,20 @@ export default tseslint.config(
 		},
 	},
 	configs["flat/recommended"],
+	astro.configs.recommended,
+	{
+		files: ["**/*.astro"],
+		extends: [tseslint.configs.disableTypeChecked],
+	},
+	{
+		files: ["*.mjs", "*.ts"],
+		extends: [tseslint.configs.disableTypeChecked],
+		languageOptions: {
+			globals: {
+				process: "readonly",
+			},
+		},
+	},
 	{
 		files: ["src/**/*.ts"],
 		plugins: {
@@ -70,7 +88,7 @@ export default tseslint.config(
 		},
 	},
 	{
-		files: ["src/**/*.test.ts"],
+		files: ["test/**/*.test.ts"],
 		rules: {
 			"@typescript-eslint/no-floating-promises": "off",
 			"@typescript-eslint/no-explicit-any": "off",

@@ -16,6 +16,15 @@
 		"test:watch": "vitest",
 		"prepare": "husky"
 	},
+	"lint-staged": {
+		"*.{ts,mjs,astro}": [
+			"eslint --fix",
+			"prettier --write"
+		],
+		"*.{css,json,md}": [
+			"prettier --write"
+		]
+	},
 	"dependencies": {
 		"@astrojs/netlify": "^7.0.13",
 		"@eslint-community/eslint-plugin-eslint-comments": "^4.7.2",
@@ -29,13 +38,15 @@
 		"@eslint/js": "^10.0.1",
 		"@ianvs/prettier-plugin-sort-imports": "^4.7.1",
 		"eslint": "^10.8.0",
+		"eslint-plugin-astro": "^3.0.1",
+		"eslint-plugin-lit": "^2.3.1",
 		"eslint-plugin-unicorn": "^72.0.0",
 		"husky": "^9.1.7",
+		"lint-staged": "^17.2.0",
 		"prettier": "^3.9.6",
 		"prettier-plugin-astro": "^0.14.1",
 		"typescript": "^6.0.3",
 		"typescript-eslint": "^8.65.0",
-		"vitest": "^3",
-		"eslint-plugin-lit": "^2.3.1"
+		"vitest": "^3"
 	}
 }
