@@ -38,10 +38,8 @@ import type { IconNode } from "lucide";
 
 import { Unknown } from "../../types/unknown";
 import { peek } from "./preset";
-import type {
-	DeviceCategoryId,
-	DeviceConnectivityId,
-} from "../../types/device";
+import type { DeviceCategoryTopLevelId } from "../../types/category";
+import type { DeviceConnectivityId } from "../../types/device";
 import type { QuickFilterId } from "../../types/quick-filter";
 import type { PresentationRenderPreset } from "./preset";
 
@@ -118,7 +116,7 @@ const PRESENTATION_ENTITY_DEVICE_CATEGORY = {
 	"water-management": { ...renderable(Droplet), label: "Water management" },
 	weather: { ...renderable(CloudSun), label: "Weather" },
 } as const satisfies Record<
-	DeviceCategoryId,
+	DeviceCategoryTopLevelId,
 	PresentationRenderable & PresentationLabeled
 >;
 
@@ -163,7 +161,7 @@ export const device = {
 					label: "Connectivity unknown",
 					color: "var(--neutral-400)",
 				} as const),
-	category: (self: DeviceCategoryId | Unknown) =>
+	category: (self: DeviceCategoryTopLevelId | Unknown) =>
 		self !== Unknown
 			? PRESENTATION_ENTITY_DEVICE_CATEGORY[self]
 			: ({

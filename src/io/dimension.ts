@@ -1,10 +1,9 @@
 import { z } from "astro/zod";
 
-import { ioFetch, searchParameters } from ".";
+import { ioFetch, IoHeadersCaching, searchParameters } from ".";
 
-import { withUnknown } from "../types/unknown";
-import { IoDeviceCategoryId } from "./device";
-import type { IoDeviceConnectivityId } from "./device";
+import { pick } from "../utilities/pick";
+import type { IoDeviceCategoryId, IoDeviceConnectivityId } from "./device";
 
 export type IoGetDimensionsQuery = {
 	term?: string;
@@ -16,31 +15,42 @@ export type IoGetDimensionsQuery = {
 	"!category"?: Set<IoDeviceCategoryId>;
 };
 
-const DimensionCategory = z.object({
-	name: withUnknown(IoDeviceCategoryId),
-	count: z.number(),
-	get children() {
-		return z.array(DimensionCategory);
-	},
-});
+export type IoDimensionCategory = {
+	name: string;
+	count: number;
+	children: Record<string, IoDimensionCategory>;
+};
+const IoDimensionCategory: z.ZodType<IoDimensionCategory> = z.lazy(() =>
+	z.object({
+		name: z.string(),
+		count: z.number(),
+		children: z.record(z.string(), IoDimensionCategory),
+	}),
+);
+
 const GetDimensionsSchema = z.object({
 	body: z.object({
-		manufacturers: z.object({ name: z.string(), count: z.number() }),
-		categories: z.array(DimensionCategory),
+		manufacturers: z.array(z.object({ name: z.string(), count: z.number() })),
+		categories: z.record(z.string(), IoDimensionCategory),
 		connectivity: z.object({
-			offline: z.object({ count: z.number() }),
-			online: z.object({ count: z.number() }),
+			offline: z.optional(z.object({ count: z.number() })),
+			online: z.optional(z.object({ count: z.number() })),
 		}),
 	}),
-	headers: z.unknown(),
+	headers: z.object({
+		...IoHeadersCaching.shape,
+	}),
 });
 
-export const getDimensions = async (query: IoGetDimensionsQuery) => {
-	const { body } = await ioFetch(
+export const getDimensions = async (query: IoGetDimensionsQuery = {}) => {
+	const { body, headers } = await ioFetch(
 		"/api/unstable/dimensions",
 		GetDimensionsSchema,
 		searchParameters(query),
 	);
 
-	return body;
+	return {
+		dimensions: body,
+		caching: pick(headers, ["cache-control", "last-modified"]),
+	};
 };

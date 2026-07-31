@@ -1,0 +1,425 @@
+---
+import DeviceCard from "../components/DeviceCard.astro";
+import Layout from "../layouts/Layout.astro";
+
+import { getDevices } from "../io/device";
+import { getDimensions } from "../io/dimension";
+import {
+	browseFiltersCount,
+	browseFiltersFromSearchParams,
+	browseFiltersToHref,
+	browseFiltersToQuery,
+	cleared,
+	withCategoryToggled,
+	withLocalOnly,
+	withManufacturerToggled,
+	withoutTerm,
+} from "../types/browse";
+import {
+	DeviceCategoryTopLevelId,
+	topLevelCategoryResolver,
+} from "../types/category";
+import { devicePolyMap } from "../types/device";
+import { paginationItems } from "../types/pagination";
+import { cachePolicy } from "../utilities/cache";
+import * as presentation from "../utilities/presentation";
+import { PresentationRenderPresetRoleIcon } from "../utilities/presentation/preset";
+
+type Chip = { label: string; href: string };
+
+export const prerender = false;
+
+const PAGE_SIZE = 24;
+const MANUFACTURER_LIMIT = 8;
+
+const filters = browseFiltersFromSearchParams(Astro.url.searchParams);
+const pageParam = Number(Astro.url.searchParams.get("page") ?? "0");
+const page =
+	Number.isInteger(pageParam) && pageParam > 0 ? Math.floor(pageParam) : 0;
+
+const [result, { dimensions }] = await Promise.all([
+	getDevices({
+		...browseFiltersToQuery(filters),
+		...(page > 0 ? { page } : {}),
+		size: PAGE_SIZE,
+	}),
+	getDimensions(),
+]);
+
+Astro.cache.set({ ...cachePolicy(result.caching), tags: ["devices"] });
+
+const devices = result.devices.map(devicePolyMap);
+const resolveCategory = topLevelCategoryResolver(dimensions.categories);
+const total = result.total;
+const pageCount = result.pages;
+
+const categoryFacets = Object.entries(dimensions.categories)
+	.flatMap(([id, node]) => {
+		const parsed = DeviceCategoryTopLevelId.safeParse(id);
+
+		return parsed.success
+			? [{ id: parsed.data, label: node.name, count: node.count }]
+			: [];
+	})
+	.toSorted((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+
+const categoryRows = [
+	...categoryFacets,
+	...[...filters.category]
+		.filter((id) => !categoryFacets.some((facet) => facet.id === id))
+		.map((id) => ({
+			id,
+			label: presentation.device.category(id).label,
+			count: 0,
+		})),
+];
+const categoryLabel = new Map(categoryRows.map((row) => [row.id, row.label]));
+
+const manufacturerRows = [
+	...dimensions.manufacturers.slice(0, MANUFACTURER_LIMIT),
+	...dimensions.manufacturers
+		.slice(MANUFACTURER_LIMIT)
+		.filter((manufacturer) => filters.manufacturer.has(manufacturer.name)),
+];
+const manufacturerOverflow = Math.max(
+	0,
+	dimensions.manufacturers.length - manufacturerRows.length,
+);
+
+const chips: Chip[] = [
+	...(typeof filters.term !== "undefined"
+		? [
+				{
+					label: `“${filters.term}”`,
+					href: browseFiltersToHref(withoutTerm(filters)),
+				},
+			]
+		: []),
+	...[...filters.category].map((id) => ({
+		label: categoryLabel.get(id) ?? presentation.device.category(id).label,
+		href: browseFiltersToHref(withCategoryToggled(filters, id)),
+	})),
+	...[...filters.manufacturer].map((name) => ({
+		label: name,
+		href: browseFiltersToHref(withManufacturerToggled(filters, name)),
+	})),
+	...(filters.localOnly
+		? [
+				{
+					label: "Local control only",
+					href: browseFiltersToHref(withLocalOnly(filters, false)),
+				},
+			]
+		: []),
+];
+const activeCount = browseFiltersCount(filters);
+
+const pageHref = (target: number): string => {
+	const params = new URLSearchParams(Astro.url.searchParams);
+	if (target <= 0) {
+		params.delete("page");
+	} else {
+		params.set("page", String(target));
+	}
+	const qs = params.toString();
+
+	return qs.length > 0 ? `/browse?${qs}` : "/browse";
+};
+
+const pages = pageCount > 1 ? paginationItems(page, pageCount) : [];
+const hasPrevious = page > 0;
+const hasNext = page < pageCount - 1;
+
+const clearedHref = browseFiltersToHref(cleared(filters));
+---
+
+<Layout page="browse" title="Browse">
+	<div class="browse">
+		<div class="container browse-grid">
+			<div class="browse-toolbar">
+				<div class="browse-toolbar-filters">
+					<h2 class="browse-toolbar-title">Filters</h2>
+					{
+						activeCount > 0 && (
+							<a class="browse-toolbar-clear" href={clearedHref}>
+								Clear all
+							</a>
+						)
+					}
+				</div>
+				<div class="browse-toolbar-main">
+					{
+						chips.length > 0 && (
+							<span class="browse-toolbar-chips">
+								{chips.map((chip) => (
+									<span class="filter-chip">
+										<span class="filter-chip-label">{chip.label}</span>
+										<a
+											class="filter-chip-remove"
+											href={chip.href}
+											aria-label={`Remove ${chip.label}`}
+										>
+											<Fragment
+												set:html={presentation.render(
+													presentation.generic("x"),
+													PresentationRenderPresetRoleIcon.withSize(12),
+												)}
+											/>
+										</a>
+									</span>
+								))}
+							</span>
+						)
+					}
+					<p class="browse-match-count">
+						<b>{total.toLocaleString("en-US")}</b> devices match
+					</p>
+				</div>
+			</div>
+
+			<details class="browse-filters" open data-browse-filters-disclosure>
+				<summary class="browse-filters-summary">
+					Filters{activeCount > 0 ? ` · ${activeCount}` : ""}
+				</summary>
+				<form
+					class="filters"
+					method="get"
+					action="/browse"
+					aria-label="Filters"
+					data-browse-filters
+				>
+					{
+						typeof filters.term !== "undefined" && (
+							<input type="hidden" name="q" value={filters.term} />
+						)
+					}
+					<div class="local-only-toggle">
+						<label class="local-only-toggle-row">
+							<span class="local-only-toggle-text">
+								<span class="local-only-toggle-label">Local control only</span>
+								<span class="local-only-toggle-hint">
+									Hide devices that need an internet connection
+								</span>
+							</span>
+							<span class={"switch" + (filters.localOnly ? " is-on" : "")}>
+								<input
+									type="checkbox"
+									name="local"
+									value="1"
+									checked={filters.localOnly}
+									aria-label="Local control only"
+								/>
+								<span class="switch-track"></span>
+								<span class="switch-thumb"></span>
+							</span>
+						</label>
+					</div>
+					<div class="filter-group">
+						<div class="filter-group-head">
+							<div class="filter-group-label">Category</div>
+						</div>
+						<div class="filter-options">
+							{
+								categoryRows.map((row) => (
+									<label class="filter-row">
+										<input
+											type="checkbox"
+											name="category"
+											value={row.id}
+											checked={filters.category.has(row.id)}
+										/>
+										<span class="filter-row-text">{row.label}</span>
+										<span class="count">
+											{row.count.toLocaleString("en-US")}
+										</span>
+									</label>
+								))
+							}
+						</div>
+					</div>
+					<div class="filter-group">
+						<div class="filter-group-head">
+							<div class="filter-group-label">Manufacturer</div>
+						</div>
+						<div class="filter-options">
+							{
+								manufacturerRows.map((manufacturer) => (
+									<label class="filter-row">
+										<input
+											type="checkbox"
+											name="manufacturer"
+											value={manufacturer.name}
+											checked={filters.manufacturer.has(manufacturer.name)}
+										/>
+										<span class="filter-row-text">{manufacturer.name}</span>
+										<span class="count">
+											{manufacturer.count.toLocaleString("en-US")}
+										</span>
+									</label>
+								))
+							}
+							{
+								manufacturerOverflow > 0 && (
+									<p class="filter-overflow-note">
+										and {manufacturerOverflow.toLocaleString("en-US")} more.
+										Search to narrow down.
+									</p>
+								)
+							}
+						</div>
+					</div>
+					<button
+						class="btn btn-secondary"
+						type="submit"
+						data-browse-filters-apply
+					>
+						Apply filters
+					</button>
+				</form>
+			</details>
+			<script is:inline>
+				(function () {
+					var disclosure = document.querySelector(
+						"[data-browse-filters-disclosure]",
+					);
+					if (
+						disclosure !== null &&
+						!window.matchMedia("(min-width: 768px)").matches
+					) {
+						disclosure.removeAttribute("open");
+					}
+				})();
+			</script>
+
+			<div class="browse-main">
+				{
+					devices.length === 0 ? (
+						<div class="browse-empty">
+							<h2>No devices match these filters.</h2>
+							<p>Try loosening a filter or clearing the search.</p>
+							<a class="btn btn-secondary" href="/browse">
+								Clear all filters
+							</a>
+						</div>
+					) : (
+						<>
+							<div class="device-list">
+								{devices.map((device) => (
+									<DeviceCard
+										device={device}
+										resolveCategory={resolveCategory}
+									/>
+								))}
+							</div>
+							{pages.length > 0 && (
+								<nav class="browse-pagination" aria-label="Pagination">
+									{hasPrevious ? (
+										<a
+											class="browse-pagination-step"
+											href={pageHref(page - 1)}
+											rel="prev"
+										>
+											<span
+												set:html={presentation.render(
+													presentation.generic("chevronL"),
+													PresentationRenderPresetRoleIcon.withSize(16),
+												)}
+											/>
+											<span>Previous</span>
+										</a>
+									) : (
+										<span
+											class="browse-pagination-step is-disabled"
+											aria-disabled="true"
+										>
+											<span
+												set:html={presentation.render(
+													presentation.generic("chevronL"),
+													PresentationRenderPresetRoleIcon.withSize(16),
+												)}
+											/>
+											<span>Previous</span>
+										</span>
+									)}
+									<span class="browse-pagination-pages">
+										{pages.map((item) =>
+											item.gap ? (
+												<span class="browse-pagination-gap" aria-hidden="true">
+													…
+												</span>
+											) : item.page === page ? (
+												<span
+													class="browse-pagination-page is-current"
+													aria-current="page"
+												>
+													{(item.page + 1).toLocaleString("en-US")}
+												</span>
+											) : (
+												<a
+													class="browse-pagination-page"
+													href={pageHref(item.page)}
+													aria-label={`Page ${item.page + 1}`}
+												>
+													{(item.page + 1).toLocaleString("en-US")}
+												</a>
+											),
+										)}
+									</span>
+									{hasNext ? (
+										<a
+											class="browse-pagination-step"
+											href={pageHref(page + 1)}
+											rel="next"
+										>
+											<span>Next</span>
+											<span
+												set:html={presentation.render(
+													presentation.generic("chevronR"),
+													PresentationRenderPresetRoleIcon.withSize(16),
+												)}
+											/>
+										</a>
+									) : (
+										<span
+											class="browse-pagination-step is-disabled"
+											aria-disabled="true"
+										>
+											<span>Next</span>
+											<span
+												set:html={presentation.render(
+													presentation.generic("chevronR"),
+													PresentationRenderPresetRoleIcon.withSize(16),
+												)}
+											/>
+										</span>
+									)}
+								</nav>
+							)}
+						</>
+					)
+				}
+			</div>
+		</div>
+	</div>
+</Layout>
+
+<script>
+	const bind = () => {
+		const form = document.querySelector<HTMLFormElement>(
+			"[data-browse-filters]",
+		);
+		if (form === null || form.dataset.bound === "true") {
+			return;
+		}
+		form.dataset.bound = "true";
+		form
+			.querySelector<HTMLButtonElement>("[data-browse-filters-apply]")
+			?.setAttribute("hidden", "");
+		form.addEventListener("change", () => {
+			form.requestSubmit();
+		});
+	};
+
+	document.addEventListener("astro:page-load", bind);
+	bind();
+</script>

@@ -52,7 +52,7 @@
 	line-height: 1.25;
 	margin-top: 2px;
 }
-.device-manu {
+.device-manufacturer {
 	font-size: var(--fs-14);
 	color: var(--fg-muted);
 	margin-top: 2px;
@@ -79,7 +79,7 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
-	.device-manu {
+	.device-manufacturer {
 		font-size: var(--fs-13);
 		margin-top: 1px;
 	}

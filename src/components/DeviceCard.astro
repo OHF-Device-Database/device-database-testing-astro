@@ -2,19 +2,27 @@
 import { Unknown } from "../types/unknown";
 import * as presentation from "../utilities/presentation";
 import { PresentationRenderPresetRoleGlyph } from "../utilities/presentation/preset";
-import type { DevicePoly } from "../types/device";
+import type { DeviceCategoryTopLevelId } from "../types/category";
+import type { DeviceCategoryId, DevicePoly } from "../types/device";
 
 interface Props {
 	device: DevicePoly;
+	resolveCategory: (
+		id: DeviceCategoryId | Unknown,
+	) => DeviceCategoryTopLevelId | Unknown;
 }
 
-const { device } = Astro.props;
+const { device, resolveCategory } = Astro.props;
 
 const presentedConnectivity = presentation.device.connectivity(
 	device.connectivity,
 );
-const presentedCategories =
-	device.categories?.map((c) => presentation.device.category(c)) ?? [];
+const resolvedCategories = [
+	...new Set(device.categories?.map(resolveCategory) ?? []),
+];
+const presentedCategories = resolvedCategories.map((c) =>
+	presentation.device.category(c),
+);
 
 let name: string;
 if (
@@ -32,11 +40,11 @@ if (
 }
 ---
 
-<a class="device-row" href={`/device/${device.id}`}>
+<a class="device-row" href={`/devices/${device.id}`}>
 	<div
 		class="device-thumb"
 		set:html={presentation.render(
-			presentation.device.category(device.categories?.at(0) ?? Unknown),
+			presentation.device.category(resolvedCategories.at(0) ?? Unknown),
 			PresentationRenderPresetRoleGlyph,
 		)}
 	/>
