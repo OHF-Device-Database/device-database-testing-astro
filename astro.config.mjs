@@ -9,6 +9,39 @@ import { defineConfig, envField, memoryCache } from "astro/config";
 const isNodeTarget = process.env.DEPLOY_TARGET === "node";
 const adapter = isNodeTarget ? node({ mode: "standalone" }) : netlify();
 
+const prefixedLocales = [
+	"ar",
+	"bg",
+	"ca",
+	"cs",
+	"da",
+	"de",
+	"el",
+	"es",
+	"fi",
+	"fr",
+	"he",
+	"hu",
+	"it",
+	"ja",
+	"ko",
+	"lt",
+	"lv",
+	"nb",
+	"nl",
+	"pl",
+	"pt-BR",
+	"pt-PT",
+	"ru",
+	"sk",
+	"sl",
+	"sr",
+	"sv",
+	"uk",
+	"zh-CN",
+	"zh-TW",
+];
+
 // https://astro.build/config
 export default defineConfig({
 	build: {
@@ -46,8 +79,17 @@ export default defineConfig({
 					{
 						pattern: ":protocol://:domain(.*)::port?/:path(.*)?",
 						localized: [
-							["fr", ":protocol://:domain(.*)::port?/fr/:path(.*)?"],
-							["en", ":protocol://:domain(.*)::port?/:path(.*)?"],
+							...prefixedLocales.map(
+								(locale) =>
+									/** @type {[string, string]} */ ([
+										locale,
+										`:protocol://:domain(.*)::port?/${locale}/:path(.*)?`,
+									]),
+							),
+							/** @type {[string, string]} */ ([
+								"en",
+								":protocol://:domain(.*)::port?/:path(.*)?",
+							]),
 						],
 					},
 				],
