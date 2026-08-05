@@ -5,3 +5,5 @@ dist/
 # compiler side outputs, regenerated on every compile
 project.inlang/**
 !project.inlang/settings.json
+messages/*.json
+!messages/en.json
