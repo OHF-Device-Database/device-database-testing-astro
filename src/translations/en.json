@@ -1,8 +1,0 @@
-{
-	"home": {
-		"title": "Find the right device for your smart home",
-		"lede": "Real-world data from millions of Home Assistant installations",
-		"search_placeholder": "Search",
-		"browse_all": "Browse all {count, number} devices →"
-	}
-}

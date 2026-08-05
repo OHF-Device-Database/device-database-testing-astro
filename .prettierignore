@@ -1,0 +1,4 @@
+src/paraglide/
+pnpm-lock.yaml
+dist/
+.astro/

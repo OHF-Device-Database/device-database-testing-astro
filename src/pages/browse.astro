@@ -25,8 +25,6 @@ import { cachePolicy } from "../utilities/cache";
 import * as presentation from "../utilities/presentation";
 import { PresentationRenderPresetRoleIcon } from "../utilities/presentation/preset";
 
-type Chip = { label: string; href: string };
-
 export const prerender = false;
 
 const PAGE_SIZE = 24;
@@ -86,7 +84,7 @@ const manufacturerOverflow = Math.max(
 	dimensions.manufacturers.length - manufacturerRows.length,
 );
 
-const chips: Chip[] = [
+const chips = [
 	...(typeof filters.term !== "undefined"
 		? [
 				{

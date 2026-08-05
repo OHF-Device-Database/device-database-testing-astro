@@ -1,7 +1,15 @@
 import { NOINDEX } from "astro:env/server";
-import { defineMiddleware } from "astro:middleware";
+import { defineMiddleware, sequence } from "astro:middleware";
 
-export const onRequest = defineMiddleware(async (_, next) => {
+import { paraglideMiddleware } from "./paraglide/server.js";
+
+const paraglide = defineMiddleware((context, next) =>
+	paraglideMiddleware(context.request, ({ request }) =>
+		request.url !== context.request.url ? next(request) : next(),
+	),
+);
+
+const noindex = defineMiddleware(async (_, next) => {
 	const response = await next();
 
 	if (NOINDEX) {
@@ -10,3 +18,5 @@ export const onRequest = defineMiddleware(async (_, next) => {
 
 	return response;
 });
+
+export const onRequest = sequence(paraglide, noindex);

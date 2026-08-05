@@ -1,6 +1,8 @@
 import { DeviceCategoryTopLevelId } from "../category";
 import type { IoGetDevicesQuery } from "../../io/device";
 
+export type BrowseFilterChip = { label: string; href: string };
+
 export type BrowseFilters = {
 	term?: string | undefined;
 	category: Set<DeviceCategoryTopLevelId>;

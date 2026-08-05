@@ -1,6 +1,7 @@
 // @ts-check
 import netlify from "@astrojs/netlify";
 import node from "@astrojs/node";
+import { paraglideVitePlugin } from "@inlang/paraglide-js";
 import { defineConfig, envField, memoryCache } from "astro/config";
 
 // Switch the deploy target with DEPLOY_TARGET. Defaults to "netlify" so the
@@ -36,6 +37,22 @@ export default defineConfig({
 	},
 	adapter,
 	vite: {
+		plugins: [
+			paraglideVitePlugin({
+				project: "./project.inlang",
+				outdir: "./src/paraglide",
+				strategy: ["url", "baseLocale"],
+				urlPatterns: [
+					{
+						pattern: ":protocol://:domain(.*)::port?/:path(.*)?",
+						localized: [
+							["fr", ":protocol://:domain(.*)::port?/fr/:path(.*)?"],
+							["en", ":protocol://:domain(.*)::port?/:path(.*)?"],
+						],
+					},
+				],
+			}),
+		],
 		// The Docker image ships dist/ without node_modules, so the node build
 		// must bundle every dependency into the server output.
 		ssr: isNodeTarget ? { noExternal: true } : {},

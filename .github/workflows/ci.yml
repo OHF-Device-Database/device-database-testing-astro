@@ -18,6 +18,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Sync
         run: pnpm exec astro sync
+      - name: Compile messages
+        run: pnpm run i18n:compile
       - name: Format
         run: pnpm exec prettier --check .
       - name: Lint
