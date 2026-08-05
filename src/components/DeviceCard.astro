@@ -1,4 +1,5 @@
 ---
+import { localizeHref } from "../paraglide/runtime.js";
 import { Unknown } from "../types/unknown";
 import * as presentation from "../utilities/presentation";
 import { PresentationRenderPresetRoleGlyph } from "../utilities/presentation/preset";
@@ -40,7 +41,7 @@ if (
 }
 ---
 
-<a class="device-row" href={`/devices/${device.id}`}>
+<a class="device-row" href={localizeHref(`/devices/${device.id}`)}>
 	<div
 		class="device-thumb"
 		set:html={presentation.render(

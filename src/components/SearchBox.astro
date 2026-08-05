@@ -1,4 +1,5 @@
 ---
+import { m } from "../paraglide/messages.js";
 import { localizeHref } from "../paraglide/runtime.js";
 import { generic, render } from "../utilities/presentation";
 import { PresentationRenderPresetRoleIcon } from "../utilities/presentation/preset";
@@ -13,7 +14,7 @@ interface Props {
 	placeholder?: string;
 }
 
-const { size = "header", placeholder = "Search" } = Astro.props;
+const { size = "header", placeholder = m.search_placeholder() } = Astro.props;
 const iconSize = size === "hero" ? 22 : 18;
 ---
 
@@ -35,12 +36,14 @@ const iconSize = size === "hero" ? 22 : 18;
 				type="search"
 				name="q"
 				placeholder={placeholder}
-				aria-label="Search devices"
+				aria-label={m.search_devices_label()}
 				aria-autocomplete="list"
 				aria-expanded="false"
 				autocomplete="off"
 			/>
-			<button type="button" class="appnav-search-clear" hidden>Clear</button>
+			<button type="button" class="appnav-search-clear" hidden
+				>{m.search_clear()}</button
+			>
 		</form>
 	</div>
 </device-search>

@@ -1,6 +1,7 @@
 ---
 import SearchBox from "./SearchBox.astro";
 
+import { m } from "../paraglide/messages.js";
 import { localizeHref } from "../paraglide/runtime.js";
 import { LOGO_SVG } from "../utilities/logo";
 import { generic, render } from "../utilities/presentation";
@@ -18,18 +19,17 @@ const showSearch = page !== "home";
 <div class="preview-banner">
 	<div class="container preview-banner-inner">
 		<p class="preview-banner-text">
-			You are viewing a preview edition of the Device Database. Data may be
-			incomplete or change at any time.
+			{m.nav_preview_banner_text()}
 			<a
 				href="https://github.com/OHF-Device-Database"
 				target="_blank"
-				rel="noopener noreferrer">Learn more</a
+				rel="noopener noreferrer">{m.nav_preview_banner_learn_more()}</a
 			>
 		</p>
 		<button
 			type="button"
 			class="preview-banner-close"
-			aria-label="Dismiss preview notice"
+			aria-label={m.nav_preview_banner_dismiss()}
 			data-preview-banner-close
 		>
 			<Fragment
@@ -45,7 +45,7 @@ const showSearch = page !== "home";
 			<a
 				href={localizeHref("/")}
 				class="brand"
-				aria-label="Device Database, home"
+				aria-label={m.nav_brand_home()}
 				set:html={LOGO_SVG}
 			/>
 		</div>
@@ -63,7 +63,7 @@ const showSearch = page !== "home";
 				target="_blank"
 				rel="noopener noreferrer"
 			>
-				<span>Preview Edition</span>
+				<span>{m.nav_preview_badge()}</span>
 			</a>
 		</div>
 	</div>

@@ -1,20 +1,22 @@
 ---
 import Layout from "../layouts/Layout.astro";
+
+import { m } from "../paraglide/messages.js";
+
+export const prerender = false;
+
+Astro.cache.set({ maxAge: 86400 });
 ---
 
-<Layout page="page" title="Imprint">
+<Layout page="page" title={m.imprint_title()}>
 	<div class="container-narrow content-page">
 		<section class="content-section content-intro">
-			<h1>Imprint</h1>
-			<p class="content-lede">
-				This site, the Open Home Foundation Device Database, is operated by the
-				Open Home Foundation, the non-profit stewards of Home Assistant,
-				ESPHome, Music Assistant, and friends.
-			</p>
+			<h1>{m.imprint_title()}</h1>
+			<p class="content-lede">{m.imprint_lede()}</p>
 		</section>
 
 		<section class="content-section">
-			<h2>Operator</h2>
+			<h2>{m.imprint_operator_title()}</h2>
 			<p class="content-prose">
 				Open Home Foundation<br />
 				Grabenstrasse 25<br />
@@ -25,7 +27,7 @@ import Layout from "../layouts/Layout.astro";
 		</section>
 
 		<section class="content-section">
-			<h2>Contact</h2>
+			<h2>{m.imprint_contact_title()}</h2>
 			<p class="content-prose">
 				<a href="mailto:hello@openhomefoundation.org"
 					>hello@openhomefoundation.org</a

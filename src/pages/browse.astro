@@ -4,6 +4,8 @@ import Layout from "../layouts/Layout.astro";
 
 import { getDevices } from "../io/device";
 import { getDimensions } from "../io/dimension";
+import { m } from "../paraglide/messages.js";
+import { getLocale, localizeHref } from "../paraglide/runtime.js";
 import {
 	browseFiltersCount,
 	browseFiltersFromSearchParams,
@@ -106,7 +108,7 @@ const chips: Chip[] = [
 	...(filters.localOnly
 		? [
 				{
-					label: "Local control only",
+					label: m.browse_local_only_label(),
 					href: browseFiltersToHref(withLocalOnly(filters, false)),
 				},
 			]
@@ -123,26 +125,26 @@ const pageHref = (target: number): string => {
 	}
 	const qs = params.toString();
 
-	return qs.length > 0 ? `/browse?${qs}` : "/browse";
+	return localizeHref(qs.length > 0 ? `/browse?${qs}` : "/browse");
 };
 
 const pages = pageCount > 1 ? paginationItems(page, pageCount) : [];
 const hasPrevious = page > 0;
 const hasNext = page < pageCount - 1;
 
-const clearedHref = browseFiltersToHref(cleared(filters));
+const clearedHref = localizeHref(browseFiltersToHref(cleared(filters)));
 ---
 
-<Layout page="browse" title="Browse">
+<Layout page="browse" title={m.browse_title()}>
 	<div class="browse">
 		<div class="container browse-grid">
 			<div class="browse-toolbar">
 				<div class="browse-toolbar-filters">
-					<h2 class="browse-toolbar-title">Filters</h2>
+					<h2 class="browse-toolbar-title">{m.browse_filters()}</h2>
 					{
 						activeCount > 0 && (
 							<a class="browse-toolbar-clear" href={clearedHref}>
-								Clear all
+								{m.browse_clear_all()}
 							</a>
 						)
 					}
@@ -156,8 +158,8 @@ const clearedHref = browseFiltersToHref(cleared(filters));
 										<span class="filter-chip-label">{chip.label}</span>
 										<a
 											class="filter-chip-remove"
-											href={chip.href}
-											aria-label={`Remove ${chip.label}`}
+											href={localizeHref(chip.href)}
+											aria-label={m.browse_remove_filter({ label: chip.label })}
 										>
 											<Fragment
 												set:html={presentation.render(
@@ -171,21 +173,24 @@ const clearedHref = browseFiltersToHref(cleared(filters));
 							</span>
 						)
 					}
-					<p class="browse-match-count">
-						<b>{total.toLocaleString("en-US")}</b> devices match
-					</p>
+					<p
+						class="browse-match-count"
+						set:html={m.browse_match_count({
+							count: `<b>${total.toLocaleString(getLocale())}</b>`,
+						})}
+					/>
 				</div>
 			</div>
 
 			<details class="browse-filters" open data-browse-filters-disclosure>
 				<summary class="browse-filters-summary">
-					Filters{activeCount > 0 ? ` · ${activeCount}` : ""}
+					{m.browse_filters()}{activeCount > 0 ? ` · ${activeCount}` : ""}
 				</summary>
 				<form
 					class="filters"
 					method="get"
-					action="/browse"
-					aria-label="Filters"
+					action={localizeHref("/browse")}
+					aria-label={m.browse_filters()}
 					data-browse-filters
 				>
 					{
@@ -196,9 +201,11 @@ const clearedHref = browseFiltersToHref(cleared(filters));
 					<div class="local-only-toggle">
 						<label class="local-only-toggle-row">
 							<span class="local-only-toggle-text">
-								<span class="local-only-toggle-label">Local control only</span>
+								<span class="local-only-toggle-label">
+									{m.browse_local_only_label()}
+								</span>
 								<span class="local-only-toggle-hint">
-									Hide devices that need an internet connection
+									{m.browse_local_only_hint()}
 								</span>
 							</span>
 							<span class={"switch" + (filters.localOnly ? " is-on" : "")}>
@@ -207,7 +214,7 @@ const clearedHref = browseFiltersToHref(cleared(filters));
 									name="local"
 									value="1"
 									checked={filters.localOnly}
-									aria-label="Local control only"
+									aria-label={m.browse_local_only_label()}
 								/>
 								<span class="switch-track"></span>
 								<span class="switch-thumb"></span>
@@ -216,7 +223,7 @@ const clearedHref = browseFiltersToHref(cleared(filters));
 					</div>
 					<div class="filter-group">
 						<div class="filter-group-head">
-							<div class="filter-group-label">Category</div>
+							<div class="filter-group-label">{m.browse_category_label()}</div>
 						</div>
 						<div class="filter-options">
 							{
@@ -230,7 +237,7 @@ const clearedHref = browseFiltersToHref(cleared(filters));
 										/>
 										<span class="filter-row-text">{row.label}</span>
 										<span class="count">
-											{row.count.toLocaleString("en-US")}
+											{row.count.toLocaleString(getLocale())}
 										</span>
 									</label>
 								))
@@ -239,7 +246,9 @@ const clearedHref = browseFiltersToHref(cleared(filters));
 					</div>
 					<div class="filter-group">
 						<div class="filter-group-head">
-							<div class="filter-group-label">Manufacturer</div>
+							<div class="filter-group-label">
+								{m.browse_manufacturer_label()}
+							</div>
 						</div>
 						<div class="filter-options">
 							{
@@ -253,7 +262,7 @@ const clearedHref = browseFiltersToHref(cleared(filters));
 										/>
 										<span class="filter-row-text">{manufacturer.name}</span>
 										<span class="count">
-											{manufacturer.count.toLocaleString("en-US")}
+											{manufacturer.count.toLocaleString(getLocale())}
 										</span>
 									</label>
 								))
@@ -261,8 +270,9 @@ const clearedHref = browseFiltersToHref(cleared(filters));
 							{
 								manufacturerOverflow > 0 && (
 									<p class="filter-overflow-note">
-										and {manufacturerOverflow.toLocaleString("en-US")} more.
-										Search to narrow down.
+										{m.browse_manufacturer_overflow({
+											count: manufacturerOverflow.toLocaleString(getLocale()),
+										})}
 									</p>
 								)
 							}
@@ -273,7 +283,7 @@ const clearedHref = browseFiltersToHref(cleared(filters));
 						type="submit"
 						data-browse-filters-apply
 					>
-						Apply filters
+						{m.browse_apply_filters()}
 					</button>
 				</form>
 			</details>
@@ -295,10 +305,10 @@ const clearedHref = browseFiltersToHref(cleared(filters));
 				{
 					devices.length === 0 ? (
 						<div class="browse-empty">
-							<h2>No devices match these filters.</h2>
-							<p>Try loosening a filter or clearing the search.</p>
-							<a class="btn btn-secondary" href="/browse">
-								Clear all filters
+							<h2>{m.browse_empty_title()}</h2>
+							<p>{m.browse_empty_hint()}</p>
+							<a class="btn btn-secondary" href={localizeHref("/browse")}>
+								{m.browse_empty_clear()}
 							</a>
 						</div>
 					) : (
@@ -312,7 +322,10 @@ const clearedHref = browseFiltersToHref(cleared(filters));
 								))}
 							</div>
 							{pages.length > 0 && (
-								<nav class="browse-pagination" aria-label="Pagination">
+								<nav
+									class="browse-pagination"
+									aria-label={m.browse_pagination_label()}
+								>
 									{hasPrevious ? (
 										<a
 											class="browse-pagination-step"
@@ -325,7 +338,7 @@ const clearedHref = browseFiltersToHref(cleared(filters));
 													PresentationRenderPresetRoleIcon.withSize(16),
 												)}
 											/>
-											<span>Previous</span>
+											<span>{m.browse_previous()}</span>
 										</a>
 									) : (
 										<span
@@ -338,7 +351,7 @@ const clearedHref = browseFiltersToHref(cleared(filters));
 													PresentationRenderPresetRoleIcon.withSize(16),
 												)}
 											/>
-											<span>Previous</span>
+											<span>{m.browse_previous()}</span>
 										</span>
 									)}
 									<span class="browse-pagination-pages">
@@ -352,15 +365,17 @@ const clearedHref = browseFiltersToHref(cleared(filters));
 													class="browse-pagination-page is-current"
 													aria-current="page"
 												>
-													{(item.page + 1).toLocaleString("en-US")}
+													{(item.page + 1).toLocaleString(getLocale())}
 												</span>
 											) : (
 												<a
 													class="browse-pagination-page"
 													href={pageHref(item.page)}
-													aria-label={`Page ${item.page + 1}`}
+													aria-label={m.browse_page_number({
+														number: item.page + 1,
+													})}
 												>
-													{(item.page + 1).toLocaleString("en-US")}
+													{(item.page + 1).toLocaleString(getLocale())}
 												</a>
 											),
 										)}
@@ -371,7 +386,7 @@ const clearedHref = browseFiltersToHref(cleared(filters));
 											href={pageHref(page + 1)}
 											rel="next"
 										>
-											<span>Next</span>
+											<span>{m.browse_next()}</span>
 											<span
 												set:html={presentation.render(
 													presentation.generic("chevronR"),
@@ -384,7 +399,7 @@ const clearedHref = browseFiltersToHref(cleared(filters));
 											class="browse-pagination-step is-disabled"
 											aria-disabled="true"
 										>
-											<span>Next</span>
+											<span>{m.browse_next()}</span>
 											<span
 												set:html={presentation.render(
 													presentation.generic("chevronR"),

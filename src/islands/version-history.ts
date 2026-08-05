@@ -2,6 +2,8 @@ import { html, LitElement, nothing } from "lit";
 import { property, state } from "lit/decorators.js";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
 
+import { m } from "../paraglide/messages.js";
+import { getLocale } from "../paraglide/runtime.js";
 import { defineElementOnce } from "../utilities/define-element.js";
 import * as presentation from "../utilities/presentation";
 import { PresentationRenderPresetRoleIcon } from "../utilities/presentation/preset.js";
@@ -14,7 +16,7 @@ export interface VersionEntry {
 
 export class VersionHistory extends LitElement {
 	@property({ type: Array }) entries: VersionEntry[] = [];
-	@property() label = "Show version history";
+	@property() label = m.version_history_show();
 
 	@state() private _open = false;
 
@@ -69,18 +71,18 @@ export class VersionHistory extends LitElement {
 									class="vh-panel"
 									role="dialog"
 									aria-modal="true"
-									aria-label="Version history"
+									aria-label=${m.version_history_title()}
 									@click=${(e: Event) => e.stopPropagation()}
 								>
 									<header class="vh-head">
 										<button
 											class="vh-close"
-											aria-label="Close"
+											aria-label=${m.version_history_close()}
 											@click=${this._close}
 										>
 											${unsafeHTML(presentation.render(presentation.generic("x"), PresentationRenderPresetRoleIcon))}
 										</button>
-										<h2>Version history</h2>
+										<h2>${m.version_history_title()}</h2>
 									</header>
 									<ol class="vh-timeline">
 										${this.entries.map(
@@ -92,9 +94,9 @@ export class VersionHistory extends LitElement {
 													<div class="vh-body">
 														<div class="vh-ver">
 															<span class="mono">${entry.version}</span>
-															${entry.current ? html`<span class="vh-badge">Current</span>` : nothing}
+															${entry.current ? html`<span class="vh-badge">${m.version_history_current()}</span>` : nothing}
 														</div>
-														${entry.installs ? html`<div class="vh-meta">${entry.installs.toLocaleString("en-US")} active installs</div>` : nothing}
+														${entry.installs ? html`<div class="vh-meta">${m.version_history_installs({ count: entry.installs.toLocaleString(getLocale()) })}</div>` : nothing}
 													</div>
 												</li>
 											`,

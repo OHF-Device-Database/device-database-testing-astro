@@ -36,6 +36,7 @@ import {
 } from "lucide";
 import type { IconNode } from "lucide";
 
+import { m } from "../../paraglide/messages.js";
 import { Unknown } from "../../types/unknown";
 import { peek } from "./preset";
 import type { DeviceCategoryTopLevelId } from "../../types/category";
@@ -43,8 +44,8 @@ import type { DeviceConnectivityId } from "../../types/device";
 import type { QuickFilterId } from "../../types/quick-filter";
 import type { PresentationRenderPreset } from "./preset";
 
-type PresentationLabeled = {
-	label: string;
+type PresentationLazyLabeled = {
+	label: () => string;
 };
 
 const PresentationRenderableSymbol = Symbol("PresentationIconRenderable");
@@ -68,17 +69,17 @@ type PresentationStylesheetColor = {
 const PRESENTATION_ENTITY_DEVICE_CONNECTIVITY = {
 	online: {
 		cls: "net-yes",
-		label: "Requires internet",
+		label: m.connectivity_requires_internet,
 		color: "var(--neutral-400)",
 	},
 	offline: {
 		cls: "net-no",
-		label: "Local connection",
+		label: m.connectivity_local,
 		color: "var(--success)",
 	},
 } as const satisfies Record<
 	DeviceConnectivityId,
-	PresentationLabeled &
+	PresentationLazyLabeled &
 		PresentationStylesheetClass &
 		PresentationStylesheetColor
 >;
@@ -86,53 +87,62 @@ const PRESENTATION_ENTITY_DEVICE_CONNECTIVITY = {
 const PRESENTATION_ENTITY_DEVICE_CATEGORY = {
 	"button-switch-and-control": {
 		...renderable(ToggleRight),
-		label: "Buttons, switches, and controls",
+		label: m.category_button_switch_and_control,
 	},
-	cleaning: { ...renderable(Bot), label: "Cleaning" },
-	"climate-control": { ...renderable(Thermometer), label: "Climate control" },
-	cover: { ...renderable(Blinds), label: "Cover" },
-	entertainment: { ...renderable(Speaker), label: "Entertainment" },
-	garden: { ...renderable(Sprout), label: "Garden" },
-	irrigation: { ...renderable(Droplets), label: "Irrigation" },
+	cleaning: { ...renderable(Bot), label: m.category_cleaning },
+	"climate-control": {
+		...renderable(Thermometer),
+		label: m.category_climate_control,
+	},
+	cover: { ...renderable(Blinds), label: m.category_cover },
+	entertainment: { ...renderable(Speaker), label: m.category_entertainment },
+	garden: { ...renderable(Sprout), label: m.category_garden },
+	irrigation: { ...renderable(Droplets), label: m.category_irrigation },
 	"kitchen-and-household": {
 		...renderable(Refrigerator),
-		label: "Kitchen and household",
+		label: m.category_kitchen_and_household,
 	},
-	lighting: { ...renderable(Lightbulb), label: "Lighting" },
-	monitoring: { ...renderable(Radar), label: "Monitoring" },
-	networking: { ...renderable(Router), label: "Networking" },
-	pets: { ...renderable(PawPrint), label: "Pets" },
-	"pool-and-spa": { ...renderable(Waves), label: "Pool and spa" },
-	"power-and-energy": { ...renderable(Zap), label: "Power and energy" },
-	printing: { ...renderable(Printer), label: "Printing" },
+	lighting: { ...renderable(Lightbulb), label: m.category_lighting },
+	monitoring: { ...renderable(Radar), label: m.category_monitoring },
+	networking: { ...renderable(Router), label: m.category_networking },
+	pets: { ...renderable(PawPrint), label: m.category_pets },
+	"pool-and-spa": { ...renderable(Waves), label: m.category_pool_and_spa },
+	"power-and-energy": {
+		...renderable(Zap),
+		label: m.category_power_and_energy,
+	},
+	printing: { ...renderable(Printer), label: m.category_printing },
 	"security-and-access-control": {
 		...renderable(Lock),
-		label: "Security and access control",
+		label: m.category_security_and_access_control,
 	},
 	"vehicle-and-mobility": {
 		...renderable(Car),
-		label: "Vehicles and mobility",
+		label: m.category_vehicle_and_mobility,
 	},
-	"water-management": { ...renderable(Droplet), label: "Water management" },
-	weather: { ...renderable(CloudSun), label: "Weather" },
+	"water-management": {
+		...renderable(Droplet),
+		label: m.category_water_management,
+	},
+	weather: { ...renderable(CloudSun), label: m.category_weather },
 } as const satisfies Record<
 	DeviceCategoryTopLevelId,
-	PresentationRenderable & PresentationLabeled
+	PresentationRenderable & PresentationLazyLabeled
 >;
 
 const PRESENTATION_ENTITY_QUICK_FILTER = {
 	"sensors-local": {
 		...renderable(Radar),
-		label: "Sensors with local connection",
+		label: m.quick_filter_sensors_local,
 	},
 	"lighting-local": {
 		...renderable(Lightbulb),
-		label: "Lighting with local connection",
+		label: m.quick_filter_lighting_local,
 	},
-	energy: { ...renderable(Zap), label: "Energy monitoring" },
+	energy: { ...renderable(Zap), label: m.quick_filter_energy },
 } as const satisfies Record<
 	QuickFilterId,
-	PresentationRenderable & PresentationLabeled
+	PresentationRenderable & PresentationLazyLabeled
 >;
 
 const PRESENTATION_GENERIC = {
@@ -153,24 +163,32 @@ const PRESENTATION_GENERIC = {
 } as const;
 
 export const device = {
-	connectivity: (self: DeviceConnectivityId | Unknown) =>
-		self !== Unknown
-			? PRESENTATION_ENTITY_DEVICE_CONNECTIVITY[self]
-			: ({
-					cls: "net-unknown",
-					label: "Connectivity unknown",
-					color: "var(--neutral-400)",
-				} as const),
-	category: (self: DeviceCategoryTopLevelId | Unknown) =>
-		self !== Unknown
-			? PRESENTATION_ENTITY_DEVICE_CATEGORY[self]
-			: ({
-					...renderable(CircleQuestionMark),
-					label: "Category unknown",
-				} as const),
+	connectivity: (self: DeviceConnectivityId | Unknown) => {
+		if (self === Unknown) {
+			return {
+				cls: "net-unknown",
+				label: m.connectivity_unknown(),
+				color: "var(--neutral-400)",
+			} as const;
+		}
+		const { label, ...rest } = PRESENTATION_ENTITY_DEVICE_CONNECTIVITY[self];
+		return { ...rest, label: label() };
+	},
+	category: (self: DeviceCategoryTopLevelId | Unknown) => {
+		if (self === Unknown) {
+			return {
+				...renderable(CircleQuestionMark),
+				label: m.category_unknown(),
+			} as const;
+		}
+		const { label, ...rest } = PRESENTATION_ENTITY_DEVICE_CATEGORY[self];
+		return { ...rest, label: label() };
+	},
 };
-export const quickFilter = (self: QuickFilterId) =>
-	PRESENTATION_ENTITY_QUICK_FILTER[self];
+export const quickFilter = (self: QuickFilterId) => {
+	const { label, ...rest } = PRESENTATION_ENTITY_QUICK_FILTER[self];
+	return { ...rest, label: label() };
+};
 
 export const generic = (self: keyof typeof PRESENTATION_GENERIC) =>
 	PRESENTATION_GENERIC[self];

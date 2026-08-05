@@ -5,6 +5,8 @@ import Layout from "../../layouts/Layout.astro";
 
 import { getDevice, getDeviceCount } from "../../io/device";
 import { getDimensions } from "../../io/dimension";
+import { m } from "../../paraglide/messages.js";
+import { getLocale, localizeHref } from "../../paraglide/runtime.js";
 import { topLevelCategoryResolver } from "../../types/category";
 import { deviceMonoMap } from "../../types/device";
 import { Unknown } from "../../types/unknown";
@@ -35,7 +37,7 @@ const [{ total }, { dimensions }] = await Promise.all([
 const resolveCategory = topLevelCategoryResolver(dimensions.categories);
 
 const formatDate = (date: Date): string =>
-	date.toLocaleDateString("en-US", {
+	date.toLocaleDateString(getLocale(), {
 		day: "numeric",
 		month: "short",
 		year: "numeric",
@@ -85,10 +87,10 @@ const view =
 							presented: presentation.device.connectivity(device.connectivity),
 							explanation:
 								device.connectivity === "online"
-									? "This device requires an active internet connection to function. Setup, day-to-day control, or both rely on a manufacturer service. If the manufacturer's servers go offline or the product is discontinued, the device may stop working."
+									? m.device_connectivity_online_explanation()
 									: device.connectivity === "offline"
-										? 'This device can be controlled locally on your home network. Keep in mind that "without the cloud" isn\'t always absolute: some devices may still need internet, a manufacturer account for setup, or the cloud for certain features.'
-										: "We don't yet have connectivity data for this device, so we can't say whether it depends on the manufacturer's cloud. This page will update as more reports come in.",
+										? m.device_connectivity_offline_explanation()
+										: m.device_connectivity_unknown_explanation(),
 						},
 						docsUrl: `https://www.home-assistant.io/integrations/${device.integration.domain}`,
 						firstEncountered: formatDate(device.firstEncountered),
@@ -113,12 +115,16 @@ const view =
 			title={`${view.device.manufacturer} ${view.derived.name}`}
 		>
 			<div class="container detail-wrap">
-				<nav class="breadcrumb" aria-label="Breadcrumb">
-					<a href="/browse">Devices</a>
+				<nav class="breadcrumb" aria-label={m.device_breadcrumb_label()}>
+					<a href={localizeHref("/browse")}>{m.device_breadcrumb_devices()}</a>
 					{typeof view.derived.categories.first?.id === "string" ? (
 						<>
 							<span class="sep">›</span>
-							<a href={`/browse?category=${view.derived.categories.first.id}`}>
+							<a
+								href={localizeHref(
+									`/browse?category=${view.derived.categories.first.id}`,
+								)}
+							>
 								{view.derived.categories.first.presented.label}
 							</a>
 						</>
@@ -140,15 +146,17 @@ const view =
 					<div class="detail-title">
 						<h1>{view.derived.name}</h1>
 						<div class="detail-manu">
-							by{" "}
+							{m.device_by()}{" "}
 							<a
-								href={`/browse?manufacturer=${encodeURIComponent(view.device.manufacturer)}`}
+								href={localizeHref(
+									`/browse?manufacturer=${encodeURIComponent(view.device.manufacturer)}`,
+								)}
 							>
 								{view.device.manufacturer}
 							</a>
 						</div>
 						<div class="glance">
-							<span class="glance-key">Connectivity</span>
+							<span class="glance-key">{m.device_connectivity()}</span>
 							<span
 								class={
 									"local-indicator " + view.derived.connectivity.presented.cls
@@ -157,7 +165,7 @@ const view =
 								<span class="dot" />
 								{view.derived.connectivity.presented.label}
 							</span>
-							<span class="glance-key">Home Assistant Integration</span>
+							<span class="glance-key">{m.device_ha_integration()}</span>
 							<span>{view.device.integration.name}</span>
 						</div>
 					</div>
@@ -190,19 +198,15 @@ const view =
 								aria-hidden="true"
 								set:html={haLogo}
 							/>
-							<h2>Connects with Home Assistant</h2>
+							<h2>{m.device_ha_connect_title()}</h2>
 
-							<p>
-								Home Assistant is free software for running your smart home from
-								a single app. To add this device, open Home Assistant, go to
-								Settings &gt; Devices and services, and click Add integration.
-							</p>
+							<p>{m.device_ha_connect_body()}</p>
 							<dl class="ha-meta">
-								<dt>Integration</dt>
+								<dt>{m.device_integration()}</dt>
 								<dd>{view.device.integration.name}</dd>
 								{view.device.entities.length > 0 && (
 									<>
-										<dt>Supported entities</dt>
+										<dt>{m.device_supported_entities()}</dt>
 										<dd class="ha-entity-chips">
 											{view.device.entities.map((et) => (
 												<span class="ha-entity-chip mono">{et.domain}</span>
@@ -214,7 +218,7 @@ const view =
 
 							<p class="ha-docs-link">
 								<a href={view.derived.docsUrl} target="_blank" rel="noopener">
-									Read the Home Assistant documentation{" "}
+									{m.device_read_docs()}{" "}
 									<span
 										set:html={presentation.render(
 											presentation.generic("open"),
@@ -226,11 +230,11 @@ const view =
 						</section>
 
 						<section class="article-section">
-							<h2>Specifications</h2>
+							<h2>{m.device_specifications()}</h2>
 							<div class="spec-accordions">
 								<details class="spec-acc" open>
 									<summary class="spec-acc-summary">
-										<span>Ecosystems</span>
+										<span>{m.device_ecosystems()}</span>
 										<span
 											class="spec-acc-chevron"
 											set:html={presentation.render(
@@ -242,7 +246,7 @@ const view =
 									<div class="spec-acc-body">
 										<dl class="spec-dl">
 											<div class="trait-row">
-												<dt>Connects with</dt>
+												<dt>{m.device_connects_with()}</dt>
 												<dd>
 													<span class="ha-chip">
 														<span
@@ -250,7 +254,7 @@ const view =
 															aria-hidden="true"
 															set:html={haLogo}
 														/>
-														Home Assistant
+														{m.device_home_assistant()}
 													</span>
 												</dd>
 											</div>
@@ -261,7 +265,7 @@ const view =
 								{view.derived.versions.software.length > 0 && (
 									<details class="spec-acc" open>
 										<summary class="spec-acc-summary">
-											<span>Software version</span>
+											<span>{m.device_software_version()}</span>
 											<span
 												class="spec-acc-chevron"
 												set:html={presentation.render(
@@ -273,7 +277,7 @@ const view =
 										<div class="spec-acc-body">
 											<dl class="spec-dl">
 												<div class="trait-row">
-													<dt>Current</dt>
+													<dt>{m.device_current()}</dt>
 													<dd class="spec-version-dd">
 														<span class="mono">
 															{view.derived.versions.software.at(0)?.version}
@@ -302,7 +306,7 @@ const view =
 								{view.derived.versions.hardware.length > 0 && (
 									<details class="spec-acc" open>
 										<summary class="spec-acc-summary">
-											<span>Hardware version</span>
+											<span>{m.device_hardware_version()}</span>
 											<span
 												class="spec-acc-chevron"
 												set:html={presentation.render(
@@ -332,7 +336,7 @@ const view =
 
 								<details class="spec-acc" open>
 									<summary class="spec-acc-summary">
-										<span>Product identifiers</span>
+										<span>{m.device_product_identifiers()}</span>
 										<span
 											class="spec-acc-chevron"
 											set:html={presentation.render(
@@ -345,7 +349,7 @@ const view =
 										<div class="spec-acc-body">
 											<dl class="spec-dl">
 												<div class="trait-row">
-													<dt>Model number</dt>
+													<dt>{m.device_model_number()}</dt>
 													<dd>
 														<span class="spec-chip mono">
 															{view.device.modelId}
@@ -362,25 +366,22 @@ const view =
 
 					<aside>
 						<div class="aside-card aside-stats">
-							<h4>Real-world data</h4>
+							<h4>{m.device_real_world_data()}</h4>
 							<dl class="aside-stat-list">
 								<div class="aside-stat">
-									<dt>Reports</dt>
-									<dd>{view.device.count.toLocaleString("en-US")}</dd>
+									<dt>{m.device_reports()}</dt>
+									<dd>{view.device.count.toLocaleString(getLocale())}</dd>
 								</div>
 
 								<div class="aside-stat">
-									<dt>First seen</dt>
+									<dt>{m.device_first_seen()}</dt>
 									<dd>{view.derived.firstEncountered}</dd>
 								</div>
 							</dl>
-							<p class="aside-stats-note">
-								Anonymized telemetry from opt-in Home Assistant users. No
-								accounts, no personal data, no tracking.
-							</p>
+							<p class="aside-stats-note">{m.device_stats_note()}</p>
 							<p class="aside-source-linkrow">
-								<a href="/how-it-works">
-									Learn about the methodology{" "}
+								<a href={localizeHref("/how-it-works")}>
+									{m.device_methodology_link()}{" "}
 									<span
 										set:html={presentation.render(
 											presentation.generic("open"),
@@ -395,14 +396,16 @@ const view =
 			</div>
 		</Layout>
 	) : (
-		<Layout page="page" title="Not found">
+		<Layout page="page" title={m.device_not_found_title()}>
 			<div class="container" style="padding: 80px 0; text-align: center;">
 				<div class="eyebrow" style="margin-bottom: 12px;">
 					404
 				</div>
-				<h1 style="margin-bottom: 16px;">Device not found.</h1>
-				<a class="btn btn-primary" href="/browse">
-					Browse all {total} devices
+				<h1 style="margin-bottom: 16px;">{m.device_not_found_heading()}</h1>
+				<a class="btn btn-primary" href={localizeHref("/browse")}>
+					{m.device_not_found_browse_all({
+						count: total.toLocaleString(getLocale()),
+					})}
 				</a>
 			</div>
 		</Layout>

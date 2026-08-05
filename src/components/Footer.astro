@@ -2,6 +2,9 @@
 import ohfLogoDark from "../assets/ohf-logo-dark.svg?raw";
 import ohfLogoLight from "../assets/ohf-logo-light.svg?raw";
 
+import { m } from "../paraglide/messages.js";
+import { localizeHref } from "../paraglide/runtime.js";
+
 interface Props {
 	flush?: boolean;
 }
@@ -12,12 +15,18 @@ const { flush = false } = Astro.props;
 <footer class={"appfoot" + (flush ? " appfoot-flush" : "")}>
 	<div class="container appfoot-row">
 		<ul class="appfoot-links">
-			<li><a href="/browse">Browse</a></li>
-			<li><a href="/how-it-works">How it works</a></li>
-			<li><a href="/editorial-stance">Editorial stance</a></li>
-			<li><a href="/about">About</a></li>
+			<li><a href={localizeHref("/browse")}>{m.footer_browse()}</a></li>
 			<li>
-				<a href="https://www.openhomefoundation.org/">Open Home Foundation</a>
+				<a href={localizeHref("/how-it-works")}>{m.footer_how_it_works()}</a>
+			</li>
+			<li>
+				<a href={localizeHref("/editorial-stance")}>
+					{m.footer_editorial_stance()}
+				</a>
+			</li>
+			<li><a href={localizeHref("/about")}>{m.footer_about()}</a></li>
+			<li>
+				<a href="https://www.openhomefoundation.org/">{m.footer_ohf()}</a>
 			</li>
 		</ul>
 		<span class="appfoot-legal-inline">
@@ -25,7 +34,9 @@ const { flush = false } = Astro.props;
 				<span class="ohf-logo-light" set:html={ohfLogoLight} />
 				<span class="ohf-logo-dark" set:html={ohfLogoDark} />
 			</span>
-			© 2026 Open Home Foundation · <a href="/imprint">Imprint</a>
+			{m.footer_copyright({ year: "2026" })} · <a
+				href={localizeHref("/imprint")}>{m.footer_imprint()}</a
+			>
 		</span>
 	</div>
 </footer>

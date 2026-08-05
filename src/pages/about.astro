@@ -3,25 +3,25 @@ import byOhfDark from "../assets/by-ohf-dark.svg";
 import byOhfLight from "../assets/by-ohf-light.svg";
 
 import Layout from "../layouts/Layout.astro";
+
+import { m } from "../paraglide/messages.js";
+import { localizeHref } from "../paraglide/runtime.js";
+
+export const prerender = false;
+
+Astro.cache.set({ maxAge: 86400 });
 ---
 
-<Layout page="page" title="About">
+<Layout page="page" title={m.about_title()}>
 	<div class="container-narrow content-page">
 		<section class="content-section content-intro">
-			<h1>About the Device Database</h1>
-			<p class="content-lede">
-				The Device Database is a project of the Open Home Foundation, the
-				non-profit stewards of Home Assistant, ESPHome, Music Assistant, and
-				friends.
-			</p>
+			<h1>{m.about_heading()}</h1>
+			<p class="content-lede">{m.about_lede()}</p>
+			<p class="content-prose">{m.about_body()}</p>
 			<p class="content-prose">
-				It is built and maintained in the open. Manufacturer specs say what a
-				device should do. We record what it actually does, drawn from anonymized
-				data the community shares, and kept editorially neutral.
-			</p>
-			<p class="content-prose">
-				Read about <a href="/how-it-works">how it works</a> to see exactly what is
-				shared, and how it is protected.
+				{m.about_read_prefix()}
+				<a href={localizeHref("/how-it-works")}>{m.about_read_link()}</a>
+				{m.about_read_suffix()}
 			</p>
 
 			<a
@@ -32,7 +32,7 @@ import Layout from "../layouts/Layout.astro";
 			>
 				<picture>
 					<source srcset={byOhfDark.src} media="(prefers-color-scheme: dark)" />
-					<img src={byOhfLight.src} alt="Open Home Foundation Logo" />
+					<img src={byOhfLight.src} alt={m.about_ohf_logo_alt()} />
 				</picture>
 			</a>
 		</section>

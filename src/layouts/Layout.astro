@@ -5,6 +5,7 @@ import { ClientRouter } from "astro:transitions";
 import Footer from "../components/Footer.astro";
 import Nav from "../components/Nav.astro";
 
+import { m } from "../paraglide/messages.js";
 import globalCss from "../styles/global.css?url";
 
 interface Props {
@@ -121,7 +122,7 @@ const { title, page = "page", back } = Astro.props;
 		<slot name="head" />
 		<ClientRouter fallback="swap" />
 		<title>
-			Device Database{typeof title !== "undefined" ? ` · ${title}` : ""}
+			{m.site_title()}{typeof title !== "undefined" ? ` · ${title}` : ""}
 		</title>
 	</head>
 	<body>
