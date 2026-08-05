@@ -1,0 +1,25 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+import { localizeHref } from "../paraglide/runtime.js";
+---
+
+<Layout page="page" title="Page not found">
+	<div class="container-narrow content-page">
+		<section class="content-section content-intro">
+			<h1>Page not found</h1>
+			<p class="content-lede">
+				Sorry, we couldn't find the page you were looking for.
+			</p>
+			<p class="content-prose">
+				<a href={localizeHref("/")}>Return to the homepage</a>
+			</p>
+		</section>
+	</div>
+</Layout>
+
+<script is:inline>
+	document.addEventListener("DOMContentLoaded", function () {
+		plausible("404");
+	});
+</script>
