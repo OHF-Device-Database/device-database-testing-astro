@@ -14,7 +14,7 @@
 		"astro": "astro",
 		"test": "vitest run",
 		"test:watch": "vitest",
-		"prepare": "husky && pnpm run i18n:compile",
+		"prepare": "husky && if [ -d project.inlang ]; then pnpm run i18n:compile; fi",
 		"i18n:compile": "paraglide-js compile --project ./project.inlang --outdir ./src/paraglide"
 	},
 	"lint-staged": {

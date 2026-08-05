@@ -2,3 +2,6 @@ src/paraglide/
 pnpm-lock.yaml
 dist/
 .astro/
+# compiler side outputs, regenerated on every compile
+project.inlang/**
+!project.inlang/settings.json
