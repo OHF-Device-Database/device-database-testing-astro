@@ -3,8 +3,9 @@ import SearchBox from "../components/SearchBox.astro";
 import Layout from "../layouts/Layout.astro";
 
 import { getDeviceCount } from "../io/device";
+import { m } from "../paraglide/messages.js";
+import { getLocale, localizeHref } from "../paraglide/runtime.js";
 import { cachePolicy } from "../utilities/cache";
-import { localize } from "../utilities/localize";
 
 export const prerender = false;
 
@@ -20,16 +21,15 @@ Astro.cache.set({
 	<div class="home-screen">
 		<section class="hero">
 			<div class="container hero-center">
-				<h1>{localize("home.title")}</h1>
-				<p class="hero-lede">{localize("home.lede")}</p>
+				<h1>{m.home_title()}</h1>
+				<p class="hero-lede">{m.home_lede()}</p>
 				<div class="hero-search-wrap">
-					<SearchBox
-						size="hero"
-						placeholder={localize("home.search_placeholder")}
-					/>
+					<SearchBox size="hero" placeholder={m.home_search_placeholder()} />
 				</div>
 				<div class="hero-actions">
-					<a href="/browse">{localize("home.browse_all", { count: total })}</a>
+					<a href={localizeHref("/browse")}>
+						{m.home_browse_all({ count: total.toLocaleString(getLocale()) })}
+					</a>
 				</div>
 			</div>
 		</section>

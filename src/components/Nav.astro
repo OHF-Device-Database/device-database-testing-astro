@@ -1,6 +1,7 @@
 ---
 import SearchBox from "./SearchBox.astro";
 
+import { localizeHref } from "../paraglide/runtime.js";
 import { LOGO_SVG } from "../utilities/logo";
 import { generic, render } from "../utilities/presentation";
 import { PresentationRenderPresetRoleIcon } from "../utilities/presentation/preset";
@@ -42,7 +43,7 @@ const showSearch = page !== "home";
 	<div class="container appnav-inner">
 		<div class="appnav-left">
 			<a
-				href="/"
+				href={localizeHref("/")}
 				class="brand"
 				aria-label="Device Database, home"
 				set:html={LOGO_SVG}

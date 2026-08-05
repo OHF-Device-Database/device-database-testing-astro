@@ -14,7 +14,8 @@
 		"astro": "astro",
 		"test": "vitest run",
 		"test:watch": "vitest",
-		"prepare": "husky"
+		"prepare": "husky && if [ -d project.inlang ]; then pnpm run i18n:compile; fi",
+		"i18n:compile": "paraglide-js compile --project ./project.inlang --outdir ./src/paraglide"
 	},
 	"lint-staged": {
 		"*.{ts,mjs,astro}": [
@@ -29,7 +30,6 @@
 		"@astrojs/netlify": "^7.0.13",
 		"@eslint-community/eslint-plugin-eslint-comments": "^4.7.2",
 		"astro": "^6.4.4",
-		"intl-messageformat": "^11.2.12",
 		"lit": "^3.3.2",
 		"lucide": "^1.17.0"
 	},
@@ -38,6 +38,7 @@
 		"@astrojs/node": "^10.1.4",
 		"@eslint/js": "^10.0.1",
 		"@ianvs/prettier-plugin-sort-imports": "^4.7.1",
+		"@inlang/paraglide-js": "^2.23.0",
 		"eslint": "^10.8.0",
 		"eslint-plugin-astro": "^3.0.1",
 		"eslint-plugin-lit": "^2.3.1",

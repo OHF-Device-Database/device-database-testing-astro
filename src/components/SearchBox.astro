@@ -1,4 +1,5 @@
 ---
+import { localizeHref } from "../paraglide/runtime.js";
 import { generic, render } from "../utilities/presentation";
 import { PresentationRenderPresetRoleIcon } from "../utilities/presentation/preset";
 
@@ -18,7 +19,12 @@ const iconSize = size === "hero" ? 22 : 18;
 
 <device-search size={size} placeholder={placeholder}>
 	<div class={`searchbox searchbox-${size}`}>
-		<form class="searchbox-input" role="search" action="/browse" method="get">
+		<form
+			class="searchbox-input"
+			role="search"
+			action={localizeHref("/browse")}
+			method="get"
+		>
 			<Fragment
 				set:html={render(
 					generic("search"),

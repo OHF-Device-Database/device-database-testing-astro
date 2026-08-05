@@ -1,0 +1,7 @@
+{
+	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"home_title": "Find the right device for your smart home",
+	"home_lede": "Real-world data from millions of Home Assistant installations",
+	"home_search_placeholder": "Search",
+	"home_browse_all": "Browse all {count} devices →"
+}
