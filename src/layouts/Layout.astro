@@ -125,6 +125,26 @@ const { title, page = "page", back } = Astro.props;
 		<title>
 			{m.site_title()}{typeof title !== "undefined" ? ` · ${title}` : ""}
 		</title>
+
+		<!-- Privacy-friendly analytics by Plausible -->
+		<script
+			is:inline
+			async
+			src="https://plausible.openhomefoundation.org/js/pa-GYrJt4yZ1JGFK2tTFRKPd.js"
+		></script>
+		<script is:inline>
+			window.plausible =
+				window.plausible ||
+				function () {
+					(plausible.q = plausible.q || []).push(arguments);
+				};
+			plausible.init =
+				plausible.init ||
+				function (i) {
+					plausible.o = i || {};
+				};
+			plausible.init();
+		</script>
 	</head>
 	<body>
 		<div

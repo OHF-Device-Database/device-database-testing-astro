@@ -41,6 +41,19 @@
 .appfoot-legal-inline a {
 	font-size: inherit;
 }
+.appfoot-analytics {
+	padding-bottom: var(--space-4);
+}
+.appfoot-analytics p {
+	margin: 0;
+	max-width: 30rem;
+	font-size: var(--fs-13);
+	color: var(--fg-muted);
+	text-wrap: balance;
+}
+.appfoot-analytics a {
+	text-decoration: underline;
+}
 .appfoot-ohf-logo {
 	display: inline-flex;
 	align-items: center;
