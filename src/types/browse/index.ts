@@ -1,12 +1,19 @@
 import { DeviceCategoryTopLevelId } from "../category";
 import type { IoGetDevicesQuery } from "../../io/device";
 
+export type BrowseFilterMode = "include" | "exclude";
+
 export type BrowseFilters = {
 	term?: string | undefined;
 	category: Set<DeviceCategoryTopLevelId>;
+	categoryMode: BrowseFilterMode;
 	manufacturer: Set<string>;
+	manufacturerMode: BrowseFilterMode;
 	localOnly: boolean;
 };
+
+const modeFromParam = (value: string | null): BrowseFilterMode =>
+	value === "exclude" ? "exclude" : "include";
 
 export const browseFiltersFromSearchParams = (
 	params: URLSearchParams,
@@ -24,9 +31,11 @@ export const browseFiltersFromSearchParams = (
 						: [],
 				),
 		),
+		categoryMode: modeFromParam(params.get("categoryMode")),
 		manufacturer: new Set(
 			params.getAll("manufacturer").filter((name) => name.length > 0),
 		),
+		manufacturerMode: modeFromParam(params.get("manufacturerMode")),
 		localOnly: params.get("local") === "1",
 	};
 };
@@ -41,8 +50,14 @@ export const browseFiltersToSearchParams = (
 	for (const id of [...filters.category].toSorted()) {
 		params.append("category", id);
 	}
+	if (filters.category.size > 0 && filters.categoryMode === "exclude") {
+		params.set("categoryMode", "exclude");
+	}
 	for (const name of [...filters.manufacturer].toSorted()) {
 		params.append("manufacturer", name);
+	}
+	if (filters.manufacturer.size > 0 && filters.manufacturerMode === "exclude") {
+		params.set("manufacturerMode", "exclude");
 	}
 	if (filters.localOnly) {
 		params.set("local", "1");
@@ -61,9 +76,15 @@ export const browseFiltersToQuery = (
 	filters: BrowseFilters,
 ): IoGetDevicesQuery => ({
 	...(typeof filters.term !== "undefined" ? { term: filters.term } : {}),
-	...(filters.category.size > 0 ? { category: filters.category } : {}),
+	...(filters.category.size > 0
+		? filters.categoryMode === "exclude"
+			? { "!category": filters.category }
+			: { category: filters.category }
+		: {}),
 	...(filters.manufacturer.size > 0
-		? { manufacturer: filters.manufacturer }
+		? filters.manufacturerMode === "exclude"
+			? { "!manufacturer": filters.manufacturer }
+			: { manufacturer: filters.manufacturer }
 		: {}),
 	...(filters.localOnly
 		? { "!connectivity": new Set(["online"] as const) }
@@ -89,18 +110,29 @@ const withToggled = <T>(set: Set<T>, value: T): Set<T> => {
 export const withCategoryToggled = (
 	filters: BrowseFilters,
 	id: DeviceCategoryTopLevelId,
-): BrowseFilters => ({
-	...filters,
-	category: withToggled(filters.category, id),
-});
+): BrowseFilters => {
+	const category = withToggled(filters.category, id);
+
+	return {
+		...filters,
+		category,
+		categoryMode: category.size === 0 ? "include" : filters.categoryMode,
+	};
+};
 
 export const withManufacturerToggled = (
 	filters: BrowseFilters,
 	name: string,
-): BrowseFilters => ({
-	...filters,
-	manufacturer: withToggled(filters.manufacturer, name),
-});
+): BrowseFilters => {
+	const manufacturer = withToggled(filters.manufacturer, name);
+
+	return {
+		...filters,
+		manufacturer,
+		manufacturerMode:
+			manufacturer.size === 0 ? "include" : filters.manufacturerMode,
+	};
+};
 
 export const withLocalOnly = (
 	filters: BrowseFilters,
@@ -115,6 +147,8 @@ export const withoutTerm = (filters: BrowseFilters): BrowseFilters => ({
 export const cleared = (filters: BrowseFilters): BrowseFilters => ({
 	...(typeof filters.term !== "undefined" ? { term: filters.term } : {}),
 	category: new Set(),
+	categoryMode: "include",
 	manufacturer: new Set(),
+	manufacturerMode: "include",
 	localOnly: false,
 });

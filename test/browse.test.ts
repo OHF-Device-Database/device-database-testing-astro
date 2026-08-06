@@ -7,6 +7,7 @@ import {
 	browseFiltersToSearchParams,
 	cleared,
 	withCategoryToggled,
+	withManufacturerToggled,
 } from "../src/types/browse";
 
 vi.mock("astro:env/server", () => ({ API_AUTHORITY: "https://example.com" }));
@@ -21,9 +22,28 @@ describe("browseFiltersFromSearchParams", () => {
 		t.expect(filters).toEqual({
 			term: "hue",
 			category: new Set(["lighting", "cleaning"]),
+			categoryMode: "include",
 			manufacturer: new Set(["Signify"]),
+			manufacturerMode: "include",
 			localOnly: true,
 		});
+	});
+
+	test("parses exclude modes", (t) => {
+		const filters = browseFiltersFromSearchParams(
+			new URLSearchParams(
+				"category=lighting&categoryMode=exclude&manufacturer=Signify&manufacturerMode=exclude",
+			),
+		);
+		t.expect(filters.categoryMode).toBe("exclude");
+		t.expect(filters.manufacturerMode).toBe("exclude");
+	});
+
+	test("treats unknown modes as include", (t) => {
+		const filters = browseFiltersFromSearchParams(
+			new URLSearchParams("categoryMode=banana"),
+		);
+		t.expect(filters.categoryMode).toBe("include");
 	});
 
 	test("drops category ids the API does not know", (t) => {
@@ -44,7 +64,7 @@ describe("browseFiltersFromSearchParams", () => {
 describe("browseFiltersToSearchParams", () => {
 	test("round-trips through the URL", (t) => {
 		const params = new URLSearchParams(
-			"q=hue&category=cleaning&category=lighting&manufacturer=Signify&local=1",
+			"q=hue&category=cleaning&category=lighting&categoryMode=exclude&manufacturer=Signify&local=1",
 		);
 		const roundTripped = browseFiltersToSearchParams(
 			browseFiltersFromSearchParams(params),
@@ -58,6 +78,15 @@ describe("browseFiltersToSearchParams", () => {
 		);
 		t.expect(href).toBe("/browse");
 	});
+
+	test("omits a mode with no selections", (t) => {
+		const href = browseFiltersToHref(
+			browseFiltersFromSearchParams(
+				new URLSearchParams("categoryMode=exclude&manufacturerMode=exclude"),
+			),
+		);
+		t.expect(href).toBe("/browse");
+	});
 });
 
 describe("browseFiltersToQuery", () => {
@@ -66,6 +95,20 @@ describe("browseFiltersToQuery", () => {
 			browseFiltersFromSearchParams(new URLSearchParams("local=1")),
 		);
 		t.expect(query).toEqual({ "!connectivity": new Set(["online"]) });
+	});
+
+	test("maps exclude modes to negated dimensions", (t) => {
+		const query = browseFiltersToQuery(
+			browseFiltersFromSearchParams(
+				new URLSearchParams(
+					"category=lighting&categoryMode=exclude&manufacturer=Signify&manufacturerMode=exclude",
+				),
+			),
+		);
+		t.expect(query).toEqual({
+			"!category": new Set(["lighting"]),
+			"!manufacturer": new Set(["Signify"]),
+		});
 	});
 
 	test("omits empty dimensions entirely", (t) => {
@@ -87,14 +130,44 @@ describe("modifiers", () => {
 		t.expect(withCategoryToggled(base, "lighting").category).toEqual(new Set());
 	});
 
+	test("removing the last selection resets the mode", (t) => {
+		const category = browseFiltersFromSearchParams(
+			new URLSearchParams("category=lighting&categoryMode=exclude"),
+		);
+		t.expect(withCategoryToggled(category, "lighting").categoryMode).toBe(
+			"include",
+		);
+		const manufacturer = browseFiltersFromSearchParams(
+			new URLSearchParams("manufacturer=Signify&manufacturerMode=exclude"),
+		);
+		t.expect(
+			withManufacturerToggled(manufacturer, "Signify").manufacturerMode,
+		).toBe("include");
+	});
+
+	test("keeping other selections keeps the mode", (t) => {
+		const base = browseFiltersFromSearchParams(
+			new URLSearchParams(
+				"category=lighting&category=cleaning&categoryMode=exclude",
+			),
+		);
+		t.expect(withCategoryToggled(base, "lighting").categoryMode).toBe(
+			"exclude",
+		);
+	});
+
 	test("cleared drops filters but keeps the term", (t) => {
 		const base = browseFiltersFromSearchParams(
-			new URLSearchParams("q=hue&category=lighting&local=1"),
+			new URLSearchParams(
+				"q=hue&category=lighting&categoryMode=exclude&local=1",
+			),
 		);
 		t.expect(cleared(base)).toEqual({
 			term: "hue",
 			category: new Set(),
+			categoryMode: "include",
 			manufacturer: new Set(),
+			manufacturerMode: "include",
 			localOnly: false,
 		});
 	});

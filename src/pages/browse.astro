@@ -27,12 +27,10 @@ import { cachePolicy } from "../utilities/cache";
 import * as presentation from "../utilities/presentation";
 import { PresentationRenderPresetRoleIcon } from "../utilities/presentation/preset";
 
-type Chip = { label: string; href: string };
-
 export const prerender = false;
 
 const PAGE_SIZE = 24;
-const MANUFACTURER_LIMIT = 8;
+const SIDEBAR_LIMIT = 8;
 
 const filters = browseFiltersFromSearchParams(Astro.url.searchParams);
 const pageParam = Number(Astro.url.searchParams.get("page") ?? "0");
@@ -77,18 +75,35 @@ const categoryRows = [
 ];
 const categoryLabel = new Map(categoryRows.map((row) => [row.id, row.label]));
 
-const manufacturerRows = [
-	...dimensions.manufacturers.slice(0, MANUFACTURER_LIMIT),
+const categoryVisible = [
+	...categoryRows.slice(0, SIDEBAR_LIMIT),
+	...categoryRows
+		.slice(SIDEBAR_LIMIT)
+		.filter((row) => filters.category.has(row.id)),
+];
+const categoryOverflow = categoryRows.length - categoryVisible.length;
+
+const manufacturerVisible = [
+	...dimensions.manufacturers.slice(0, SIDEBAR_LIMIT),
 	...dimensions.manufacturers
-		.slice(MANUFACTURER_LIMIT)
+		.slice(SIDEBAR_LIMIT)
 		.filter((manufacturer) => filters.manufacturer.has(manufacturer.name)),
 ];
-const manufacturerOverflow = Math.max(
-	0,
-	dimensions.manufacturers.length - manufacturerRows.length,
+const manufacturerOverflow =
+	dimensions.manufacturers.length - manufacturerVisible.length;
+
+const categoryOptions = JSON.stringify(
+	categoryRows.map(({ id, label, count }) => ({ id, label, count })),
+);
+const manufacturerOptions = JSON.stringify(
+	dimensions.manufacturers.map(({ name, count }) => ({
+		id: name,
+		label: name,
+		count,
+	})),
 );
 
-const chips: Chip[] = [
+const chips = [
 	...(typeof filters.term !== "undefined"
 		? [
 				{
@@ -97,12 +112,23 @@ const chips: Chip[] = [
 				},
 			]
 		: []),
-	...[...filters.category].map((id) => ({
-		label: categoryLabel.get(id) ?? presentation.device.category(id).label,
-		href: browseFiltersToHref(withCategoryToggled(filters, id)),
-	})),
+	...[...filters.category].map((id) => {
+		const label =
+			categoryLabel.get(id) ?? presentation.device.category(id).label;
+
+		return {
+			label:
+				filters.categoryMode === "exclude"
+					? m.browse_chip_not({ label })
+					: label,
+			href: browseFiltersToHref(withCategoryToggled(filters, id)),
+		};
+	}),
 	...[...filters.manufacturer].map((name) => ({
-		label: name,
+		label:
+			filters.manufacturerMode === "exclude"
+				? m.browse_chip_not({ label: name })
+				: name,
 		href: browseFiltersToHref(withManufacturerToggled(filters, name)),
 	})),
 	...(filters.localOnly
@@ -181,11 +207,8 @@ const clearedHref = localizeHref(browseFiltersToHref(cleared(filters)));
 					/>
 				</div>
 			</div>
-
-			<details class="browse-filters" open data-browse-filters-disclosure>
-				<summary class="browse-filters-summary">
-					{m.browse_filters()}{activeCount > 0 ? ` · ${activeCount}` : ""}
-				</summary>
+			<details class="browse-filters" open>
+				<summary class="browse-filters-summary">{m.browse_filters()}</summary>
 				<form
 					class="filters"
 					method="get"
@@ -224,10 +247,40 @@ const clearedHref = localizeHref(browseFiltersToHref(cleared(filters)));
 					<div class="filter-group">
 						<div class="filter-group-head">
 							<div class="filter-group-label">{m.browse_category_label()}</div>
+							<div
+								class="filter-mode"
+								role="radiogroup"
+								aria-label={m.browse_mode_label()}
+							>
+								<label
+									class={"filter-mode-btn" +
+										(filters.categoryMode === "include" ? " is-active" : "")}
+								>
+									<input
+										type="radio"
+										name="categoryMode"
+										value="include"
+										checked={filters.categoryMode === "include"}
+									/>
+									<span>{m.browse_mode_is()}</span>
+								</label>
+								<label
+									class={"filter-mode-btn" +
+										(filters.categoryMode === "exclude" ? " is-active" : "")}
+								>
+									<input
+										type="radio"
+										name="categoryMode"
+										value="exclude"
+										checked={filters.categoryMode === "exclude"}
+									/>
+									<span>{m.browse_mode_is_not()}</span>
+								</label>
+							</div>
 						</div>
 						<div class="filter-options">
 							{
-								categoryRows.map((row) => (
+								categoryVisible.map((row) => (
 									<label class="filter-row">
 										<input
 											type="checkbox"
@@ -242,6 +295,23 @@ const clearedHref = localizeHref(browseFiltersToHref(cleared(filters)));
 									</label>
 								))
 							}
+							{
+								categoryOverflow > 0 && (
+									<button
+										type="button"
+										class="filter-more"
+										data-filter-more="category"
+									>
+										<Fragment
+											set:html={presentation.render(
+												presentation.generic("search"),
+												PresentationRenderPresetRoleIcon.withSize(16),
+											)}
+										/>
+										<span>{m.browse_more()}</span>
+									</button>
+								)
+							}
 						</div>
 					</div>
 					<div class="filter-group">
@@ -249,10 +319,44 @@ const clearedHref = localizeHref(browseFiltersToHref(cleared(filters)));
 							<div class="filter-group-label">
 								{m.browse_manufacturer_label()}
 							</div>
+							<div
+								class="filter-mode"
+								role="radiogroup"
+								aria-label={m.browse_mode_label()}
+							>
+								<label
+									class={"filter-mode-btn" +
+										(filters.manufacturerMode === "include"
+											? " is-active"
+											: "")}
+								>
+									<input
+										type="radio"
+										name="manufacturerMode"
+										value="include"
+										checked={filters.manufacturerMode === "include"}
+									/>
+									<span>{m.browse_mode_is()}</span>
+								</label>
+								<label
+									class={"filter-mode-btn" +
+										(filters.manufacturerMode === "exclude"
+											? " is-active"
+											: "")}
+								>
+									<input
+										type="radio"
+										name="manufacturerMode"
+										value="exclude"
+										checked={filters.manufacturerMode === "exclude"}
+									/>
+									<span>{m.browse_mode_is_not()}</span>
+								</label>
+							</div>
 						</div>
 						<div class="filter-options">
 							{
-								manufacturerRows.map((manufacturer) => (
+								manufacturerVisible.map((manufacturer) => (
 									<label class="filter-row">
 										<input
 											type="checkbox"
@@ -269,11 +373,19 @@ const clearedHref = localizeHref(browseFiltersToHref(cleared(filters)));
 							}
 							{
 								manufacturerOverflow > 0 && (
-									<p class="filter-overflow-note">
-										{m.browse_manufacturer_overflow({
-											count: manufacturerOverflow.toLocaleString(getLocale()),
-										})}
-									</p>
+									<button
+										type="button"
+										class="filter-more"
+										data-filter-more="manufacturer"
+									>
+										<Fragment
+											set:html={presentation.render(
+												presentation.generic("search"),
+												PresentationRenderPresetRoleIcon.withSize(16),
+											)}
+										/>
+										<span>{m.browse_more()}</span>
+									</button>
 								)
 							}
 						</div>
@@ -287,19 +399,6 @@ const clearedHref = localizeHref(browseFiltersToHref(cleared(filters)));
 					</button>
 				</form>
 			</details>
-			<script is:inline>
-				(function () {
-					var disclosure = document.querySelector(
-						"[data-browse-filters-disclosure]",
-					);
-					if (
-						disclosure !== null &&
-						!window.matchMedia("(min-width: 768px)").matches
-					) {
-						disclosure.removeAttribute("open");
-					}
-				})();
-			</script>
 
 			<div class="browse-main">
 				{
@@ -415,11 +514,66 @@ const clearedHref = localizeHref(browseFiltersToHref(cleared(filters)));
 				}
 			</div>
 		</div>
+		<filter-modal
+			dim="category"
+			label={m.browse_category_label()}
+			searchplaceholder={m.browse_modal_search_categories()}
+			emptylabel={m.browse_modal_empty_categories()}
+			options={categoryOptions}
+			selected={JSON.stringify([...filters.category].toSorted())}
+			mode={filters.categoryMode}></filter-modal>
+		<filter-modal
+			dim="manufacturer"
+			label={m.browse_manufacturer_label()}
+			searchplaceholder={m.browse_modal_search_manufacturers()}
+			emptylabel={m.browse_modal_empty_manufacturers()}
+			options={manufacturerOptions}
+			selected={JSON.stringify([...filters.manufacturer].toSorted())}
+			mode={filters.manufacturerMode}
+			lettergroups></filter-modal>
+		<div class="filters-fab-wrap">
+			<div class="container">
+				<button
+					type="button"
+					class="filters-fab"
+					aria-label={activeCount > 0
+						? m.browse_fab_active({ count: activeCount })
+						: m.browse_filters()}
+					data-filter-sheet-open
+				>
+					<Fragment
+						set:html={presentation.render(
+							presentation.generic("filter"),
+							PresentationRenderPresetRoleIcon.withSize(16),
+						)}
+					/>
+					<span>
+						{m.browse_filters()}{
+							activeCount > 0 && (
+								<span class="filters-fab-count"> · {activeCount}</span>
+							)
+						}
+					</span>
+				</button>
+			</div>
+		</div>
+		<filter-sheet
+			categoryoptions={categoryOptions}
+			manufactureroptions={manufacturerOptions}></filter-sheet>
 	</div>
 </Layout>
 
 <script>
 	const bind = () => {
+		const fab = document.querySelector<HTMLButtonElement>(
+			"[data-filter-sheet-open]",
+		);
+		if (fab !== null && fab.dataset.bound !== "true") {
+			fab.dataset.bound = "true";
+			fab.addEventListener("click", () => {
+				window.dispatchEvent(new CustomEvent("browse:open-sheet"));
+			});
+		}
 		const form = document.querySelector<HTMLFormElement>(
 			"[data-browse-filters]",
 		);
@@ -433,6 +587,32 @@ const clearedHref = localizeHref(browseFiltersToHref(cleared(filters)));
 		form.addEventListener("change", () => {
 			form.requestSubmit();
 		});
+		form.addEventListener("submit", () => {
+			const defaults = [
+				...form.querySelectorAll<HTMLInputElement>(
+					'input[type="radio"][value="include"]',
+				),
+			];
+			for (const input of defaults) {
+				input.disabled = true;
+			}
+			setTimeout(() => {
+				for (const input of defaults) {
+					input.disabled = false;
+				}
+			});
+		});
+		for (const button of form.querySelectorAll<HTMLButtonElement>(
+			"[data-filter-more]",
+		)) {
+			button.addEventListener("click", () => {
+				window.dispatchEvent(
+					new CustomEvent("browse:open-filter", {
+						detail: { dim: button.dataset.filterMore ?? "" },
+					}),
+				);
+			});
+		}
 	};
 
 	document.addEventListener("astro:page-load", bind);

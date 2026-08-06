@@ -96,6 +96,12 @@ export default tseslint.config(
 		},
 	},
 	{
-		ignores: ["dist/**", "node_modules/**", ".astro/**", "src/paraglide/**"],
+		ignores: [
+			"dist/**",
+			"node_modules/**",
+			".astro/**",
+			".netlify/**",
+			"src/paraglide/**",
+		],
 	},
 );
