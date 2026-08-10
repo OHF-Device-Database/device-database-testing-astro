@@ -40,7 +40,7 @@ import { m } from "../../paraglide/messages.js";
 import { Unknown } from "../../types/unknown";
 import { peek } from "./preset";
 import type { DeviceCategoryTopLevelId } from "../../types/category";
-import type { DeviceConnectivityId } from "../../types/device";
+import type { DeviceConnectivityId, DeviceMono } from "../../types/device";
 import type { QuickFilterId } from "../../types/quick-filter";
 import type { PresentationRenderPreset } from "./preset";
 
@@ -163,6 +163,21 @@ const PRESENTATION_GENERIC = {
 } as const;
 
 export const device = {
+	name: (self: Pick<DeviceMono, "model" | "modelId">): string => {
+		if (
+			typeof self.model !== "undefined" &&
+			typeof self.modelId !== "undefined"
+		) {
+			if (self.model === self.modelId) {
+				return self.model;
+			}
+			return `${self.model} (${self.modelId})`;
+		} else if (typeof self.model !== "undefined") {
+			return self.model;
+		} else {
+			return self.modelId!;
+		}
+	},
 	connectivity: (self: DeviceConnectivityId | Unknown) => {
 		if (self === Unknown) {
 			return {
