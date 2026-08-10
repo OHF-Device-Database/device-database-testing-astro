@@ -17,6 +17,8 @@ export interface FilterModalOption {
 	count?: number | undefined;
 }
 
+type GroupingConfig = "alphabet" | "none";
+
 export class FilterModal extends LitElement {
 	@property() dim = "";
 	@property() label = "";
@@ -31,6 +33,7 @@ export class FilterModal extends LitElement {
 	@state() private _query = "";
 	@state() private _draftSelected = new Set<string>();
 	@state() private _draftMode: FilterModalMode = "include";
+	@state() private _groupBy: GroupingConfig = "none";
 
 	private _onOpenFilter = (e: Event): void => {
 		if ((e as CustomEvent<{ dim: string }>).detail.dim === this.dim) {
@@ -64,6 +67,7 @@ export class FilterModal extends LitElement {
 		this._query = "";
 		this._draftSelected = new Set(this.selected);
 		this._draftMode = this.mode;
+		this._groupBy = "none";
 		document.body.classList.add("modal-open");
 		document.addEventListener("keydown", this._onKey);
 	}
@@ -127,6 +131,13 @@ export class FilterModal extends LitElement {
 				: this.options;
 		if (!this.lettergroups) {
 			return [["", matched] as const];
+		}
+
+		if (this._groupBy === "none") {
+			const sorted = [...matched].sort(
+				(a, b) => (b.count ?? 0) - (a.count ?? 0),
+			);
+			return [["", sorted] as const];
 		}
 
 		const groups = new Map<string, FilterModalOption[]>();
@@ -210,6 +221,32 @@ export class FilterModal extends LitElement {
 									@input=${(e: Event) => (this._query = (e.target as HTMLInputElement).value)}
 								/>
 							</div>
+							${
+								this.lettergroups
+									? html`<div
+											class="filter-mode"
+											role="group"
+											aria-label=${m.browse_sheet_grouping_label()}
+										>
+											<button
+												type="button"
+												class=${"filter-mode-btn" + (this._groupBy === "none" ? " is-active" : "")}
+												aria-pressed=${this._groupBy === "none"}
+												@click=${() => (this._groupBy = "none")}
+											>
+												<span>${m.browse_sheet_grouping_none()}</span>
+											</button>
+											<button
+												type="button"
+												class=${"filter-mode-btn" + (this._groupBy === "alphabet" ? " is-active" : "")}
+												aria-pressed=${this._groupBy === "alphabet"}
+												@click=${() => (this._groupBy = "alphabet")}
+											>
+												<span>${m.browse_sheet_grouping_alpha()}</span>
+											</button>
+										</div>`
+									: nothing
+							}
 						</div>
 					</header>
 					<div class="modal-body">
