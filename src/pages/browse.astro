@@ -390,13 +390,6 @@ const clearedHref = localizeHref(browseFiltersToHref(cleared(filters)));
 							}
 						</div>
 					</div>
-					<button
-						class="btn btn-secondary"
-						type="submit"
-						data-browse-filters-apply
-					>
-						{m.browse_apply_filters()}
-					</button>
 				</form>
 			</details>
 
@@ -581,9 +574,6 @@ const clearedHref = localizeHref(browseFiltersToHref(cleared(filters)));
 			return;
 		}
 		form.dataset.bound = "true";
-		form
-			.querySelector<HTMLButtonElement>("[data-browse-filters-apply]")
-			?.setAttribute("hidden", "");
 		form.addEventListener("change", () => {
 			form.requestSubmit();
 		});

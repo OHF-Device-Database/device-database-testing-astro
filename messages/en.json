@@ -30,7 +30,6 @@
 	"browse_category_label": "Category",
 	"browse_manufacturer_label": "Manufacturer",
 	"browse_manufacturer_overflow": "and {count} more. Search to narrow down.",
-	"browse_apply_filters": "Apply filters",
 	"browse_empty_title": "No devices match these filters.",
 	"browse_empty_hint": "Try loosening a filter or clearing the search.",
 	"browse_empty_clear": "Clear all filters",
