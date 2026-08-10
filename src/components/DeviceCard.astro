@@ -25,20 +25,7 @@ const presentedCategories = resolvedCategories.map((c) =>
 	presentation.device.category(c),
 );
 
-let name: string;
-if (
-	typeof device.model !== "undefined" &&
-	typeof device.modelId !== "undefined"
-) {
-	name = `${device.model} / ${device.modelId}`;
-} else if (
-	typeof device.model !== "undefined" &&
-	typeof device.modelId === "undefined"
-) {
-	name = `${device.model}`;
-} else {
-	name = `${device.modelId}`;
-}
+const name = presentation.device.name(device);
 ---
 
 <a class="device-row" href={localizeHref(`/devices/${device.id}`)}>

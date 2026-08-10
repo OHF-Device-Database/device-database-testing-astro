@@ -55,20 +55,7 @@ const view =
 						? resolveCategory(firstRawCategoryId)
 						: undefined;
 
-				let name: string;
-				if (
-					typeof device.model !== "undefined" &&
-					typeof device.modelId !== "undefined"
-				) {
-					name = `${device.model} / ${device.modelId}`;
-				} else if (
-					typeof device.model !== "undefined" &&
-					typeof device.modelId === "undefined"
-				) {
-					name = `${device.model}`;
-				} else {
-					name = `${device.modelId}`;
-				}
+				const name = presentation.device.name(device);
 
 				return {
 					device,
