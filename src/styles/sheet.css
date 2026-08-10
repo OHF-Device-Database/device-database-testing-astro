@@ -183,12 +183,6 @@
 	background: var(--surface-tint-soft);
 }
 
-.sheet-group {
-}
-
-.sheet-group-rows {
-}
-
 .filter-tap-row {
 	display: flex;
 	align-items: center;

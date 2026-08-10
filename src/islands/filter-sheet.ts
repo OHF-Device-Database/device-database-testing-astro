@@ -414,9 +414,9 @@ export class FilterSheet extends LitElement {
 							</div>`
 						: groups.map(
 								([letter, options]) => html`
-									<section class="sheet-group">
+									<section>
 										${letter.length > 0 ? html`<div class="sheet-group-head">${letter}</div>` : nothing}
-										<div class="sheet-group-rows">
+										<div>
 											${options.map((option) => {
 												const on = selected.has(option.id);
 												return html`
