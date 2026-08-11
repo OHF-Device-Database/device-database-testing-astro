@@ -29,6 +29,8 @@ interface DimensionConfig {
 	letterGroups: boolean;
 }
 
+type GroupingConfig = "alphabet" | "none";
+
 const icon = (name: Parameters<typeof presentation.generic>[0], size: number) =>
 	unsafeHTML(
 		presentation.render(
@@ -45,6 +47,7 @@ export class FilterSheet extends LitElement {
 	@state() private _subView: SheetDimension | null = null;
 	@state() private _query = "";
 	@state() private _draft: SheetFilters | null = null;
+	@state() private _groupBy: GroupingConfig = "none";
 
 	private _onOpenSheet = (): void => {
 		this._openSheet();
@@ -154,6 +157,7 @@ export class FilterSheet extends LitElement {
 		this._open = true;
 		this._subView = null;
 		this._query = "";
+		this._groupBy = "none";
 		document.body.classList.add("modal-open");
 		document.addEventListener("keydown", this._onKey);
 	}
@@ -328,6 +332,13 @@ export class FilterSheet extends LitElement {
 			return [["", matched] as const];
 		}
 
+		if (this._groupBy === "none") {
+			const sorted = [...matched].sort(
+				(a, b) => (b.count ?? 0) - (a.count ?? 0),
+			);
+			return [["", sorted] as const];
+		}
+
 		const groups = new Map<string, FilterModalOption[]>();
 		const ungrouped: FilterModalOption[] = [];
 		for (const option of matched) {
@@ -403,9 +414,9 @@ export class FilterSheet extends LitElement {
 							</div>`
 						: groups.map(
 								([letter, options]) => html`
-									<section class="modal-group">
-										${letter.length > 0 ? html`<div class="modal-group-head">${letter}</div>` : nothing}
-										<div class="modal-group-rows">
+									<section>
+										${letter.length > 0 ? html`<div class="sheet-group-head">${letter}</div>` : nothing}
+										<div>
 											${options.map((option) => {
 												const on = selected.has(option.id);
 												return html`
@@ -543,6 +554,32 @@ export class FilterSheet extends LitElement {
 												@input=${(e: Event) => (this._query = (e.target as HTMLInputElement).value)}
 											/>
 										</div>
+										${
+											config.letterGroups
+												? html`<div
+														class="filter-mode"
+														role="group"
+														aria-label=${m.browse_sheet_grouping_label()}
+													>
+														<button
+															type="button"
+															class=${"filter-mode-btn" + (this._groupBy === "none" ? " is-active" : "")}
+															aria-pressed=${this._groupBy === "none"}
+															@click=${() => (this._groupBy = "none")}
+														>
+															<span>${m.browse_sheet_grouping_none()}</span>
+														</button>
+														<button
+															type="button"
+															class=${"filter-mode-btn" + (this._groupBy === "alphabet" ? " is-active" : "")}
+															aria-pressed=${this._groupBy === "alphabet"}
+															@click=${() => (this._groupBy = "alphabet")}
+														>
+															<span>${m.browse_sheet_grouping_alpha()}</span>
+														</button>
+													</div>`
+												: nothing
+										}
 									</div>`
 								: nothing
 						}
