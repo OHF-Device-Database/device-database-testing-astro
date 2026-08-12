@@ -1,9 +1,14 @@
-import { API_AUTHORITY } from "astro:env/server";
 import { z } from "astro/zod";
 
 import { exactlyOne } from "../types/exactly-one";
 
 const REQUEST_TIMEOUT_MS = 8000;
+let API_AUTHORITY: string;
+if (import.meta.env.SSR) {
+	({ API_AUTHORITY } = await import("astro:env/server"));
+} else {
+	({ PUBLIC_API_AUTHORITY: API_AUTHORITY } = await import("astro:env/client"));
+}
 
 export const ioBaseUrl = (): string =>
 	/^https?:\/\//.test(API_AUTHORITY)
