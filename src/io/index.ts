@@ -60,6 +60,7 @@ export const ioFetch = async <
 	decoder: FetchDecoder<InputBody, InputHeaders, OutputBody, OutputHeaders>,
 	searchParams?: URLSearchParams,
 	accept: "application/json" | "text/plain" = "application/json",
+	signal?: AbortSignal,
 ): Promise<{ body: OutputBody; headers: OutputHeaders }> => {
 	const url = typeof path === "string" ? new URL(path, ioBaseUrl()) : path;
 	if (searchParams) {
@@ -68,7 +69,7 @@ export const ioFetch = async <
 
 	const res = await fetch(url, {
 		headers: { accept },
-		signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+		signal: signal ?? AbortSignal.timeout(REQUEST_TIMEOUT_MS),
 	});
 
 	if (!res.ok) {

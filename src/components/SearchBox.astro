@@ -1,4 +1,5 @@
 ---
+import { getDimensions } from "../io/dimension";
 import { m } from "../paraglide/messages.js";
 import { localizeHref } from "../paraglide/runtime.js";
 import { generic, render } from "../utilities/presentation";
@@ -16,9 +17,15 @@ interface Props {
 
 const { size = "header", placeholder = m.search_placeholder() } = Astro.props;
 const iconSize = size === "hero" ? 22 : 18;
+
+const { dimensions } = await getDimensions();
 ---
 
-<device-search size={size} placeholder={placeholder}>
+<device-search
+	size={size}
+	placeholder={placeholder}
+	dimensions={JSON.stringify(dimensions)}
+>
 	<div class={`searchbox searchbox-${size}`}>
 		<form
 			class="searchbox-input"

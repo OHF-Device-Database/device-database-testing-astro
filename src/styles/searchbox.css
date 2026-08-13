@@ -77,6 +77,9 @@
 
 .searchbox-popover {
 	position-area: bottom;
+	max-height: calc(100% - 12px);
+	width: anchor-size(width);
+	overflow-y: auto;
 }
 
 .searchbox-popover-section {
@@ -89,6 +92,75 @@
 	flex-direction: column;
 }
 
-.searchbox-popover-section-rows [aria-selected="true"] {
-	background: red;
+.searchbox-popover-section-row {
+	display: flex;
+	width: 100%;
+	gap: var(--space-2);
+	height: fit-content;
+}
+
+.searchbox-popover-section-row {
+	display: flex;
+	align-items: center;
+	gap: var(--space-4);
+	width: 100%;
+	padding: var(--space-3) var(--space-5);
+	background: transparent;
+	border: 0;
+	font: inherit;
+	font-size: var(--fs-14);
+	text-align: left;
+	cursor: pointer;
+	color: var(--fg);
+	text-decoration: none;
+}
+.searchbox-popover-section-row[aria-selected="true"] {
+	background: var(--surface-tint-soft);
+}
+.searchbox-popover-section-row svg {
+	color: var(--fg-muted);
+	flex-shrink: 0;
+}
+.searchbox-popover-section-row-main {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.searchbox-popover-section-row-meta {
+	color: var(--fg-muted);
+	font-size: var(--fs-12);
+	flex-shrink: 0;
+}
+.searchbox-popover-section-row mark {
+	background: var(--highlight-soft);
+	color: inherit;
+	font-weight: var(--fw-semibold);
+	border-radius: var(--radius-1);
+	padding: 0 1px;
+}
+.searchbox-more-text {
+	color: var(--link);
+	font-weight: var(--fw-medium);
+}
+
+.searchbox-loading-spinner {
+	display: inline-block;
+	width: 12px;
+	height: 12px;
+	border: 2px solid var(--fg-subtle);
+	border-top-color: transparent;
+	border-radius: 50%;
+	animation: searchbox-loading-spinner-spin 0.6s linear infinite;
+	vertical-align: middle;
+	margin-left: var(--space-2);
+}
+
+@keyframes searchbox-loading-spinner-spin {
+	to {
+		transform: rotate(360deg);
+	}
 }

@@ -59,6 +59,22 @@
 	width: 100%;
 	margin: var(--space-4) 0 var(--space-3);
 }
+/* move to top screen edge on mobile when focused */
+@media (max-width: 767px) {
+	.hero-search-wrap:focus-within {
+		height: 56px;
+	}
+	.hero-search-wrap:focus-within > * {
+		position: fixed;
+		top: 72px;
+		left: 0;
+		right: 0;
+		z-index: 30;
+		padding: var(--space-3);
+		background: var(--bg);
+		box-shadow: var(--shadow-1);
+	}
+}
 .hero-actions {
 	display: flex;
 	gap: var(--space-3);

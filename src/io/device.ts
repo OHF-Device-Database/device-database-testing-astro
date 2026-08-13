@@ -163,11 +163,16 @@ const GetDevicesSchema = z.object({
 		...IoHeadersCaching.shape,
 	}),
 });
-export const getDevices = async (query: IoGetDevicesQuery) => {
+export const getDevices = async (
+	query: IoGetDevicesQuery,
+	signal?: AbortSignal,
+) => {
 	const { body, headers } = await ioFetch(
 		"/api/unstable/derived/devices",
 		GetDevicesSchema,
 		searchParameters(query),
+		"application/json",
+		signal,
 	);
 
 	const pages =
