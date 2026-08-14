@@ -1,6 +1,8 @@
 ---
+import { getDimensions } from "../io/dimension";
 import { m } from "../paraglide/messages.js";
 import { localizeHref } from "../paraglide/runtime.js";
+import { cachePolicy } from "../utilities/cache";
 import { generic, render } from "../utilities/presentation";
 import { PresentationRenderPresetRoleIcon } from "../utilities/presentation/preset";
 
@@ -16,9 +18,22 @@ interface Props {
 
 const { size = "header", placeholder = m.search_placeholder() } = Astro.props;
 const iconSize = size === "hero" ? 22 : 18;
+
+let dimensions;
+try {
+	const result = await getDimensions({}, AbortSignal.timeout(3_000));
+	dimensions = result.dimensions;
+	Astro.cache.set({ ...cachePolicy(result.caching), tags: ["dimensions"] });
+} catch {
+	dimensions = null;
+}
 ---
 
-<device-search size={size} placeholder={placeholder}>
+<device-search
+	size={size}
+	placeholder={placeholder}
+	dimensions={JSON.stringify(dimensions)}
+>
 	<div class={`searchbox searchbox-${size}`}>
 		<form
 			class="searchbox-input"
@@ -41,7 +56,7 @@ const iconSize = size === "hero" ? 22 : 18;
 				aria-expanded="false"
 				autocomplete="off"
 			/>
-			<button type="button" class="appnav-search-clear" hidden
+			<button type="button" class="searchbox-button-clear" hidden
 				>{m.search_clear()}</button
 			>
 		</form>

@@ -1,9 +1,15 @@
-import { API_AUTHORITY } from "astro:env/server";
 import { z } from "astro/zod";
 
 import { exactlyOne } from "../types/exactly-one";
 
 const REQUEST_TIMEOUT_MS = 8000;
+let API_AUTHORITY: string;
+if (import.meta.env.SSR) {
+	({ API_AUTHORITY } = await import("astro:env/server"));
+} else {
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any -- defined dynamically in `Layout.astro``
+	API_AUTHORITY = (window as any).__API_AUTHORITY__;
+}
 
 export const ioBaseUrl = (): string =>
 	/^https?:\/\//.test(API_AUTHORITY)
@@ -55,6 +61,7 @@ export const ioFetch = async <
 	decoder: FetchDecoder<InputBody, InputHeaders, OutputBody, OutputHeaders>,
 	searchParams?: URLSearchParams,
 	accept: "application/json" | "text/plain" = "application/json",
+	signal?: AbortSignal,
 ): Promise<{ body: OutputBody; headers: OutputHeaders }> => {
 	const url = typeof path === "string" ? new URL(path, ioBaseUrl()) : path;
 	if (searchParams) {
@@ -63,7 +70,7 @@ export const ioFetch = async <
 
 	const res = await fetch(url, {
 		headers: { accept },
-		signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+		signal: signal ?? AbortSignal.timeout(REQUEST_TIMEOUT_MS),
 	});
 
 	if (!res.ok) {
