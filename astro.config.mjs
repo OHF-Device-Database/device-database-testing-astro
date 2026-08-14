@@ -57,7 +57,12 @@ export default defineConfig({
 				access: "secret",
 				default: "http://localhost:3000",
 			}),
-
+			// for csr fetches
+			CSR_API_AUTHORITY: envField.string({
+				context: "server",
+				access: "secret",
+				default: "http://localhost:3000",
+			}),
 			// Preview edition is no-indexed by default. Set NOINDEX=false in the runtime
 			// environment for a real production deploy. Like API_AUTHORITY it is not baked
 			// into the image: every page that consumes it is server-rendered.
