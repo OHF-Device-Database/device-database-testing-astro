@@ -487,6 +487,7 @@ export class DeviceSearch extends LitElement {
 									id=${`manufacturer-${m.name}`}
 									@click=${() => void navigate(this._urlManufacturer(m.name))}
 								>
+									${unsafeHTML(render(generic("users"), PresentationRenderPresetRoleIcon.withSize(16)))}
 									<div class="searchbox-popover-section-row-main">
 										<div>${DeviceSearch._highlight(m.name, this._term)}</div>
 									</div>
