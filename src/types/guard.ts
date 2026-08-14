@@ -1,4 +1,4 @@
-import type { ZodEnum } from "astro:schema";
+import type { ZodEnum } from "astro/zod";
 
 /** can only support enums because zod offers no sound way to validate generic types */
 export const guard =
