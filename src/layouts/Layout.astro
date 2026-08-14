@@ -4,6 +4,7 @@ import { ClientRouter } from "astro:transitions";
 
 import Footer from "../components/Footer.astro";
 import Nav from "../components/Nav.astro";
+import PlausibleAnalytics from "../components/PlausibleAnalytics.astro";
 
 import { m } from "../paraglide/messages.js";
 import { getLocale } from "../paraglide/runtime.js";
@@ -126,25 +127,7 @@ const { title, page = "page", back } = Astro.props;
 			{m.site_title()}{typeof title !== "undefined" ? ` · ${title}` : ""}
 		</title>
 
-		<!-- Privacy-friendly analytics by Plausible -->
-		<script
-			is:inline
-			async
-			src="https://plausible.openhomefoundation.org/js/pa-GYrJt4yZ1JGFK2tTFRKPd.js"
-		></script>
-		<script is:inline>
-			window.plausible =
-				window.plausible ||
-				function () {
-					(plausible.q = plausible.q || []).push(arguments);
-				};
-			plausible.init =
-				plausible.init ||
-				function (i) {
-					plausible.o = i || {};
-				};
-			plausible.init();
-		</script>
+		<PlausibleAnalytics />
 	</head>
 	<body>
 		<div

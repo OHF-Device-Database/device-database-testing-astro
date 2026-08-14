@@ -8,8 +8,11 @@
 		"pnpm": ">=11"
 	},
 	"scripts": {
+		"predev": "node ./scripts/sync-allowed-referrers.mjs",
 		"dev": "astro dev",
+		"prebuild": "node ./scripts/sync-allowed-referrers.mjs",
 		"build": "astro build",
+		"sync:allowed-referrers": "node ./scripts/sync-allowed-referrers.mjs",
 		"preview": "astro preview",
 		"astro": "astro",
 		"test": "vitest run",

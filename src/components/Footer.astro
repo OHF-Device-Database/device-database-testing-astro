@@ -10,6 +10,19 @@ interface Props {
 }
 
 const { flush = false } = Astro.props;
+
+const ANALYTICS_BLOG_URL =
+	"https://www.openhomefoundation.org/blog/making-our-web-analytics-open-source-with-plausible/";
+const ANALYTICS_DASHBOARD_URL =
+	"https://plausible.openhomefoundation.org/device-database-preview.openhomefoundation.org";
+
+// One sentence with two links in it. Keeping it as a single message with the
+// anchors substituted in leaves translators a whole sentence to work with,
+// rather than fragments they would have to keep in the right order.
+const analyticsNotice = m.footer_analytics({
+	analyticsLink: `<a href="${ANALYTICS_BLOG_URL}" rel="noopener">${m.footer_analytics_link()}</a>`,
+	dashboardLink: `<a href="${ANALYTICS_DASHBOARD_URL}" rel="noopener">${m.footer_analytics_dashboard()}</a>`,
+});
 ---
 
 <footer class={"appfoot" + (flush ? " appfoot-flush" : "")}>
@@ -40,14 +53,6 @@ const { flush = false } = Astro.props;
 		</span>
 	</div>
 	<div class="container appfoot-analytics">
-		<p>
-			This website uses <a
-				href="https://www.openhomefoundation.org/blog/making-our-web-analytics-open-source-with-plausible/"
-				rel="noopener">privacy-first analytics</a
-			> to help us improve the site. You can view all data in our <a
-				href="https://plausible.openhomefoundation.org/device-database-preview.openhomefoundation.org"
-				rel="noopener">public dashboard</a
-			>.
-		</p>
+		<p set:html={analyticsNotice} />
 	</div>
 </footer>

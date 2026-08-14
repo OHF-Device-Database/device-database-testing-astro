@@ -16,10 +16,12 @@ import { localizeHref } from "../paraglide/runtime.js";
 			</p>
 		</section>
 	</div>
-</Layout>
 
-<script is:inline>
-	document.addEventListener("DOMContentLoaded", function () {
-		plausible("404");
-	});
-</script>
+	<script is:inline>
+		// Fired inline rather than from a document listener: the ClientRouter would
+		// keep a listener alive after navigating away and report a 404 for the next
+		// page too. PlausibleAnalytics.astro defines the queue stub in the head, so
+		// the call is already safe to make here.
+		if (typeof window.plausible === "function") window.plausible("404");
+	</script>
+</Layout>
