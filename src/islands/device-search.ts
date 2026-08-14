@@ -1,10 +1,13 @@
 import { navigate } from "astro:transitions/client";
 import { html, LitElement, nothing } from "lit";
 import { property, state } from "lit/decorators.js";
+import { createRef, ref } from "lit/directives/ref.js";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
+import type { Ref } from "lit/directives/ref.js";
 
 import { getDevices } from "../io/device.js";
 import { m } from "../paraglide/messages.js";
+import { localizeHref } from "../paraglide/runtime.js";
 import { browseFiltersToSearchParams } from "../types/browse/index.js";
 import {
 	DeviceCategoryTopLevelId,
@@ -13,32 +16,29 @@ import {
 import { devicePolyMap } from "../types/device/index.js";
 import { guard } from "../types/guard.js";
 import { QUICK_FILTERS, QuickFilterId } from "../types/quick-filter.js";
+import { Unknown } from "../types/unknown.js";
 import { defineElementOnce } from "../utilities/define-element.js";
+import { flatten } from "../utilities/flatten.js";
+import { isAbortError } from "../utilities/is-abort-error.js";
 import {
 	device,
+	generic,
 	quickFilter,
 	render,
 } from "../utilities/presentation/index.js";
 import { PresentationRenderPresetRoleIcon } from "../utilities/presentation/preset.js";
-import type { DevicePoly } from "../types/device/index.js";
-
-import "../styles/searchbox.css";
-
-import { createRef, ref } from "lit/directives/ref.js";
-import type { Ref } from "lit/directives/ref.js";
-
-import { localizeHref } from "../paraglide/runtime.js";
-import { Unknown } from "../types/unknown.js";
 import type { IoDimensionCategory } from "../io/dimension.js";
+import type { DevicePoly } from "../types/device/index.js";
 
 type SectionCategory = {
 	kind: "category";
-	items: { id: DeviceCategoryTopLevelId; count?: number | undefined }[];
+	items: { id: DeviceCategoryTopLevelId; count: number }[];
 };
 type SectionDevice = {
 	kind: "device";
 	items?: DevicePoly[] | undefined;
-	more?: number | undefined;
+	total?: number | undefined;
+	stale: boolean;
 };
 type SectionManufacturer = {
 	kind: "manufacturer";
@@ -53,6 +53,12 @@ type SectionQuickFilter = {
 };
 type Section =
 	SectionCategory | SectionDevice | SectionManufacturer | SectionQuickFilter;
+
+const limits = {
+	category: 3,
+	device: 3,
+	manufacturer: 2,
+} as const;
 
 export class DeviceSearch extends LitElement {
 	@property() size: "header" | "hero" = "header";
@@ -73,6 +79,7 @@ export class DeviceSearch extends LitElement {
 		devices: DevicePoly[];
 		total: number;
 	} | null = null;
+	@state() private _fetchedDevicesStale: boolean = true;
 
 	private _fetchTimer?: ReturnType<typeof setTimeout>;
 	private _fetchAbort?: AbortController;
@@ -105,22 +112,22 @@ export class DeviceSearch extends LitElement {
 
 		this._term = this._input?.value ?? "";
 
-		this._input?.addEventListener("input", this._onInput);
-		this._input?.addEventListener("focus", this._onFocus);
-		this._input?.addEventListener("blur", this._onBlur);
-		this._input?.addEventListener("keydown", this._onKeyDown);
+		this._input?.addEventListener("input", this._onInputInput);
+		this._input?.addEventListener("focus", this._onInputFocus);
+		this._input?.addEventListener("blur", this._onInputBlur);
+		this._input?.addEventListener("keydown", this._onInputKeyDown);
 
-		this._clearButton?.addEventListener("click", this._onClick);
+		this._clearButton?.addEventListener("click", this._onClearButtonClick);
 	}
 
 	override disconnectedCallback(): void {
 		super.disconnectedCallback();
-		this._input?.removeEventListener("input", this._onInput);
-		this._input?.removeEventListener("focus", this._onFocus);
-		this._input?.removeEventListener("blur", this._onBlur);
-		this._input?.removeEventListener("keydown", this._onKeyDown);
+		this._input?.removeEventListener("input", this._onInputInput);
+		this._input?.removeEventListener("focus", this._onInputFocus);
+		this._input?.removeEventListener("blur", this._onInputBlur);
+		this._input?.removeEventListener("keydown", this._onInputKeyDown);
 
-		this._clearButton?.removeEventListener("click", this._onClick);
+		this._clearButton?.removeEventListener("click", this._onClearButtonClick);
 
 		this._resetFetched();
 	}
@@ -188,12 +195,12 @@ export class DeviceSearch extends LitElement {
 		return localizeHref(`/browse${qs ? "?" + qs : ""}`);
 	}
 
-	private _onInput = (event: InputEvent) => {
+	private _onInputInput = (event: InputEvent) => {
 		this._term = (event.target as HTMLInputElement).value;
 		this._scheduleFetchDevices();
 	};
 
-	private _onFocus = () => {
+	private _onInputFocus = () => {
 		this._popover?.value?.showPopover(
 			this._form !== null
 				? // width of popover is set to that of source element and form
@@ -203,23 +210,12 @@ export class DeviceSearch extends LitElement {
 		);
 	};
 
-	private _onBlur = (event: FocusEvent) => {
-		const popover = this._popover?.value;
-		if (
-			popover !== undefined &&
-			event.relatedTarget instanceof HTMLButtonElement &&
-			popover.contains(event.relatedTarget)
-		) {
-			// close popover _after_ click has run
-			event.relatedTarget.addEventListener(
-				"click",
-				() => this._closePopover(),
-				{ once: true },
-			);
-			return;
-		}
-
+	private _onInputBlur = () => {
 		this._closePopover();
+	};
+
+	private _onPopoverMouseDown = (event: MouseEvent) => {
+		event.preventDefault();
 	};
 
 	private _closePopover(): void {
@@ -231,7 +227,7 @@ export class DeviceSearch extends LitElement {
 		this._input?.removeAttribute("aria-activedescendant");
 	}
 
-	private _onKeyDown = (event: KeyboardEvent) => {
+	private _onInputKeyDown = (event: KeyboardEvent) => {
 		const popover = this._popover.value;
 		if (typeof popover === "undefined") {
 			return;
@@ -289,8 +285,12 @@ export class DeviceSearch extends LitElement {
 				break;
 			}
 			case "Enter": {
-				event.preventDefault();
+				if (active !== null) {
+					event.preventDefault();
+				}
+
 				active?.click();
+
 				break;
 			}
 			case "Escape": {
@@ -300,7 +300,7 @@ export class DeviceSearch extends LitElement {
 		}
 	};
 
-	private _onClick = () => {
+	private _onClearButtonClick = () => {
 		if (this._input !== null) {
 			this._input.value = "";
 			this._term = "";
@@ -314,6 +314,7 @@ export class DeviceSearch extends LitElement {
 			this._fetchAbort?.abort();
 			return;
 		}
+		this._fetchedDevicesStale = true;
 		this._fetchTimer = setTimeout(() => void this._fetchDevices(), 220);
 	}
 
@@ -323,11 +324,20 @@ export class DeviceSearch extends LitElement {
 		const controller = new AbortController();
 		this._fetchAbort = controller;
 
-		const { devices, total } = await getDevices({ term }, controller.signal);
-		this._fetchedDevices = {
-			devices: devices.map(devicePolyMap),
-			total,
-		};
+		try {
+			const { devices, total } = await getDevices({ term }, controller.signal);
+			this._fetchedDevices = {
+				devices: devices.map(devicePolyMap),
+				total,
+			};
+			this._fetchedDevicesStale = false;
+		} catch (e) {
+			if (!isAbortError(e)) {
+				this._fetchedDevices = null;
+			}
+
+			this._fetchedDevicesStale = true;
+		}
 	}
 
 	private _resetFetched(): void {
@@ -336,21 +346,14 @@ export class DeviceSearch extends LitElement {
 		this._fetchedDevices = null;
 	}
 
-	private static _sectionQuickFilter(term: string): SectionQuickFilter {
+	private static _sectionQuickFilter(): SectionQuickFilter {
 		const is = guard(QuickFilterId);
 
 		return {
 			kind: "quick-filter",
-			items: Object.keys(QUICK_FILTERS).flatMap((key) => {
-				if (!is(key)) {
-					return [];
-				}
-				const { label } = quickFilter(key);
-				if (!label.toLocaleLowerCase().includes(term.toLocaleLowerCase())) {
-					return [];
-				}
-				return [key];
-			}),
+			items: Object.keys(QUICK_FILTERS).flatMap((key) =>
+				is(key) ? [key] : [],
+			),
 		};
 	}
 
@@ -384,12 +387,8 @@ export class DeviceSearch extends LitElement {
 		return {
 			kind: "device",
 			items: this._fetchedDevices?.devices,
-			more:
-				this._fetchedDevices !== null
-					? this._fetchedDevices.total > this._fetchedDevices.devices.length
-						? this._fetchedDevices.total
-						: undefined
-					: undefined,
+			total: this._fetchedDevices?.total,
+			stale: this._fetchedDevicesStale,
 		};
 	}
 
@@ -406,16 +405,15 @@ export class DeviceSearch extends LitElement {
 	private get _sections() {
 		if (this._isEmpty) {
 			return [
-				DeviceSearch._sectionQuickFilter(""),
+				DeviceSearch._sectionQuickFilter(),
 				this._sectionCategory(""),
 			] as const;
 		}
 
 		return [
-			DeviceSearch._sectionQuickFilter(this._term),
-			this._sectionCategory(this._term),
 			this._sectionDevice(),
 			this._sectionManufacturer(this._term),
+			this._sectionCategory(this._term),
 		] as const;
 	}
 
@@ -424,11 +422,14 @@ export class DeviceSearch extends LitElement {
 			return nothing;
 		}
 
+		let rendered;
 		switch (section.kind) {
 			case "quick-filter":
-				return html`<span class="label"
-						>${m.search_popover_section_quickfilter()}</span
-					>
+				rendered = html`<div class="searchbox-popover-section-header">
+						<div class="searchbox-popover-section-label">
+							${m.search_popover_section_quickfilter()}
+						</div>
+					</div>
 					<div class="searchbox-popover-section-rows">
 						${section.items.map((f) => {
 							const filter = quickFilter(f);
@@ -437,65 +438,81 @@ export class DeviceSearch extends LitElement {
 								class="searchbox-popover-section-row"
 								@click=${() => void navigate(this._urlQuickFilter(f))}
 							>
-								<span>
-									${unsafeHTML(render(filter, PresentationRenderPresetRoleIcon.withSize(11)))}
-								</span>
-								<div>${DeviceSearch._highlight(filter.label, this._term)}</div>
+								${unsafeHTML(render(filter, PresentationRenderPresetRoleIcon.withSize(16)))}
+
+								<div class="searchbox-popover-section-row-main">
+									<div>${filter.label}</div>
+								</div>
 							</button>`;
 						})}
 					</div>`;
+				break;
 			case "category":
-				return html`<span class="label"
-						>${m.search_popover_section_category()}</span
-					>
+				rendered = html`<div class="searchbox-popover-section-header">
+						<div class="searchbox-popover-section-label">
+							${m.search_popover_section_category()}
+						</div>
+					</div>
 					<div class="searchbox-popover-section-rows">
-						${section.items.slice(0, 3).map((c) => {
+						${section.items.slice(0, limits.category).map((c) => {
 							const category = device.category(c.id);
 							return html`<button
 								class="searchbox-popover-section-row"
 								id=${`category-${c.id}`}
 								@click=${() => void navigate(this._urlCategory(c.id))}
 							>
-								<span>
-									${unsafeHTML(render(category, PresentationRenderPresetRoleIcon.withSize(11)))}
-								</span>
-								<div>
-									${DeviceSearch._highlight(category.label, this._term)}
+								${unsafeHTML(render(category, PresentationRenderPresetRoleIcon.withSize(16)))}
+
+								<div class="searchbox-popover-section-row-main">
+									<div>
+										${DeviceSearch._highlight(category.label, this._term)}
+									</div>
 								</div>
-								${typeof c.count !== "undefined" ? html`<span>${c.count}</span>` : nothing}
+								<span class="searchbox-popover-section-count">${c.count}</span>
 							</button>`;
 						})}
 					</div>`;
+				break;
 			case "manufacturer":
-				return html`<span class="label"
-						>${m.search_popover_section_manufacturer()}</span
-					>
+				rendered = html`<div class="searchbox-popover-section-header">
+						<div class="searchbox-popover-section-label">
+							${m.search_popover_section_manufacturer()}
+						</div>
+					</div>
 					<div class="searchbox-popover-section-rows">
-						${section.items.slice(0, 3).map(
+						${section.items.slice(0, limits.manufacturer).map(
 							(m) =>
 								html`<button
 									class="searchbox-popover-section-row"
 									id=${`manufacturer-${m.name}`}
 									@click=${() => void navigate(this._urlManufacturer(m.name))}
 								>
-									<div>${DeviceSearch._highlight(m.name, this._term)}</div>
-									${typeof m.count !== "undefined" ? html`<span>${m.count}</span>` : nothing}
+									<div class="searchbox-popover-section-row-main">
+										<div>${DeviceSearch._highlight(m.name, this._term)}</div>
+									</div>
+									<span class="searchbox-popover-section-count"
+										>${m.count}</span
+									>
 								</button>`,
 						)}
 					</div>`;
+				break;
 			case "device": {
 				const resolveTopLevelCategory =
 					typeof this.dimensions?.categories !== "undefined"
 						? topLevelCategoryResolver(this.dimensions?.categories)
 						: (): Unknown => Unknown;
 
-				return html`<span class="label"
-						>${m.search_popover_section_device()}${typeof section.items === "undefined" ? html`<span class="searchbox-loading-spinner"></span>` : nothing}</span
-					>
+				rendered = html`<div class="searchbox-popover-section-header">
+						<div class="searchbox-popover-section-label">
+							${m.search_popover_section_device()}
+						</div>
+						${typeof section.items === "undefined" || section.stale ? html`<span class="searchbox-loading-spinner"></span>` : nothing}
+					</div>
 					${
 						typeof section.items !== "undefined"
 							? html`<div class="searchbox-popover-section-rows">
-									${section.items.slice(0, 3).map((d) => {
+									${section.items.slice(0, limits.device).map((d) => {
 										const first = d.categories?.at(0);
 
 										const category = device.category(
@@ -504,33 +521,37 @@ export class DeviceSearch extends LitElement {
 												: Unknown,
 										);
 										return html`<button
-											class="searchbox-popover-section-row"
+											class=${"searchbox-popover-section-row" + (section.stale ? " searchbox-popover-section-row-stale" : "")}
 											id=${`device-${d.id}`}
 											@click=${() => void navigate(this._urlDevice(d.id))}
 										>
-											<span>
-												${unsafeHTML(render(category, PresentationRenderPresetRoleIcon.withSize(11)))}
-											</span>
+											${unsafeHTML(render(category, PresentationRenderPresetRoleIcon.withSize(16)))}
+
 											<div class="searchbox-popover-section-row-main">
-												<span class="searchbox-popover-section-row-meta"
+												<span class="searchbox-popover-section-row-secondary"
 													>${DeviceSearch._highlight(d.manufacturer, this._term)}</span
 												>
 												<span>
 													${DeviceSearch._highlight(device.name(d), this._term)}
 												</span>
 											</div>
-											${typeof d.count !== "undefined" ? html`<span>${d.count}</span>` : nothing}
+											<span class="searchbox-popover-section-count"
+												>${d.count}</span
+											>
 										</button>`;
 									})}
 									${
-										typeof section.more !== "undefined"
+										typeof section.total !== "undefined" &&
+										section.total > limits.device
 											? html`<button
 													class="searchbox-popover-section-row"
 													id=${`more-device`}
 													@click=${() => void navigate(this._urlTerm(this._term))}
 												>
+													${unsafeHTML(render(generic("arrow"), PresentationRenderPresetRoleIcon.withSize(16)))}
+
 													<span class="searchbox-more-text"
-														>${m.search_popover_browse_more_devices({ count: section.more - 3 })}</span
+														>${unsafeHTML(m.search_popover_browse_more_devices({ count: flatten(html`<span class=${section.stale ? "redacted" : ""}>${section.total - limits.device}</span>`) }))}</span
 													>
 												</button>`
 											: nothing
@@ -538,8 +559,11 @@ export class DeviceSearch extends LitElement {
 								</div>`
 							: nothing
 					}`;
+				break;
 			}
 		}
+
+		return html`<div class="searchbox-popover-section">${rendered}</div>`;
 	}
 
 	private static _highlight(text: string, term: string) {
@@ -561,20 +585,18 @@ export class DeviceSearch extends LitElement {
 			class="searchbox-popover"
 			popover="manual"
 			role="listbox"
+			@mousedown=${this._onPopoverMouseDown}
 			${ref(this._popover)}
 		>
-			${
-				sections.every(
-					(s) => typeof s.items !== "undefined" && s.items.length === 0,
-				)
-					? html`<p>${m.search_popover_no_matches()}</p>`
-					: this._sections.map(
-							(s) =>
-								html`<div class="searchbox-popover-section">
-									${this._renderSection(s)}
-								</div>`,
-						)
-			}
+			<div class="searchbox-popover-content">
+				${
+					sections.every(
+						(s) => typeof s.items !== "undefined" && s.items.length === 0,
+					)
+						? html`<p>${m.search_popover_no_matches()}</p>`
+						: this._sections.map((s) => this._renderSection(s))
+				}
+			</div>
 		</div>`;
 	}
 }

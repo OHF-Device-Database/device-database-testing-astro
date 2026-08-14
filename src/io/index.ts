@@ -7,7 +7,8 @@ let API_AUTHORITY: string;
 if (import.meta.env.SSR) {
 	({ API_AUTHORITY } = await import("astro:env/server"));
 } else {
-	({ PUBLIC_API_AUTHORITY: API_AUTHORITY } = await import("astro:env/client"));
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any -- defined dynamically in `Layout.astro``
+	API_AUTHORITY = (window as any).__API_AUTHORITY__;
 }
 
 export const ioBaseUrl = (): string =>

@@ -54,14 +54,10 @@ export default defineConfig({
 			// from process.env when the server starts, so one image works per environment.
 			API_AUTHORITY: envField.string({
 				context: "server",
-				access: "public",
+				access: "secret",
 				default: "http://localhost:3000",
 			}),
-			PUBLIC_API_AUTHORITY: envField.string({
-				context: "client",
-				access: "public",
-				default: "http://localhost:3000",
-			}),
+
 			// Preview edition is no-indexed by default. Set NOINDEX=false in the runtime
 			// environment for a real production deploy. Like API_AUTHORITY it is not baked
 			// into the image: every page that consumes it is server-rendered.

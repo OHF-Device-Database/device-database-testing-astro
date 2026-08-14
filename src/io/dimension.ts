@@ -42,11 +42,16 @@ const GetDimensionsSchema = z.object({
 	}),
 });
 
-export const getDimensions = async (query: IoGetDimensionsQuery = {}) => {
+export const getDimensions = async (
+	query: IoGetDimensionsQuery = {},
+	signal?: AbortSignal,
+) => {
 	const { body, headers } = await ioFetch(
 		"/api/unstable/dimensions",
 		GetDimensionsSchema,
 		searchParameters(query),
+		"application/json",
+		signal,
 	);
 
 	return {

@@ -2,6 +2,7 @@
 import { getDimensions } from "../io/dimension";
 import { m } from "../paraglide/messages.js";
 import { localizeHref } from "../paraglide/runtime.js";
+import { cachePolicy } from "../utilities/cache";
 import { generic, render } from "../utilities/presentation";
 import { PresentationRenderPresetRoleIcon } from "../utilities/presentation/preset";
 
@@ -18,7 +19,14 @@ interface Props {
 const { size = "header", placeholder = m.search_placeholder() } = Astro.props;
 const iconSize = size === "hero" ? 22 : 18;
 
-const { dimensions } = await getDimensions();
+let dimensions;
+try {
+	const result = await getDimensions({}, AbortSignal.timeout(3_000));
+	dimensions = result.dimensions;
+	Astro.cache.set({ ...cachePolicy(result.caching), tags: ["dimensions"] });
+} catch {
+	dimensions = null;
+}
 ---
 
 <device-search

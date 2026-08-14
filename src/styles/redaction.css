@@ -1,0 +1,10 @@
+.redacted {
+	color: transparent;
+	background-color: var(--surface-tint-strong);
+	border-radius: var(--radius-2);
+	-webkit-box-decoration-break: clone;
+	box-decoration-break: clone;
+	cursor: default;
+	pointer-events: none;
+	user-select: none;
+}

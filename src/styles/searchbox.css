@@ -44,7 +44,6 @@
 	border: 0;
 	outline: 0;
 	padding: 0;
-	background: transparent;
 	font: inherit;
 	font-size: var(--fs-14);
 	color: var(--fg);
@@ -76,15 +75,49 @@
 }
 
 .searchbox-popover {
+	margin-top: 8px;
 	position-area: bottom;
-	max-height: calc(100% - 12px);
+	max-height: calc(100% - 8px);
 	width: anchor-size(width);
 	overflow-y: auto;
+	background: var(--surface);
+	border: 1px solid var(--border-strong);
+	border-radius: var(--radius-4);
+	box-shadow: var(--shadow-3);
+	padding: var(--space-3) 0;
+}
+
+.searchbox-popover-content {
+	display: flex;
+	gap: var(--space-3);
+	flex-direction: column;
 }
 
 .searchbox-popover-section {
 	display: flex;
 	flex-direction: column;
+	text-align: left;
+}
+
+.searchbox-popover-section-label {
+	font-size: var(--fs-12);
+	font-weight: var(--fw-semibold);
+	letter-spacing: var(--ls-wide);
+	text-transform: uppercase;
+	color: var(--fg-muted);
+}
+
+.searchbox-popover-section-count {
+	font-size: var(--fs-12);
+	font-weight: var(--fw-light);
+	letter-spacing: var(--ls-wide);
+	color: var(--fg-muted);
+}
+
+.searchbox-popover-section-header {
+	display: flex;
+	justify-content: space-between;
+	padding: 0 var(--space-3) var(--space-2);
 }
 
 .searchbox-popover-section-rows {
@@ -114,6 +147,11 @@
 	color: var(--fg);
 	text-decoration: none;
 }
+
+.searchbox-popover-section-row-stale {
+	opacity: 0.7;
+}
+
 .searchbox-popover-section-row[aria-selected="true"],
 .searchbox-popover-section-row:hover {
 	background: var(--surface-tint-soft);
@@ -131,7 +169,7 @@
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
-.searchbox-popover-section-row-meta {
+.searchbox-popover-section-row-secondary {
 	color: var(--fg-muted);
 	font-size: var(--fs-12);
 	flex-shrink: 0;

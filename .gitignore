@@ -31,3 +31,5 @@ src/paraglide/
 project.inlang/cache/
 project.inlang/.meta.json
 project.inlang/README.md
+
+.pnpm-store/
