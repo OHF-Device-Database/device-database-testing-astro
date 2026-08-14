@@ -1,5 +1,5 @@
 ---
-import { API_AUTHORITY, NOINDEX } from "astro:env/server";
+import { CSR_API_AUTHORITY, NOINDEX } from "astro:env/server";
 import { ClientRouter } from "astro:transitions";
 
 import Footer from "../components/Footer.astro";
@@ -26,8 +26,8 @@ const { title, page = "page", back } = Astro.props;
 		<meta name="theme-color" content="#2a2a27" />
 		{NOINDEX && <meta name="robots" content="noindex, nofollow" />}
 
-		<script define:vars={{ API_AUTHORITY }} is:inline>
-			window.__API_AUTHORITY__ = API_AUTHORITY;
+		<script define:vars={{ CSR_API_AUTHORITY }} is:inline>
+			window.__API_AUTHORITY__ = CSR_API_AUTHORITY;
 		</script>
 
 		<script is:inline>
