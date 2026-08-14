@@ -114,7 +114,8 @@
 	color: var(--fg);
 	text-decoration: none;
 }
-.searchbox-popover-section-row[aria-selected="true"] {
+.searchbox-popover-section-row[aria-selected="true"],
+.searchbox-popover-section-row:hover {
 	background: var(--surface-tint-soft);
 }
 .searchbox-popover-section-row svg {
