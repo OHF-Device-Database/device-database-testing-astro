@@ -195,7 +195,11 @@
 	"labs_survey_august_2026_method_title": "How to read these results",
 	"labs_survey_august_2026_method_body_1": "This was an opt-in survey promoted through Home Assistant community channels, so it describes people already invested in the ecosystem rather than smart home buyers in general. Three quarters of respondents are Europe-based, and the technical skew is pronounced. Where a question allowed several answers, percentages are shares of all selections made, not shares of respondents, so they sum across options rather than to 100%.",
 	"labs_survey_august_2026_method_body_2": "Free-text answers are summarised rather than published, and no personal data or email addresses are included in the results. 61% of respondents told us they are open to being contacted about future research.",
-	"labs_survey_august_2026_full_results_title": "Full results",
-	"labs_survey_august_2026_full_results_body": "The complete breakdown covers all 42 analysed questions with per-question response counts and charts.",
-	"labs_survey_august_2026_full_results_link": "Open the full survey results"
+	"labs_survey_august_2026_results_title": "All questions",
+	"labs_survey_august_2026_results_intro": "Every analysed question, in the order it was asked, with the number of responses behind each one. Questions that allowed several answers report shares of all selections made, so those charts sum to more than the number of respondents.",
+	"labs_survey_august_2026_chart_responses": "{count} responses",
+	"labs_survey_august_2026_chart_average": "Average: {average}/5",
+	"labs_survey_august_2026_chart_label_count": "Count:",
+	"labs_survey_august_2026_chart_label_responses": "Responses:",
+	"labs_survey_august_2026_contact_description": "of respondents are open to being contacted"
 }
