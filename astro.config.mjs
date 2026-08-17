@@ -48,6 +48,7 @@ export default defineConfig({
 		// External stylesheets persist correctly across ClientRouter navigations.
 		inlineStylesheets: "never",
 	},
+	output: "server",
 	env: {
 		schema: {
 			// access: "secret" keeps the value out of the build output; it is read
