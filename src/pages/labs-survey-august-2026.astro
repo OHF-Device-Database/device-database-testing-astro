@@ -1,19 +1,63 @@
 ---
 import Layout from "../layouts/Layout.astro";
+
+import surveyData from "../data/labs-survey-august-2026.json";
 import { m } from "../paraglide/messages.js";
 
 export const prerender = false;
 
 Astro.cache.set({ maxAge: 86400 });
 
-const reportUrl = "/reports/labs-survey-august-2026.html";
+type Chart = {
+	title: string;
+	type: "bar" | "horizontal_bar" | "pie" | "contact_summary";
+	data?: Record<string, number>;
+	total_respondents?: number;
+	likert_average?: number;
+	is_likert?: boolean;
+	contact_yes_percentage?: number;
+};
+
+const charts = surveyData.charts as Chart[];
+
+const contributionChart = charts.find((chart) =>
+	chart.title.includes("How likely are you to contribute"),
+);
+const regionChart = charts.find((chart) => chart.title.includes("In what region"));
+
+const regionTotal = Object.values(regionChart?.data ?? {}).reduce(
+	(sum, value) => sum + value,
+	0,
+);
+const europeShare = regionTotal
+	? Math.round(((regionChart?.data?.Europe ?? 0) / regionTotal) * 100)
+	: 0;
 
 const stats = [
-	{ value: "715", label: m.labs_survey_august_2026_stat_responses() },
-	{ value: "42", label: m.labs_survey_august_2026_stat_questions() },
-	{ value: "4.68/5", label: m.labs_survey_august_2026_stat_contribution() },
-	{ value: "75%", label: m.labs_survey_august_2026_stat_europe() },
+	{
+		value: String(surveyData.total_responses),
+		label: m.labs_survey_august_2026_stat_responses(),
+	},
+	{
+		value: String(charts.length),
+		label: m.labs_survey_august_2026_stat_questions(),
+	},
+	{
+		value: `${contributionChart?.likert_average ?? "-"}/5`,
+		label: m.labs_survey_august_2026_stat_contribution(),
+	},
+	{
+		value: `${europeShare}%`,
+		label: m.labs_survey_august_2026_stat_europe(),
+	},
 ];
+
+// Chart.js tooltips run in the browser, so the few strings they need are handed
+// over as data attributes rather than pulling the paraglide runtime client-side.
+const chartLabels = {
+	count: m.labs_survey_august_2026_chart_label_count(),
+	responses: m.labs_survey_august_2026_chart_label_responses(),
+};
 ---
 
 <Layout page="page" title={m.labs_survey_august_2026_title()}>
@@ -61,14 +105,354 @@ const stats = [
 		</section>
 
 		<section class="content-section">
-			<h2>{m.labs_survey_august_2026_full_results_title()}</h2>
-			<p class="content-prose">{m.labs_survey_august_2026_full_results_body()}</p>
-			<p class="content-prose">
-				<a href={reportUrl}>{m.labs_survey_august_2026_full_results_link()}</a>
-			</p>
+			<h2>{m.labs_survey_august_2026_results_title()}</h2>
+			<p class="content-prose">{m.labs_survey_august_2026_results_intro()}</p>
+
+			<div
+				class="survey-charts"
+				data-survey-charts
+				data-label-count={chartLabels.count}
+				data-label-responses={chartLabels.responses}
+			>
+				{
+					charts.map((chart, index) => (
+						<figure class="survey-chart">
+							<figcaption>
+								<h3 class="survey-chart-title">{chart.title}</h3>
+								{
+									(chart.total_respondents || chart.likert_average) && (
+										<p class="survey-chart-meta">
+											{[
+												chart.total_respondents
+													? m.labs_survey_august_2026_chart_responses({
+															count: chart.total_respondents,
+														})
+													: null,
+												chart.likert_average
+													? m.labs_survey_august_2026_chart_average({
+															average: chart.likert_average,
+														})
+													: null,
+											]
+												.filter(Boolean)
+												.join(" | ")}
+										</p>
+									)
+								}
+							</figcaption>
+
+							{
+								chart.type === "contact_summary" ? (
+									<div class="survey-contact">
+										<p class="survey-contact-value">
+											{chart.contact_yes_percentage}%
+										</p>
+										<p class="survey-contact-label">
+											{m.labs_survey_august_2026_contact_description()}
+										</p>
+									</div>
+								) : (
+									<div class="survey-chart-canvas" data-chart-index={index}>
+										<canvas
+											aria-label={chart.title}
+											role="img"
+											data-canvas-index={index}
+										/>
+									</div>
+								)
+							}
+						</figure>
+					))
+				}
+			</div>
 		</section>
 	</div>
+
+	<script
+		type="application/json"
+		data-survey-data
+		is:inline
+		set:html={JSON.stringify(surveyData)}
+	/>
 </Layout>
+
+<!--
+	is:inline keeps this out of the Vite pipeline so Chart.js can be imported
+	straight from the CDN as native ESM. The cost is that this file is plain JS,
+	not TypeScript, and is not bundled or minified.
+-->
+<script is:inline type="module">
+	const CHART_JS = "https://cdn.jsdelivr.net/npm/chart.js@4.4.0/auto/+esm";
+
+	const PALETTE = [
+		"#18BCF2",
+		"#155E75",
+		"#D98E2B",
+		"#4E9F5A",
+		"#B4556A",
+		"#6C63C7",
+		"#2FA39B",
+		"#8A6FBF",
+		"#C0762C",
+		"#5A8FBF",
+		"#7FA65A",
+		"#B85C48",
+		"#4C6C8C",
+		"#9C8B5A",
+		"#5AA6C8",
+		"#8C5A7A",
+		"#6B8E6B",
+		"#A67C52",
+		"#7A7669",
+		"#4A4844",
+	];
+
+	const truncate = (value, max) =>
+		value.length > max ? `${value.slice(0, max)}...` : value;
+
+	const rendered = new Set();
+	const instances = [];
+	let observer;
+
+	// The CDN module is only fetched once a chart is about to become visible, so
+	// readers who never scroll that far never pay for it.
+	let chartLibrary;
+	async function loadChartLibrary() {
+		if (!chartLibrary) {
+			chartLibrary = import(CHART_JS).then((module) => module.default);
+		}
+		return chartLibrary;
+	}
+
+	function baseOptions() {
+		return {
+			responsive: true,
+			maintainAspectRatio: false,
+			plugins: {
+				legend: { display: false },
+				tooltip: {
+					backgroundColor: "#11100F",
+					cornerRadius: 8,
+					padding: 16,
+					titleFont: { size: 13, weight: "bold" },
+					bodyFont: { size: 12 },
+					titleMarginBottom: 10,
+					bodySpacing: 6,
+					boxWidth: 12,
+					boxHeight: 12,
+				},
+			},
+		};
+	}
+
+	function drawChart(Chart, canvas, info, labels) {
+		const entries = Object.entries(info.data ?? {});
+		if (entries.length === 0) return;
+
+		const keys = entries.map(([key]) => key);
+		const values = entries.map(([, value]) => value);
+		const options = baseOptions();
+
+		if (info.type === "pie") {
+			instances.push(
+				new Chart(canvas, {
+					type: "doughnut",
+					data: {
+						labels: keys,
+						datasets: [
+							{
+								data: values,
+								backgroundColor: PALETTE,
+								borderWidth: 2,
+								borderColor: "#fff",
+							},
+						],
+					},
+					options: {
+						...options,
+						cutout: "60%",
+						plugins: {
+							...options.plugins,
+							legend: {
+								display: true,
+								position: "right",
+								labels: {
+									font: { size: 10 },
+									padding: 8,
+									boxWidth: 12,
+									generateLabels(chart) {
+										const dataset = chart.data.datasets[0];
+										const total = dataset.data.reduce(
+											(sum, value) => sum + value,
+											0,
+										);
+										return chart.data.labels.map((label, i) => {
+											const share = (
+												(dataset.data[i] / total) *
+												100
+											).toFixed(1);
+											return {
+												text: `${truncate(label, 25)} (${share}%)`,
+												fillStyle: PALETTE[i % PALETTE.length],
+												hidden: false,
+												index: i,
+											};
+										});
+									},
+								},
+							},
+							tooltip: {
+								...options.plugins.tooltip,
+								callbacks: {
+									title: (context) => context[0].label,
+									label: (context) => {
+										const total = context.dataset.data.reduce(
+											(sum, value) => sum + value,
+											0,
+										);
+										const share = ((context.parsed / total) * 100).toFixed(1);
+										return `${labels.count} ${context.parsed} (${share}%)`;
+									},
+								},
+							},
+						},
+					},
+				}),
+			);
+			return;
+		}
+
+		const horizontal = info.type === "horizontal_bar";
+
+		instances.push(
+			new Chart(canvas, {
+				type: "bar",
+				data: {
+					labels: keys,
+					datasets: [
+						{
+							data: values,
+							backgroundColor: horizontal ? PALETTE : PALETTE[0],
+							borderWidth: 0,
+							borderRadius: 6,
+						},
+					],
+				},
+				options: {
+					...options,
+					indexAxis: horizontal ? "y" : "x",
+					plugins: {
+						...options.plugins,
+						tooltip: {
+							...options.plugins.tooltip,
+							callbacks: {
+								title: (context) => context[0].label,
+								label: (context) =>
+									horizontal
+										? `${labels.responses} ${context.parsed.x}`
+										: `${labels.count} ${context.parsed.y}`,
+							},
+						},
+					},
+					scales: horizontal
+						? {
+								x: {
+									beginAtZero: true,
+									ticks: { precision: 0 },
+									grid: { color: "rgba(0, 0, 0, 0.05)" },
+								},
+								y: {
+									grid: { display: false },
+									ticks: {
+										font: { size: 10 },
+										callback(value) {
+											return truncate(this.getLabelForValue(Number(value)), 50);
+										},
+									},
+								},
+							}
+						: {
+								y: {
+									beginAtZero: true,
+									ticks: { precision: 0 },
+									grid: { color: "rgba(0, 0, 0, 0.05)" },
+								},
+								x: {
+									grid: { display: false },
+									ticks: {
+										callback(value) {
+											return truncate(this.getLabelForValue(Number(value)), 20);
+										},
+									},
+								},
+							},
+				},
+			}),
+		);
+	}
+
+	function init() {
+		const container = document.querySelector("[data-survey-charts]");
+		const dataScript = document.querySelector("[data-survey-data]");
+		if (!container || !dataScript?.textContent) return;
+
+		const surveyData = JSON.parse(dataScript.textContent);
+		const labels = {
+			count: container.dataset.labelCount ?? "",
+			responses: container.dataset.labelResponses ?? "",
+		};
+
+		// 40+ canvases is a lot to initialise up front, so each one waits until it
+		// is close to the viewport.
+		observer = new IntersectionObserver(
+			(entries) => {
+				for (const entry of entries) {
+					if (!entry.isIntersecting) continue;
+
+					const canvas = entry.target;
+					observer.unobserve(canvas);
+					if (rendered.has(canvas)) continue;
+					rendered.add(canvas);
+
+					const info = surveyData.charts[Number(canvas.dataset.canvasIndex)];
+					if (!info) continue;
+
+					const wrapper = canvas.parentElement;
+					if (wrapper && info.type === "horizontal_bar") {
+						const rows = Object.keys(info.data ?? {}).length;
+						wrapper.style.height = `${Math.max(300, rows * 35)}px`;
+					}
+
+					loadChartLibrary()
+						.then((Chart) => drawChart(Chart, canvas, info, labels))
+						.catch(() => {
+							container.dataset.chartsFailed = "true";
+						});
+				}
+			},
+			{ rootMargin: "300px 0px" },
+		);
+
+		for (const canvas of container.querySelectorAll("canvas[data-canvas-index]")) {
+			observer.observe(canvas);
+		}
+	}
+
+	function teardown() {
+		observer?.disconnect();
+		observer = undefined;
+		rendered.clear();
+		while (instances.length > 0) instances.pop()?.destroy();
+	}
+
+	// Inline scripts re-execute after a ClientRouter navigation, so the listeners
+	// are registered only once.
+	if (!window.__labsSurveyChartsBound) {
+		window.__labsSurveyChartsBound = true;
+		document.addEventListener("astro:page-load", init);
+		document.addEventListener("astro:before-swap", teardown);
+	}
+</script>
 
 <style>
 	.survey-stats {
@@ -102,6 +486,58 @@ const stats = [
 		opacity: 0.7;
 	}
 
+	.survey-charts {
+		display: grid;
+		gap: 1.5rem;
+		margin-block-start: 2rem;
+	}
+
+	.survey-chart {
+		margin: 0;
+		padding: 1.75rem;
+		border: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+		border-radius: 12px;
+	}
+
+	.survey-chart-title {
+		font-size: 1.1rem;
+		line-height: 1.35;
+		margin: 0;
+	}
+
+	.survey-chart-meta {
+		margin: 0.35rem 0 0;
+		font-size: 0.85rem;
+		opacity: 0.7;
+	}
+
+	.survey-chart-canvas {
+		position: relative;
+		height: 400px;
+		margin-block-start: 1.5rem;
+	}
+
+	.survey-contact {
+		margin-block-start: 1.5rem;
+		padding: 2.5rem 2rem;
+		border-radius: 12px;
+		background: color-mix(in srgb, currentColor 4%, transparent);
+		text-align: center;
+	}
+
+	.survey-contact-value {
+		margin: 0;
+		font-size: 3.5rem;
+		font-weight: 600;
+		letter-spacing: -0.01em;
+		line-height: 1;
+	}
+
+	.survey-contact-label {
+		margin: 0.6rem 0 0;
+		opacity: 0.75;
+	}
+
 	@media (max-width: 40rem) {
 		.survey-stat,
 		.survey-stat + .survey-stat {
@@ -112,6 +548,14 @@ const stats = [
 		.survey-stat + .survey-stat {
 			border-block-start: 1px solid
 				color-mix(in srgb, currentColor 12%, transparent);
+		}
+
+		.survey-chart {
+			padding: 1.25rem;
+		}
+
+		.survey-chart-canvas {
+			height: 320px;
 		}
 	}
 </style>
