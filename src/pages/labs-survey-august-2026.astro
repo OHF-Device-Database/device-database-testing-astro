@@ -23,7 +23,9 @@ const charts = surveyData.charts as Chart[];
 const contributionChart = charts.find((chart) =>
 	chart.title.includes("How likely are you to contribute"),
 );
-const regionChart = charts.find((chart) => chart.title.includes("In what region"));
+const regionChart = charts.find((chart) =>
+	chart.title.includes("In what region"),
+);
 
 const regionTotal = Object.values(regionChart?.data ?? {}).reduce(
 	(sum, value) => sum + value,
@@ -83,13 +85,34 @@ const chartLabels = {
 
 		<section class="content-section">
 			<h2>{m.labs_survey_august_2026_takeaways_title()}</h2>
-			<p class="content-prose" set:html={m.labs_survey_august_2026_takeaway_contribution()} />
-			<p class="content-prose" set:html={m.labs_survey_august_2026_takeaway_profile()} />
-			<p class="content-prose" set:html={m.labs_survey_august_2026_takeaway_motivation()} />
-			<p class="content-prose" set:html={m.labs_survey_august_2026_takeaway_needs()} />
-			<p class="content-prose" set:html={m.labs_survey_august_2026_takeaway_usage()} />
-			<p class="content-prose" set:html={m.labs_survey_august_2026_takeaway_manufacturers()} />
-			<p class="content-prose" set:html={m.labs_survey_august_2026_takeaway_stability()} />
+			<p
+				class="content-prose"
+				set:html={m.labs_survey_august_2026_takeaway_contribution()}
+			/>
+			<p
+				class="content-prose"
+				set:html={m.labs_survey_august_2026_takeaway_profile()}
+			/>
+			<p
+				class="content-prose"
+				set:html={m.labs_survey_august_2026_takeaway_motivation()}
+			/>
+			<p
+				class="content-prose"
+				set:html={m.labs_survey_august_2026_takeaway_needs()}
+			/>
+			<p
+				class="content-prose"
+				set:html={m.labs_survey_august_2026_takeaway_usage()}
+			/>
+			<p
+				class="content-prose"
+				set:html={m.labs_survey_august_2026_takeaway_manufacturers()}
+			/>
+			<p
+				class="content-prose"
+				set:html={m.labs_survey_august_2026_takeaway_stability()}
+			/>
 		</section>
 
 		<section class="content-section">
@@ -119,48 +142,44 @@ const chartLabels = {
 						<figure class="survey-chart">
 							<figcaption>
 								<h3 class="survey-chart-title">{chart.title}</h3>
-								{
-									(chart.total_respondents || chart.likert_average) && (
-										<p class="survey-chart-meta">
-											{[
-												chart.total_respondents
-													? m.labs_survey_august_2026_chart_responses({
-															count: chart.total_respondents,
-														})
-													: null,
-												chart.likert_average
-													? m.labs_survey_august_2026_chart_average({
-															average: chart.likert_average,
-														})
-													: null,
-											]
-												.filter(Boolean)
-												.join(" | ")}
-										</p>
-									)
-								}
+								{(chart.total_respondents || chart.likert_average) && (
+									<p class="survey-chart-meta">
+										{[
+											chart.total_respondents
+												? m.labs_survey_august_2026_chart_responses({
+														count: chart.total_respondents,
+													})
+												: null,
+											chart.likert_average
+												? m.labs_survey_august_2026_chart_average({
+														average: chart.likert_average,
+													})
+												: null,
+										]
+											.filter(Boolean)
+											.join(" | ")}
+									</p>
+								)}
 							</figcaption>
 
-							{
-								chart.type === "contact_summary" ? (
-									<div class="survey-contact">
-										<p class="survey-contact-value">
-											{chart.contact_yes_percentage}%
-										</p>
-										<p class="survey-contact-label">
-											{m.labs_survey_august_2026_contact_description()}
-										</p>
-									</div>
-								) : (
-									<div class="survey-chart-canvas" data-chart-index={index}>
-										<canvas
-											aria-label={chart.title}
-											role="img"
-											data-canvas-index={index}
-										/>
-									</div>
-								)
-							}
+							{chart.type === "contact_summary" ? (
+								<div class="survey-contact">
+									<p class="survey-contact-value">
+										{chart.contact_yes_percentage}%
+									</p>
+									<p class="survey-contact-label">
+										{m.labs_survey_august_2026_contact_description()}
+									</p>
+								</div>
+							) : (
+								<div class="survey-chart-canvas" data-chart-index={index}>
+									<canvas
+										aria-label={chart.title}
+										role="img"
+										data-canvas-index={index}
+									/>
+								</div>
+							)}
 						</figure>
 					))
 				}
@@ -287,10 +306,9 @@ const chartLabels = {
 											0,
 										);
 										return chart.data.labels.map((label, i) => {
-											const share = (
-												(dataset.data[i] / total) *
-												100
-											).toFixed(1);
+											const share = ((dataset.data[i] / total) * 100).toFixed(
+												1,
+											);
 											return {
 												text: `${truncate(label, 25)} (${share}%)`,
 												fillStyle: PALETTE[i % PALETTE.length],
@@ -433,7 +451,9 @@ const chartLabels = {
 			{ rootMargin: "300px 0px" },
 		);
 
-		for (const canvas of container.querySelectorAll("canvas[data-canvas-index]")) {
+		for (const canvas of container.querySelectorAll(
+			"canvas[data-canvas-index]",
+		)) {
 			observer.observe(canvas);
 		}
 	}
