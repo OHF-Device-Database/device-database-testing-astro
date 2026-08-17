@@ -472,6 +472,65 @@
 	align-items: center;
 	gap: 4px;
 }
+.aside-duplicates {
+	margin-top: var(--space-7);
+}
+.aside-duplicate-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+}
+.aside-duplicate-row {
+	display: flex;
+	align-items: center;
+	gap: var(--space-3);
+	padding: 8px 0;
+	border-top: 1px solid var(--border-subtle);
+	color: var(--fg);
+	text-decoration: none;
+}
+.aside-duplicate-list li:first-child .aside-duplicate-row {
+	border-top: 0;
+	padding-top: 0;
+}
+.aside-duplicate-row:hover .aside-duplicate-name {
+	text-decoration: underline;
+	text-underline-offset: 2px;
+}
+.aside-duplicate-icon {
+	display: inline-flex;
+	color: var(--fg-muted);
+	flex-shrink: 0;
+}
+.aside-duplicate-main {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+}
+.aside-duplicate-name,
+.aside-duplicate-integration {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.aside-duplicate-name {
+	font-size: var(--fs-14);
+}
+.aside-duplicate-integration {
+	font-size: var(--fs-12);
+	color: var(--fg-muted);
+}
+.aside-duplicate-count {
+	font-family: var(--font-mono);
+	font-weight: var(--fw-medium);
+	font-size: var(--fs-14);
+	color: var(--fg);
+	font-variant-numeric: tabular-nums;
+	flex-shrink: 0;
+}
 @media (max-width: 767px) {
 	.detail-head {
 		grid-template-columns: 1fr;
