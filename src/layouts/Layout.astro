@@ -127,7 +127,8 @@ const { title, page = "page", back } = Astro.props;
 			{m.site_title()}{typeof title !== "undefined" ? ` · ${title}` : ""}
 		</title>
 
-		<PlausibleAnalytics />
+		{/* Builds only, so `astro dev` never reaches Plausible. */}
+		{import.meta.env.PROD && <PlausibleAnalytics />}
 	</head>
 	<body>
 		<div

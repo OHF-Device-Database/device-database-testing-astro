@@ -3,6 +3,10 @@
 // private URL as the referrer. The allow list is downloaded once per build by
 // scripts/sync-allowed-referrers.mjs and inlined below, so the referrer is
 // checked in the browser and rewritten before Plausible ever sees it.
+//
+// Layout.astro gates this on import.meta.env.PROD, so `astro dev` never loads
+// it. PROD is true for any build, so branch deploys and deploy previews do load
+// it; the hostname allow list on the Plausible instance drops their events.
 import allowedReferrers from "../data/allowed-referrers.json";
 ---
 
