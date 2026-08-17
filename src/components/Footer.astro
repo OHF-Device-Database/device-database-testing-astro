@@ -16,13 +16,20 @@ const ANALYTICS_BLOG_URL =
 const ANALYTICS_DASHBOARD_URL =
 	"https://plausible.openhomefoundation.org/device-database-preview.openhomefoundation.org";
 
-// One sentence with two links in it. Keeping it as a single message with the
-// anchors substituted in leaves translators a whole sentence to work with,
-// rather than fragments they would have to keep in the right order.
-const analyticsNotice = m.footer_analytics({
-	analyticsLink: `<a href="${ANALYTICS_BLOG_URL}" rel="noopener">${m.footer_analytics_link()}</a>`,
-	dashboardLink: `<a href="${ANALYTICS_DASHBOARD_URL}" rel="noopener">${m.footer_analytics_dashboard()}</a>`,
-});
+const ANALYTICS_TOKEN = "\u0000";
+const DASHBOARD_TOKEN = "\u0001";
+
+// One sentence with two links in it, so translators get a whole sentence rather
+// than fragments they would have to keep in the right order. The links are
+// substituted as tokens and split back out below, so each text part is rendered
+// as text and no message file can inject markup.
+const analyticsNoticeParts = m
+	.footer_analytics({
+		analyticsLink: ANALYTICS_TOKEN,
+		dashboardLink: DASHBOARD_TOKEN,
+	})
+	// eslint-disable-next-line no-control-regex -- deliberate sentinels; control characters cannot occur in translated prose, so they are unambiguous delimiters
+	.split(/([\u0000\u0001])/);
 ---
 
 <footer class={"appfoot" + (flush ? " appfoot-flush" : "")}>
@@ -53,6 +60,29 @@ const analyticsNotice = m.footer_analytics({
 		</span>
 	</div>
 	<div class="container appfoot-analytics">
-		<p set:html={analyticsNotice} />
+		<p>
+			{
+				analyticsNoticeParts.map((part) =>
+					part === ANALYTICS_TOKEN ? (
+						// set:text rather than a child expression: Prettier breaks a child
+						// onto its own line and Astro emits that as a real space, which
+						// would underline one space past the link text.
+						<a
+							href={ANALYTICS_BLOG_URL}
+							rel="noopener"
+							set:text={m.footer_analytics_link()}
+						/>
+					) : part === DASHBOARD_TOKEN ? (
+						<a
+							href={ANALYTICS_DASHBOARD_URL}
+							rel="noopener"
+							set:text={m.footer_analytics_dashboard()}
+						/>
+					) : (
+						part
+					),
+				)
+			}
+		</p>
 	</div>
 </footer>
