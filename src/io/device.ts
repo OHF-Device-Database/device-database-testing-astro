@@ -206,8 +206,31 @@ export const getDeviceCount = async () => {
 	};
 };
 
+const IoRef = z.object({ id: z.string(), url: z.string() });
+
+export const IoDeviceDuplicates = z.object({
+	items: z.array(IoDevicePoly.and(z.object({ url: z.string() }))),
+	total: z.number(),
+	next: z.optional(z.string()),
+});
+export type IoDeviceDuplicates = z.infer<typeof IoDeviceDuplicates>;
+
+export const IoDeviceCanonical = IoDevicePoly.and(
+	z.object({
+		url: z.string(),
+		duplicates: z.array(IoRef),
+	}),
+);
+export type IoDeviceCanonical = z.infer<typeof IoDeviceCanonical>;
+
 const DeviceGetSchema = z.object({
-	body: IoDeviceMono,
+	// deduplication fields stay optional so an older api edition doesn't fail every device page
+	body: IoDeviceMono.and(
+		z.object({
+			duplicates: z.optional(IoDeviceDuplicates),
+			canonical: z.optional(IoDeviceCanonical),
+		}),
+	),
 	headers: z.object({
 		...IoHeadersCaching.shape,
 	}),

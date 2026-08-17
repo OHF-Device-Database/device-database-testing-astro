@@ -8,7 +8,7 @@ import { getDimensions } from "../../io/dimension";
 import { m } from "../../paraglide/messages.js";
 import { getLocale, localizeHref } from "../../paraglide/runtime.js";
 import { topLevelCategoryResolver } from "../../types/category";
-import { deviceMonoMap } from "../../types/device";
+import { deviceMonoMap, devicePolyMap } from "../../types/device";
 import { Unknown } from "../../types/unknown";
 import { cachePolicy } from "../../utilities/cache";
 import * as presentation from "../../utilities/presentation";
@@ -16,6 +16,7 @@ import {
 	PresentationRenderPresetRoleGlyph,
 	PresentationRenderPresetRoleIcon,
 } from "../../utilities/presentation/preset";
+import type { IoDevicePoly } from "../../io/device";
 import type { DeviceCategoryTopLevelId } from "../../types/category";
 
 export const prerender = false;
@@ -35,6 +36,23 @@ const [{ total }, { dimensions }] = await Promise.all([
 	getDimensions(),
 ]);
 const resolveCategory = topLevelCategoryResolver(dimensions.categories);
+
+const listingRow = (item: IoDevicePoly) => {
+	const listed = devicePolyMap(item);
+	const firstRawCategoryId = listed.categories?.at(0);
+
+	return {
+		id: listed.id,
+		name: presentation.device.name(listed),
+		integration: listed.integration.name,
+		count: listed.count,
+		presented: presentation.device.category(
+			typeof firstRawCategoryId !== "undefined"
+				? resolveCategory(firstRawCategoryId)
+				: Unknown,
+		),
+	};
+};
 
 const formatDate = (date: Date): string =>
 	date.toLocaleDateString(getLocale(), {
@@ -81,6 +99,11 @@ const view =
 						},
 						docsUrl: `https://www.home-assistant.io/integrations/${device.integration.domain}`,
 						firstEncountered: formatDate(device.firstEncountered),
+						duplicates: (result.device.duplicates?.items ?? []).map(listingRow),
+						canonical:
+							typeof result.device.canonical !== "undefined"
+								? listingRow(result.device.canonical)
+								: undefined,
 						versions: {
 							software: device.versions.software.toSorted(
 								(a, b) =>
@@ -378,6 +401,80 @@ const view =
 								</a>
 							</p>
 						</div>
+
+						{typeof view.derived.canonical !== "undefined" && (
+							<div class="aside-card aside-duplicates">
+								<h4>{m.device_main_listing()}</h4>
+								<ul class="aside-duplicate-list">
+									<li>
+										<a
+											class="aside-duplicate-row"
+											href={localizeHref(
+												`/devices/${view.derived.canonical.id}`,
+											)}
+										>
+											<span
+												class="aside-duplicate-icon"
+												set:html={presentation.render(
+													view.derived.canonical.presented,
+													PresentationRenderPresetRoleIcon.withSize(16),
+												)}
+											/>
+											<span class="aside-duplicate-main">
+												<span class="aside-duplicate-name">
+													{view.derived.canonical.name}
+												</span>
+												<span class="aside-duplicate-integration">
+													{view.derived.canonical.integration}
+												</span>
+											</span>
+											<span class="aside-duplicate-count">
+												{view.derived.canonical.count.toLocaleString(
+													getLocale(),
+												)}
+											</span>
+										</a>
+									</li>
+								</ul>
+								<p class="aside-stats-note">{m.device_main_listing_note()}</p>
+							</div>
+						)}
+
+						{view.derived.duplicates.length > 0 && (
+							<div class="aside-card aside-duplicates">
+								<h4>{m.device_also_listed_as()}</h4>
+								<ul class="aside-duplicate-list">
+									{view.derived.duplicates.map((duplicate) => (
+										<li>
+											<a
+												class="aside-duplicate-row"
+												href={localizeHref(`/devices/${duplicate.id}`)}
+											>
+												<span
+													class="aside-duplicate-icon"
+													set:html={presentation.render(
+														duplicate.presented,
+														PresentationRenderPresetRoleIcon.withSize(16),
+													)}
+												/>
+												<span class="aside-duplicate-main">
+													<span class="aside-duplicate-name">
+														{duplicate.name}
+													</span>
+													<span class="aside-duplicate-integration">
+														{duplicate.integration}
+													</span>
+												</span>
+												<span class="aside-duplicate-count">
+													{duplicate.count.toLocaleString(getLocale())}
+												</span>
+											</a>
+										</li>
+									))}
+								</ul>
+								<p class="aside-stats-note">{m.device_also_listed_note()}</p>
+							</div>
+						)}
 					</aside>
 				</div>
 			</div>
