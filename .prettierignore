@@ -1,4 +1,5 @@
 src/paraglide/
+src/data/allowed-referrers.json
 pnpm-lock.yaml
 dist/
 .astro/

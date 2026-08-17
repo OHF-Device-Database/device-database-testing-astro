@@ -2,6 +2,11 @@
 import Layout from "../layouts/Layout.astro";
 
 import { localizeHref } from "../paraglide/runtime.js";
+
+// Like every other page: the locale comes from the request, so this cannot be
+// prerendered. Prerendering it would resolve the locale at build time and send
+// a base-locale page to everyone, whatever prefix they asked for.
+export const prerender = false;
 ---
 
 <Layout page="page" title="Page not found">
@@ -16,10 +21,12 @@ import { localizeHref } from "../paraglide/runtime.js";
 			</p>
 		</section>
 	</div>
-</Layout>
 
-<script is:inline>
-	document.addEventListener("DOMContentLoaded", function () {
-		plausible("404");
-	});
-</script>
+	<script is:inline>
+		// Fired inline rather than from a document listener: the ClientRouter would
+		// keep a listener alive after navigating away and report a 404 for the next
+		// page too. PlausibleAnalytics.astro defines the queue stub in the head, so
+		// the call is already safe to make here.
+		if (typeof window.plausible === "function") window.plausible("404");
+	</script>
+</Layout>
