@@ -1,0 +1,608 @@
+{
+	"total_responses": 715,
+	"charts": [
+		{
+			"title": "How likely are you to contribute to the Open Home Foundation device database?",
+			"type": "bar",
+			"data": {
+				"1": 7,
+				"2": 8,
+				"3": 28,
+				"4": 118,
+				"5": 554
+			},
+			"total_respondents": 715,
+			"likert_average": 4.68,
+			"is_likert": true
+		},
+		{
+			"title": "What are your main reasons for contributing to the device database? (Select up to 3)",
+			"type": "horizontal_bar",
+			"data": {
+				"Support the Open Home Foundation / open-source projects like Home Assistant": 554,
+				"Hope to get useful information back": 521,
+				"Fill gaps in available information": 425,
+				"Document devices I own": 182,
+				"Share my technical expertise": 132,
+				"Correct inaccurate information": 115,
+				"Build reputation in the community": 25,
+				"Other": 20
+			},
+			"total_respondents": 1974
+		},
+		{
+			"title": "What type of information would you feel most confident contributing? (Select all that apply)",
+			"type": "horizontal_bar",
+			"data": {
+				"Basic device specifications (manufacturer, model, price)": 636,
+				"Compatibility information (protocols, platforms)": 618,
+				"Setup and installation experiences": 505,
+				"Real-world testing results": 482,
+				"Integration challenges or successes": 467,
+				"Comparison with similar devices": 268,
+				"Photos and documentation": 198,
+				"Other": 23
+			},
+			"total_respondents": 3197
+		},
+		{
+			"title": "What validation or verification methods would you trust most? (Select all that apply)",
+			"type": "horizontal_bar",
+			"data": {
+				"Peer review by experienced community members": 553,
+				"Multiple independent confirmations": 414,
+				"Automated checks for consistency": 384,
+				"Verification badges for confirmed contributors": 351,
+				"Cross-referencing with manufacturer specifications": 350,
+				"Voting system (upvote/downvote)": 326,
+				"Reputation-based trust scores": 298,
+				"Official manufacturer verification": 244,
+				"Other": 20
+			},
+			"total_respondents": 2940
+		},
+		{
+			"title": "Would you be interested in contributing on an ongoing basis?",
+			"type": "pie",
+			"data": {
+				"Yes, occasionally (monthly)": 325,
+				"Yes, regularly (weekly or more often)": 168,
+				"Yes, rarely (a few times per year)": 134,
+				"Maybe, if I acquire new devices": 62,
+				"Unsure": 19,
+				"No, likely only one-time contribution": 7
+			},
+			"total_respondents": 715
+		},
+		{
+			"title": "What concerns, if any, would prevent you from contributing? (Select all that apply)",
+			"type": "horizontal_bar",
+			"data": {
+				"Time commitment": 413,
+				"Fear of making mistakes": 198,
+				"Complexity of the process": 194,
+				"Uncertainty about contribution quality standards": 190,
+				"Lack of technical knowledge": 164,
+				"Not sure my contribution would be valued": 154,
+				"Privacy concerns": 130,
+				"No concerns": 103,
+				"Other": 35
+			},
+			"total_respondents": 1581
+		},
+		{
+			"title": "How would you prefer to track your contributions and impact? (Select all that apply)",
+			"type": "horizontal_bar",
+			"data": {
+				"Dashboard showing my contribution statistics": 442,
+				"Notifications when my contributions are validated or used": 352,
+				"I don't need tracking": 210,
+				"Achievement badges or milestones": 186,
+				"Simple contribution count": 174,
+				"Public contributor profile": 151,
+				"Other": 19
+			},
+			"total_respondents": 1534
+		},
+		{
+			"title": "Would you be willing to update device information as it changes (e.g. by firmware updates, new integrations, etc.)?",
+			"type": "pie",
+			"data": {
+				"Yes, if notified about potential updates needed": 276,
+				"Yes, definitely (I want to keep my contributions current)": 270,
+				"Maybe, if it's easy to do": 146,
+				"Probably not (one-time contribution preferred)": 14,
+				"Unsure": 5,
+				"No": 4
+			},
+			"total_respondents": 715
+		},
+		{
+			"title": "How important is it to you that your individual contributions are attributed to you?",
+			"type": "bar",
+			"data": {
+				"1": 269,
+				"2": 131,
+				"3": 178,
+				"4": 98,
+				"5": 39
+			},
+			"total_respondents": 715,
+			"likert_average": 2.31,
+			"is_likert": true
+		},
+		{
+			"title": "What kind of account would you like to use to make contributions? (Select all that apply)",
+			"type": "horizontal_bar",
+			"data": {
+				"GitHub account": 432,
+				"Email address only (create simple account)": 373,
+				"Anonymous contributions (no account needed)": 268,
+				"Google account": 237,
+				"I don't want to create an account": 76,
+				"Discord account": 63,
+				"Home Assistant Community forums account": 2,
+				"Nabu Casa Account": 2,
+				"Other": 41
+			},
+			"total_respondents": 1494
+		},
+		{
+			"title": "How comfortable are you handling technical specifications and device details?",
+			"type": "bar",
+			"data": {
+				"1": 6,
+				"2": 33,
+				"3": 133,
+				"4": 295,
+				"5": 248
+			},
+			"total_respondents": 715,
+			"likert_average": 4.04,
+			"is_likert": true
+		},
+		{
+			"title": "For what purposes would you access the smart home device information? (Select up to 3)",
+			"type": "horizontal_bar",
+			"data": {
+				"Researching devices before purchase": 631,
+				"Verifying compatibility with my existing setup": 464,
+				"Troubleshooting integration issues": 316,
+				"Comparing similar devices": 237,
+				"Understanding local vs. cloud capabilities": 193,
+				"Checking protocol and standard support": 112,
+				"Evaluating security and privacy features": 107,
+				"Professional recommendations or consulting": 18,
+				"Other": 7
+			},
+			"total_respondents": 2085
+		},
+		{
+			"title": "Which device attributes are most critical for your decision-making? (Select up to 5)",
+			"type": "horizontal_bar",
+			"data": {
+				"Communication protocols (Zigbee, Z-Wave, Thread, Wi-Fi, etc.)": 635,
+				"Local control capabilities (i.e. works without internet)": 610,
+				"Platform compatibility (Home Assistant, HomeKit, Alexa, etc.)": 456,
+				"Price and availability": 337,
+				"Open APIs and integration options": 268,
+				"Security and privacy features": 189,
+				"Power source and consumption": 170,
+				"Update frequency and support lifecycle": 141,
+				"Cloud dependency requirements": 124,
+				"Physical specifications (size, mounting, etc.)": 111,
+				"Manufacturer reputation": 82,
+				"Certification standards (Matter, etc.)": 71,
+				"Reliability": 2,
+				"Other": 25
+			},
+			"total_respondents": 3221
+		},
+		{
+			"title": "How important is it to explicitly mark user contributions as opposed to factual device specifications?",
+			"type": "bar",
+			"data": {
+				"1": 26,
+				"2": 52,
+				"3": 221,
+				"4": 256,
+				"5": 160
+			},
+			"total_respondents": 715,
+			"likert_average": 3.66,
+			"is_likert": true
+		},
+		{
+			"title": "What information gaps do you currently encounter when researching smart home devices? (Select all that apply)",
+			"type": "horizontal_bar",
+			"data": {
+				"Unclear compatibility information": 476,
+				"Limited details on local control capabilities": 465,
+				"Lack of real-world integration experiences": 443,
+				"Incomplete information about cloud dependencies": 333,
+				"Unclear firmware update policies": 301,
+				"Inconsistent specification formats across manufacturers": 274,
+				"Insufficient comparison between similar devices": 257,
+				"Missing protocol details": 253,
+				"Missing security and privacy specifications": 215,
+				"Other": 44
+			},
+			"total_respondents": 3061
+		},
+		{
+			"title": "How would you like to access the device database? (Select up to 3)",
+			"type": "pie",
+			"data": {
+				"Web interface": 682,
+				"Integration with home automation platforms": 358,
+				"Mobile app": 237,
+				"API for programmatic access": 127,
+				"Downloadable dataset": 84,
+				"Browser extension": 52,
+				"Embedded widgets for other websites": 40,
+				"Command-line tools": 19,
+				"MCP": 2,
+				"Other": 10
+			},
+			"total_respondents": 1611
+		},
+		{
+			"title": "What search and filtering capabilities are most important to you? (Select all that apply)",
+			"type": "horizontal_bar",
+			"data": {
+				"Filter by protocol support": 627,
+				"Filter by local/cloud operation": 575,
+				"Search by device category": 501,
+				"Filter by platform compatibility": 498,
+				"Filter by certification (Matter, Zigbee certified, etc.)": 396,
+				"Filter by price range": 346,
+				"Search by manufacturer": 339,
+				"Filter by power source": 292,
+				"Other": 55
+			},
+			"total_respondents": 3629
+		},
+		{
+			"title": "How important is historical device information to you (discontinued models, firmware history, etc.)?",
+			"type": "bar",
+			"data": {
+				"1": 12,
+				"2": 76,
+				"3": 190,
+				"4": 268,
+				"5": 169
+			},
+			"total_respondents": 715,
+			"likert_average": 3.71,
+			"is_likert": true
+		},
+		{
+			"title": "What kind of device lifecycle information is valuable to you? (Select all that apply)",
+			"type": "horizontal_bar",
+			"data": {
+				"Known vulnerabilities and patches": 543,
+				"End-of-life announcements": 540,
+				"Firmware update history and frequency": 497,
+				"Replacement or successor model information": 486,
+				"Expected support duration": 418,
+				"Not interested in this information": 18,
+				"Other": 17
+			},
+			"total_respondents": 2519
+		},
+		{
+			"title": "How would you like to be notified about updates to devices you're interested in? (Select up to 3)",
+			"type": "horizontal_bar",
+			"data": {
+				"Home Assistant": 630,
+				"Email notifications": 425,
+				"RSS/Atom feeds": 98,
+				"API webhooks": 55,
+				"Browser notifications": 49,
+				"I don't want notifications": 32,
+				"Other": 13
+			},
+			"total_respondents": 1302
+		},
+		{
+			"title": "What additional features would make the database valuable to you? (Select all that apply)",
+			"type": "horizontal_bar",
+			"data": {
+				"Device setup walkthroughs": 505,
+				"Integration code examples and snippets": 498,
+				"Troubleshooting guides": 494,
+				"Compatibility checker tools": 390,
+				"Related device recommendations (based on compatibility)": 342,
+				"Community forums per device": 243,
+				"Price tracking and alerts": 177,
+				"Availability notifications": 137,
+				"Manufacturer contact information": 95,
+				"Warranty and support information": 93,
+				"Other": 27
+			},
+			"total_respondents": 3001
+		},
+		{
+			"title": "If provided, would you trust a rating system for a product?",
+			"type": "pie",
+			"data": {
+				"Yes": 438,
+				"Maybe": 264,
+				"No": 13
+			},
+			"total_respondents": 715
+		},
+		{
+			"title": "Are you a manufacturer?",
+			"type": "pie",
+			"data": {
+				"No": 708,
+				"Yes": 7
+			},
+			"total_respondents": 715
+		},
+		{
+			"title": "As a manufacturer, would you be interested in usage analytics for your devices (e.g., models, firmware, popular integrations)?",
+			"type": "pie",
+			"data": {
+				"5": 6,
+				"3": 5
+			},
+			"total_respondents": 11
+		},
+		{
+			"title": "For what reasons would your company officially contribute and maintain device specifications in the database? (Select all that apply)",
+			"type": "horizontal_bar",
+			"data": {
+				"Increased device visibility to potential customers": 4,
+				"Analytics on device usage and integration patterns": 4,
+				"Demonstrating commitment to open standards": 4,
+				"Support reduction through better documentation": 4,
+				"Building trust with the smart home community": 3,
+				"Early awareness of integration issues": 3,
+				"Not applicable (I'm not a manufacturer)": 2,
+				"Direct access to user feedback and integration reports": 2,
+				"Access to compatibility testing results": 2,
+				"Other": 2
+			},
+			"total_respondents": 30
+		},
+		{
+			"title": "How could the database best serve manufacturer needs while maintaining neutrality and objectivity? (Select all that apply)",
+			"type": "horizontal_bar",
+			"data": {
+				"Clear separation between manufacturer specs and community feedback": 5,
+				"API access for automated specification updates": 3,
+				"Access to aggregated (anonymized) usage data": 3,
+				"Verified manufacturer badge for official contributions": 3,
+				"Direct communication channel with integration developers": 2,
+				"Early notification of community-reported issues": 2,
+				"Other": 4
+			},
+			"total_respondents": 22
+		},
+		{
+			"title": "Would you be interested in a manufacturer verification program that allows you to claim and maintain your devices' official specifications?",
+			"type": "bar",
+			"data": {
+				"1": 0,
+				"2": 0,
+				"3": 4,
+				"4": 4,
+				"5": 3
+			},
+			"total_respondents": 11,
+			"likert_average": 3.91,
+			"is_likert": true
+		},
+		{
+			"title": "What concerns would your company have about participating in an open device database? (Select all that apply)",
+			"type": "horizontal_bar",
+			"data": {
+				"No significant concerns": 5,
+				"Resource requirements for maintenance": 5,
+				"Competitive intelligence concerns": 3,
+				"Other": 3
+			},
+			"total_respondents": 16
+		},
+		{
+			"title": "In what region do you primarily use your smart home devices?",
+			"type": "pie",
+			"data": {
+				"Europe": 534,
+				"North America (USA, Canada, Mexico)": 132,
+				"Asia-Pacific (including Australia and New Zealand)": 31,
+				"Latin America (Central and South America)": 13,
+				"Middle East and Africa": 5
+			},
+			"total_respondents": 715
+		},
+		{
+			"title": "What best describes your professional background? (Select all that apply)",
+			"type": "horizontal_bar",
+			"data": {
+				"IT/System administration": 318,
+				"Software development/Engineering": 303,
+				"Electrical/Electronics engineering": 152,
+				"Retired": 69,
+				"Education/Research": 62,
+				"Product management/Design": 45,
+				"Student": 42,
+				"Home automation professional/Installer": 41,
+				"Finance/Business": 32,
+				"Marketing/Sales": 30,
+				"Healthcare": 29,
+				"Legal": 3,
+				"Manufacturing": 3,
+				"Hobby": 2,
+				"Hobbyist": 2,
+				"Other": 105
+			},
+			"total_respondents": 1238
+		},
+		{
+			"title": "How do you primarily use smart home technology?",
+			"type": "horizontal_bar",
+			"data": {
+				"Personal/Home use only": 654,
+				"Both personal and professional use": 55,
+				"Other": 4
+			},
+			"total_respondents": 713
+		},
+		{
+			"title": "How many smart home devices do you have installed?",
+			"type": "horizontal_bar",
+			"data": {
+				"51-100 devices": 198,
+				"31-50 devices": 171,
+				"More than 100 devices": 171,
+				"16-30 devices": 125,
+				"6-15 devices": 36,
+				"1-5 devices": 13
+			},
+			"total_respondents": 714
+		},
+		{
+			"title": "What is your age range?",
+			"type": "pie",
+			"data": {
+				"30-44": 285,
+				"45-59": 253,
+				"60+": 83,
+				"18-29": 77,
+				"Under 18": 10
+			},
+			"total_respondents": 708
+		},
+		{
+			"title": "How many people live in your household?",
+			"type": "horizontal_bar",
+			"data": {
+				"3-4": 305,
+				"2": 256,
+				"1": 79,
+				"More than 4": 67
+			},
+			"total_respondents": 707
+		},
+		{
+			"title": "Do children live in your household?",
+			"type": "pie",
+			"data": {
+				"No": 407,
+				"Yes": 296
+			},
+			"total_respondents": 703
+		},
+		{
+			"title": "Do your children control the installed smart home devices in their everyday lives?",
+			"type": "pie",
+			"data": {
+				"No": 392,
+				"Yes": 208
+			},
+			"total_respondents": 600
+		},
+		{
+			"title": "How did you first hear about the Open Home Foundation Device Database?",
+			"type": "horizontal_bar",
+			"data": {
+				"Home Assistant channels (Release party, Labs, etc.)": 476,
+				"YouTube": 91,
+				"Social media": 36,
+				"Home automation community/forum": 34,
+				"News article or blog post": 21,
+				"Search engine": 19,
+				"Recommendation from friend/colleague": 11,
+				"Podcast": 5,
+				"GitHub or open-source community": 3,
+				"Other": 16
+			},
+			"total_respondents": 712
+		},
+		{
+			"title": "What is your level of engagement with smart home technology?",
+			"type": "pie",
+			"data": {
+				"Advanced (experienced with integrations, troubleshooting)": 405,
+				"Intermediate (comfortable with setup, multiple devices)": 162,
+				"Expert (professional or extensive technical knowledge)": 94,
+				"Contributor to Home Assistant or other smart home open-source projects": 33,
+				"Beginner (just starting out, few devices)": 17
+			},
+			"total_respondents": 711
+		},
+		{
+			"title": "How long have you been using Home Assistant?",
+			"type": "horizontal_bar",
+			"data": {
+				"More than 5 years": 194,
+				"2-3 years": 142,
+				"3-4 years": 112,
+				"1-2 years": 112,
+				"4-5 years": 92,
+				"Less than a year": 62
+			},
+			"total_respondents": 714
+		},
+		{
+			"title": "Which other smart home automation platforms or ecosystems do you currently use? (Select all that apply)",
+			"type": "horizontal_bar",
+			"data": {
+				"ESPHome": 461,
+				"Google Home": 237,
+				"Amazon Alexa": 178,
+				"Apple HomeKit": 169,
+				"Samsung SmartThings": 108,
+				"Node-RED": 108,
+				"Tuya": 7,
+				"Homey": 5,
+				"ioBroker": 2,
+				"zigbee2mqtt": 2,
+				"None": 2,
+				"Hue": 2,
+				"Shelly": 2,
+				"Other": 60
+			},
+			"total_respondents": 1343
+		},
+		{
+			"title": "What other smart home platforms have you used in the past? (Select all that apply)",
+			"type": "horizontal_bar",
+			"data": {
+				"Google Home": 262,
+				"Samsung SmartThings": 176,
+				"Amazon Alexa": 171,
+				"Apple HomeKit": 138,
+				"ESPHome": 128,
+				"Node-RED": 94,
+				"openHAB": 71,
+				"ioBroker": 24,
+				"Homey": 23,
+				"Hubitat": 15,
+				"Domoticz": 10,
+				"Jeedom": 5,
+				"Tuya": 5,
+				"Homebridge": 4,
+				"FHEM": 4,
+				"Philips Hue": 3,
+				"AMX, Crestron": 2,
+				"domoticz": 2,
+				"Control4": 2,
+				"Homeseer": 2,
+				"homeseer": 2,
+				"Vera": 2,
+				"Other": 86
+			},
+			"total_respondents": 1231
+		},
+		{
+			"title": "If you're open to being contacted by us in the future, please share your email below. We'll only use it to reach out for research conducted by the Open Home Foundation.",
+			"type": "contact_summary",
+			"contact_yes_count": 437,
+			"contact_yes_percentage": 61.1
+		}
+	]
+}
