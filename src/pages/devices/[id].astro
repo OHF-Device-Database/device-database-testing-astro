@@ -22,6 +22,12 @@ import type { DeviceCategoryTopLevelId } from "../../types/category";
 export const prerender = false;
 
 const { id } = Astro.params;
+
+// starts alongside getDevice instead of after it; the 404 path below never
+// awaits it, so keep a rejection from going unhandled
+const dimensionsPromise = getDimensions();
+dimensionsPromise.catch(() => undefined);
+
 const result = typeof id !== "undefined" ? await getDevice(id) : undefined;
 
 if (typeof result !== "undefined") {
@@ -31,28 +37,9 @@ if (typeof result !== "undefined") {
 	Astro.response.status = 404;
 }
 
-const [{ total }, { dimensions }] = await Promise.all([
-	getDeviceCount(),
-	getDimensions(),
-]);
-const resolveCategory = topLevelCategoryResolver(dimensions.categories);
-
-const listingRow = (item: IoDevicePoly) => {
-	const listed = devicePolyMap(item);
-	const firstRawCategoryId = listed.categories?.at(0);
-
-	return {
-		id: listed.id,
-		name: presentation.device.name(listed),
-		integration: listed.integration.name,
-		count: listed.count,
-		presented: presentation.device.category(
-			typeof firstRawCategoryId !== "undefined"
-				? resolveCategory(firstRawCategoryId)
-				: Unknown,
-		),
-	};
-};
+// only the 404 view shows the total, so only that path pays for it
+const total =
+	typeof result !== "undefined" ? 0 : (await getDeviceCount()).total;
 
 const formatDate = (date: Date): string =>
 	date.toLocaleDateString(getLocale(), {
@@ -63,7 +50,27 @@ const formatDate = (date: Date): string =>
 
 const view =
 	typeof result !== "undefined"
-		? (() => {
+		? await (async () => {
+				const { dimensions } = await dimensionsPromise;
+				const resolveCategory = topLevelCategoryResolver(dimensions.categories);
+
+				const listingRow = (item: IoDevicePoly) => {
+					const listed = devicePolyMap(item);
+					const firstRawCategoryId = listed.categories?.at(0);
+
+					return {
+						id: listed.id,
+						name: presentation.device.name(listed),
+						integration: listed.integration.name,
+						count: listed.count,
+						presented: presentation.device.category(
+							typeof firstRawCategoryId !== "undefined"
+								? resolveCategory(firstRawCategoryId)
+								: Unknown,
+						),
+					};
+				};
+
 				const device = deviceMonoMap(result.device);
 
 				const firstRawCategoryId = device.categories?.at(0);
@@ -105,9 +112,10 @@ const view =
 								? listingRow(result.device.canonical)
 								: undefined,
 						versions: {
+							// newest first: .at(0) is rendered as the current version
 							software: device.versions.software.toSorted(
 								(a, b) =>
-									a.firstEncountered.getTime() - b.firstEncountered.getTime(),
+									b.firstEncountered.getTime() - a.firstEncountered.getTime(),
 							),
 							hardware: device.versions.hardware,
 						},
@@ -295,7 +303,7 @@ const view =
 														{view.derived.versions.software.length > 1 && (
 															<version-history
 																entries={JSON.stringify(
-																	view.device.versions.software.map((v) => ({
+																	view.derived.versions.software.map((v) => ({
 																		version: v.version,
 																		installs: v.active,
 																		current:

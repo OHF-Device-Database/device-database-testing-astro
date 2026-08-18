@@ -3,6 +3,7 @@ import { z } from "astro/zod";
 import { ioFetch, IoHeadersCaching, searchParameters } from ".";
 
 import { pick } from "../utilities/pick";
+import { withUpstreamTtl } from "./memo";
 import type { IoDeviceCategoryId, IoDeviceConnectivityId } from "./device";
 
 export type IoGetDimensionsQuery = {
@@ -42,14 +43,14 @@ const GetDimensionsSchema = z.object({
 	}),
 });
 
-export const getDimensions = async (
-	query: IoGetDimensionsQuery = {},
+const fetchDimensions = async (
+	parameters: URLSearchParams,
 	signal?: AbortSignal,
 ) => {
 	const { body, headers } = await ioFetch(
 		"/api/unstable/dimensions",
 		GetDimensionsSchema,
-		searchParameters(query),
+		parameters,
 		"application/json",
 		signal,
 	);
@@ -58,4 +59,19 @@ export const getDimensions = async (
 		dimensions: body,
 		caching: pick(headers, ["cache-control", "last-modified"]),
 	};
+};
+
+export const getDimensions = async (
+	query: IoGetDimensionsQuery = {},
+	signal?: AbortSignal,
+) => {
+	const parameters = searchParameters(query);
+
+	// the unfiltered call is shared across concurrent callers, so it must not
+	// be tied to any single caller's abort signal
+	if ([...parameters.keys()].length === 0) {
+		return withUpstreamTtl("dimensions", () => fetchDimensions(parameters));
+	}
+
+	return fetchDimensions(parameters, signal);
 };

@@ -1,6 +1,8 @@
 import { z } from "astro/zod";
 
 import {
+	ioBaseUrl,
+	IoError,
 	ioFetch,
 	IoHeaderContentRange,
 	IoHeaderLink,
@@ -11,6 +13,7 @@ import {
 import { exactlyOne } from "../types/exactly-one";
 import { withUnknown } from "../types/unknown";
 import { pick } from "../utilities/pick";
+import { withUpstreamTtl } from "./memo";
 
 export const IoDeviceConnectivityId = z.enum(["online", "offline"]);
 export type IoDeviceConnectivityId = z.infer<typeof IoDeviceConnectivityId>;
@@ -30,9 +33,15 @@ export const IoDeviceIntegration = z.object({
 	domain: z.string(),
 });
 
+// the api serializes absent fields as null in places; treat null as absent
+const absentAsUndefined = z
+	.string()
+	.nullish()
+	.transform((value) => value ?? undefined);
+
 export const IoDeviceEntity = z.object({
 	domain: z.string(),
-	original_device_class: z.optional(z.string()),
+	original_device_class: absentAsUndefined,
 });
 
 export const IoDeviceCategoryId = z.enum([
@@ -131,8 +140,8 @@ export const IoDeviceMono = z
 	.and(
 		z.union([
 			z.object({ model: z.string(), model_id: z.string() }),
-			z.object({ model: z.string().optional(), model_id: z.string() }),
-			z.object({ model: z.string(), model_id: z.string().optional() }),
+			z.object({ model: absentAsUndefined, model_id: z.string() }),
+			z.object({ model: z.string(), model_id: absentAsUndefined }),
 		]),
 	);
 export type IoDeviceMono = z.infer<typeof IoDeviceMono>;
@@ -175,8 +184,11 @@ export const getDevices = async (
 		signal,
 	);
 
+	// rfc 8288 allows relative refs in link headers
 	const pages =
-		Number(new URL(headers.link.last).searchParams.get("page") ?? 0) + 1;
+		Number(
+			new URL(headers.link.last, ioBaseUrl()).searchParams.get("page") ?? 0,
+		) + 1;
 
 	return {
 		devices: body,
@@ -193,18 +205,19 @@ const GetDeviceCountSchema = z.object({
 		...IoHeadersCaching.shape,
 	}),
 });
-export const getDeviceCount = async () => {
-	const { headers } = await ioFetch(
-		"/api/unstable/derived/devices",
-		GetDeviceCountSchema,
-		// don't constrain size, as there' a good chance the non-parametric endpoint is already cached upstream
-	);
+export const getDeviceCount = async () =>
+	withUpstreamTtl("device-count", async () => {
+		const { headers } = await ioFetch(
+			"/api/unstable/derived/devices",
+			GetDeviceCountSchema,
+			// don't constrain size, as there' a good chance the non-parametric endpoint is already cached upstream
+		);
 
-	return {
-		total: headers["content-range"].total,
-		caching: pick(headers, ["cache-control", "last-modified"]),
-	};
-};
+		return {
+			total: headers["content-range"].total,
+			caching: pick(headers, ["cache-control", "last-modified"]),
+		};
+	});
 
 const IoRef = z.object({ id: z.string(), url: z.string() });
 
@@ -236,13 +249,20 @@ const DeviceGetSchema = z.object({
 	}),
 });
 export const getDevice = async (id: string) => {
-	const { body, headers } = await ioFetch(
-		`/api/unstable/derived/devices/${encodeURIComponent(id)}`,
-		DeviceGetSchema,
-	);
+	try {
+		const { body, headers } = await ioFetch(
+			`/api/unstable/derived/devices/${encodeURIComponent(id)}`,
+			DeviceGetSchema,
+		);
 
-	return {
-		device: body,
-		caching: pick(headers, ["cache-control", "last-modified"]),
-	};
+		return {
+			device: body,
+			caching: pick(headers, ["cache-control", "last-modified"]),
+		};
+	} catch (error) {
+		if (error instanceof IoError && error.status === 404) {
+			return undefined;
+		}
+		throw error;
+	}
 };

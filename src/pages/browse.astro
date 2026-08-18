@@ -33,9 +33,10 @@ const PAGE_SIZE = 24;
 const SIDEBAR_LIMIT = 8;
 
 const filters = browseFiltersFromSearchParams(Astro.url.searchParams);
-const pageParam = Number(Astro.url.searchParams.get("page") ?? "0");
-const page =
-	Number.isInteger(pageParam) && pageParam > 0 ? Math.floor(pageParam) : 0;
+// strict digits only: Number() would also accept hex, exponents, and
+// whitespace, which then reach the upstream api un-normalized
+const pageParam = Astro.url.searchParams.get("page") ?? "0";
+const page = /^\d{1,6}$/.test(pageParam) ? Number(pageParam) : 0;
 
 const [result, { dimensions }] = await Promise.all([
 	getDevices({
