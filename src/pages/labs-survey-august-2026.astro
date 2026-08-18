@@ -2,7 +2,6 @@
 import Layout from "../layouts/Layout.astro";
 
 import surveyData from "../data/labs-survey-august-2026.json";
-import { m } from "../paraglide/messages.js";
 
 export const prerender = false;
 
@@ -35,39 +34,44 @@ const europeShare = regionTotal
 	? Math.round(((regionChart?.data?.Europe ?? 0) / regionTotal) * 100)
 	: 0;
 
+const title = "Labs survey - Update August, 2026";
+
 const stats = [
-	{
-		value: String(surveyData.total_responses),
-		label: m.labs_survey_august_2026_stat_responses(),
-	},
-	{
-		value: String(charts.length),
-		label: m.labs_survey_august_2026_stat_questions(),
-	},
+	{ value: String(surveyData.total_responses), label: "Total responses" },
+	{ value: String(charts.length), label: "Questions analysed" },
 	{
 		value: `${contributionChart?.likert_average ?? "-"}/5`,
-		label: m.labs_survey_august_2026_stat_contribution(),
+		label: "Avg. contribution likelihood",
 	},
-	{
-		value: `${europeShare}%`,
-		label: m.labs_survey_august_2026_stat_europe(),
-	},
+	{ value: `${europeShare}%`, label: "Europe-based" },
 ];
 
-// Chart.js tooltips run in the browser, so the few strings they need are handed
-// over as data attributes rather than pulling the paraglide runtime client-side.
-const chartLabels = {
-	count: m.labs_survey_august_2026_chart_label_count(),
-	responses: m.labs_survey_august_2026_chart_label_responses(),
-};
+// The survey ran in English and the questions are reproduced verbatim, so this
+// page is deliberately not localised.
+const chartMeta = (chart: Chart) =>
+	[
+		chart.total_respondents ? `${chart.total_respondents} responses` : null,
+		chart.likert_average ? `Average: ${chart.likert_average}/5` : null,
+	]
+		.filter(Boolean)
+		.join(" | ");
 ---
 
-<Layout page="page" title={m.labs_survey_august_2026_title()}>
+<Layout page="page" title={title}>
 	<div class="container-narrow content-page">
 		<section class="content-section content-intro">
-			<h1>{m.labs_survey_august_2026_title()}</h1>
-			<p class="content-lede">{m.labs_survey_august_2026_lede()}</p>
-			<p class="content-prose">{m.labs_survey_august_2026_intro()}</p>
+			<h1>{title}</h1>
+			<p class="content-lede">
+				What 715 people told us they need from a device database, and what they
+				are willing to contribute back.
+			</p>
+			<p class="content-prose">
+				The Device Database Labs survey asked the Home Assistant community what
+				smart home device information they look for, what is missing today, and
+				whether they would help fill the gaps. This update covers 715 responses
+				collected up to August 2026, 63 more than the first snapshot published
+				in June.
+			</p>
 		</section>
 
 		<section class="content-section">
@@ -84,81 +88,107 @@ const chartLabels = {
 		</section>
 
 		<section class="content-section">
-			<h2>{m.labs_survey_august_2026_takeaways_title()}</h2>
-			<p
-				class="content-prose"
-				set:html={m.labs_survey_august_2026_takeaway_contribution()}
-			/>
-			<p
-				class="content-prose"
-				set:html={m.labs_survey_august_2026_takeaway_profile()}
-			/>
-			<p
-				class="content-prose"
-				set:html={m.labs_survey_august_2026_takeaway_motivation()}
-			/>
-			<p
-				class="content-prose"
-				set:html={m.labs_survey_august_2026_takeaway_needs()}
-			/>
-			<p
-				class="content-prose"
-				set:html={m.labs_survey_august_2026_takeaway_usage()}
-			/>
-			<p
-				class="content-prose"
-				set:html={m.labs_survey_august_2026_takeaway_manufacturers()}
-			/>
-			<p
-				class="content-prose"
-				set:html={m.labs_survey_august_2026_takeaway_stability()}
-			/>
+			<h2>Key takeaways</h2>
+			<p class="content-prose">
+				<strong>Contribution readiness.</strong> Willingness to contribute stays exceptionally
+				high: 94% rate themselves 4 or 5 out of 5, unchanged since June. Only 7% report
+				no barriers at all, and the primary blocker remains time commitment (26% of
+				all concerns raised), which points squarely at streamlined contribution workflows
+				rather than persuasion.
+			</p>
+			<p class="content-prose">
+				<strong>Community profile.</strong> Respondents are highly technical: 76%
+				rate their technical comfort 4 or 5 out of 5, and 40% have run Home Assistant
+				for four years or more. Half of all stated professional backgrounds are IT
+				and system administration or software engineering. Every one of these values
+				sits within a single point of the June snapshot.
+			</p>
+			<p class="content-prose">
+				<strong>Why people contribute.</strong> Motivations are unchanged: supporting
+				the Open Home Foundation and open-source projects (28%), getting useful information
+				back in return (26%), and filling gaps in what is available today (22%). Building
+				personal reputation ranks last, at roughly 1%.
+			</p>
+			<p class="content-prose">
+				<strong>Critical information needs.</strong> Communication protocols (20%)
+				and local control capabilities (19%) outrank every other device attribute.
+				The largest gap people hit today is unclear compatibility information (16%),
+				closely followed by thin detail on local control (15%), so the two align:
+				the database is being asked for exactly what is hardest to find elsewhere.
+			</p>
+			<p class="content-prose">
+				<strong>Usage patterns.</strong> The primary use case is pre-purchase research
+				(30%). Beyond specifications, people ask for practical implementation support:
+				device setup walkthroughs, integration code examples, and troubleshooting
+				guides each draw around 17% of feature requests.
+			</p>
+			<p class="content-prose">
+				<strong>Manufacturer engagement.</strong> Only 7 respondents identified as
+				manufacturers, and no new manufacturer responses arrived since June, so these
+				results represent the consumer and enthusiast perspective. Interest in a manufacturer
+				verification programme holds at 3.91 out of 5, suggesting the appetite for
+				official participation exists but has not yet been reached.
+			</p>
+			<p class="content-prose">
+				<strong>Result stability.</strong> Adding 63 responses (a 10% increase) moved
+				every headline metric by at most one percentage point. The June findings are
+				confirmed rather than revised, and can now be treated as robust.
+			</p>
 		</section>
 
 		<section class="content-section">
-			<h2>{m.labs_survey_august_2026_changes_title()}</h2>
-			<p class="content-prose">{m.labs_survey_august_2026_changes_body_1()}</p>
-			<p class="content-prose">{m.labs_survey_august_2026_changes_body_2()}</p>
+			<h2>What changed since June</h2>
+			<p class="content-prose">
+				Very little, which is itself the most useful finding. The sample grew
+				from 652 to 715 responses and no headline number shifted by more than
+				one percentage point. Where June left open the question of whether early
+				respondents were unrepresentative enthusiasts, this update closes it:
+				the picture is stable.
+			</p>
+			<p class="content-prose">
+				Two things are worth watching. Manufacturer participation has not moved
+				at all, so the manufacturer-facing questions still rest on 7 responses
+				and should not be read as representative. And a small number of write-in
+				answers now ask for programmatic access to the database over the Model
+				Context Protocol, a request that did not appear in June.
+			</p>
 		</section>
 
 		<section class="content-section">
-			<h2>{m.labs_survey_august_2026_method_title()}</h2>
-			<p class="content-prose">{m.labs_survey_august_2026_method_body_1()}</p>
-			<p class="content-prose">{m.labs_survey_august_2026_method_body_2()}</p>
+			<h2>How to read these results</h2>
+			<p class="content-prose">
+				This was an opt-in survey promoted through Home Assistant community
+				channels, so it describes people already invested in the ecosystem
+				rather than smart home buyers in general. Three quarters of respondents
+				are Europe-based, and the technical skew is pronounced. Where a question
+				allowed several answers, percentages are shares of all selections made,
+				not shares of respondents, so they sum across options rather than to
+				100%.
+			</p>
+			<p class="content-prose">
+				Free-text answers are summarised rather than published, and no personal
+				data or email addresses are included in the results. 61% of respondents
+				told us they are open to being contacted about future research.
+			</p>
 		</section>
 
 		<section class="content-section">
-			<h2>{m.labs_survey_august_2026_results_title()}</h2>
-			<p class="content-prose">{m.labs_survey_august_2026_results_intro()}</p>
+			<h2>All questions</h2>
+			<p class="content-prose">
+				Every analysed question, in the order it was asked, with the number of
+				responses behind each one. Questions that allowed several answers report
+				shares of all selections made, so those charts sum to more than the
+				number of respondents.
+			</p>
 
-			<div
-				class="survey-charts"
-				data-survey-charts
-				data-label-count={chartLabels.count}
-				data-label-responses={chartLabels.responses}
-			>
+			<div class="survey-charts" data-survey-charts>
 				{
 					charts.map((chart, index) => (
 						<figure class="survey-chart">
 							<figcaption>
 								<h3 class="survey-chart-title">{chart.title}</h3>
 								{(chart.total_respondents || chart.likert_average) && (
-									<p class="survey-chart-meta">
-										{[
-											chart.total_respondents
-												? m.labs_survey_august_2026_chart_responses({
-														count: chart.total_respondents,
-													})
-												: null,
-											chart.likert_average
-												? m.labs_survey_august_2026_chart_average({
-														average: chart.likert_average,
-													})
-												: null,
-										]
-											.filter(Boolean)
-											.join(" | ")}
-									</p>
+									<p class="survey-chart-meta">{chartMeta(chart)}</p>
 								)}
 							</figcaption>
 
@@ -168,7 +198,7 @@ const chartLabels = {
 										{chart.contact_yes_percentage}%
 									</p>
 									<p class="survey-contact-label">
-										{m.labs_survey_august_2026_contact_description()}
+										of respondents are open to being contacted
 									</p>
 								</div>
 							) : (
@@ -264,7 +294,7 @@ const chartLabels = {
 		};
 	}
 
-	function drawChart(Chart, canvas, info, labels) {
+	function drawChart(Chart, canvas, info) {
 		const entries = Object.entries(info.data ?? {});
 		if (entries.length === 0) return;
 
@@ -329,7 +359,7 @@ const chartLabels = {
 											0,
 										);
 										const share = ((context.parsed / total) * 100).toFixed(1);
-										return `${labels.count} ${context.parsed} (${share}%)`;
+										return `Count: ${context.parsed} (${share}%)`;
 									},
 								},
 							},
@@ -367,8 +397,8 @@ const chartLabels = {
 								title: (context) => context[0].label,
 								label: (context) =>
 									horizontal
-										? `${labels.responses} ${context.parsed.x}`
-										: `${labels.count} ${context.parsed.y}`,
+										? `Responses: ${context.parsed.x}`
+										: `Count: ${context.parsed.y}`,
 							},
 						},
 					},
@@ -415,10 +445,6 @@ const chartLabels = {
 		if (!container || !dataScript?.textContent) return;
 
 		const surveyData = JSON.parse(dataScript.textContent);
-		const labels = {
-			count: container.dataset.labelCount ?? "",
-			responses: container.dataset.labelResponses ?? "",
-		};
 
 		// 40+ canvases is a lot to initialise up front, so each one waits until it
 		// is close to the viewport.
@@ -442,7 +468,7 @@ const chartLabels = {
 					}
 
 					loadChartLibrary()
-						.then((Chart) => drawChart(Chart, canvas, info, labels))
+						.then((Chart) => drawChart(Chart, canvas, info))
 						.catch(() => {
 							container.dataset.chartsFailed = "true";
 						});
